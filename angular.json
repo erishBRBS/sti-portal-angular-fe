@@ -2,7 +2,8 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": "ccadcd50-1707-4668-bf6a-a66d1dde3b1c"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -24,9 +25,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.css"
-            ],
+            "styles": ["src/styles.css"],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "ssr": {
@@ -59,6 +58,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "allowedHosts": ["localhost", "127.0.0.1"]
+          },
           "configurations": {
             "production": {
               "buildTarget": "sti-portal-angular-fe:build:production"
