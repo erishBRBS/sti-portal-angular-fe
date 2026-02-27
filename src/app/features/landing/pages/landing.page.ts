@@ -1,5 +1,12 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  Component,
+  HostListener,
+  OnDestroy,
+  OnInit,
+  Inject,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LoginModalComponent } from '../../auth/components/login-modal.component';
 
 @Component({
@@ -9,6 +16,8 @@ import { LoginModalComponent } from '../../auth/components/login-modal.component
   templateUrl: './landing.page.html',
 })
 export class LandingPage implements OnInit, OnDestroy {
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+
   // ---------------- FAQ ----------------
   faqItems = [
     {
@@ -48,21 +57,27 @@ export class LandingPage implements OnInit, OnDestroy {
   }
 
   getQuestionIcon(question: string): string {
-    if (question.toLowerCase().includes('rfid') || question.toLowerCase().includes('attendance')) return 'fa-id-badge';
-    if (question.toLowerCase().includes('lost') || question.toLowerCase().includes('id')) return 'fa-exclamation-triangle';
-    if (question.toLowerCase().includes('parents') || question.toLowerCase().includes('notifications')) return 'fa-sms';
-    if (question.toLowerCase().includes('grades') || question.toLowerCase().includes('portal')) return 'fa-graduation-cap';
-    if (question.toLowerCase().includes('facial') || question.toLowerCase().includes('security')) return 'fa-user-shield';
+    const q = question.toLowerCase();
+    if (q.includes('rfid') || q.includes('attendance')) return 'fa-id-badge';
+    if (q.includes('lost') || q.includes('id')) return 'fa-exclamation-triangle';
+    if (q.includes('parents') || q.includes('notifications')) return 'fa-sms';
+    if (q.includes('grades') || q.includes('portal')) return 'fa-graduation-cap';
+    if (q.includes('facial') || q.includes('security')) return 'fa-user-shield';
     return 'fa-question-circle';
   }
 
   getProTip(question: string): string {
     const q = question.toLowerCase();
-    if (q.includes('rfid')) return 'Avoid bending your ID card, as it might damage the internal RFID antenna.';
-    if (q.includes('lost')) return 'A temporary gate pass can be requested at the guard house while waiting for a replacement.';
-    if (q.includes('parents')) return 'Standard network rates may apply for SMS alerts depending on your service provider.';
-    if (q.includes('grades')) return 'You can download a PDF copy of your unofficial grade slip directly from the portal.';
-    if (q.includes('facial')) return 'Remove hats or heavy tinted glasses when approaching the gate camera for faster verification.';
+    if (q.includes('rfid'))
+      return 'Avoid bending your ID card, as it might damage the internal RFID antenna.';
+    if (q.includes('lost'))
+      return 'A temporary gate pass can be requested at the guard house while waiting for a replacement.';
+    if (q.includes('parents'))
+      return 'Standard network rates may apply for SMS alerts depending on your service provider.';
+    if (q.includes('grades'))
+      return 'You can download a PDF copy of your unofficial grade slip directly from the portal.';
+    if (q.includes('facial'))
+      return 'Remove hats or heavy tinted glasses when approaching the gate camera for faster verification.';
     return 'Contact the ICT department for technical issues regarding your portal account.';
   }
 
@@ -82,37 +97,43 @@ export class LandingPage implements OnInit, OnDestroy {
       src: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Gate Entry Terminal',
       title: 'Gate Entry Verification',
-      description: 'Facial recognition and RFID integration at the STI Bacoor main entrance.',
+      description:
+        'Facial recognition and RFID integration at the STI Bacoor main entrance.',
     },
     {
       src: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Real-time Attendance',
       title: 'RFID Attendance Logs',
-      description: 'Automated classroom logging system with sub-second processing speed.',
+      description:
+        'Automated classroom logging system with sub-second processing speed.',
     },
     {
       src: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'SMS Notification System',
       title: 'Parent Alert System',
-      description: 'Real-time SMS notifications sent via Semaphore API for student security.',
+      description:
+        'Real-time SMS notifications sent via Semaphore API for student security.',
     },
     {
       src: 'https://images.unsplash.com/photo-1568992688065-536aad8a12f6?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Admin Control Center',
       title: 'Centralized Dashboard',
-      description: 'Master control panel for administrators to manage student and faculty records.',
+      description:
+        'Master control panel for administrators to manage student and faculty records.',
     },
     {
       src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Student Grade Portal',
       title: 'Academic Grade Portal',
-      description: 'Secure access for students to view preliminary and final grades.',
+      description:
+        'Secure access for students to view preliminary and final grades.',
     },
     {
       src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'System Security',
       title: 'Security & Audit Logs',
-      description: 'Complete transparency of all gate and portal activity for campus safety.',
+      description:
+        'Complete transparency of all gate and portal activity for campus safety.',
     },
   ];
 
@@ -124,18 +145,24 @@ export class LandingPage implements OnInit, OnDestroy {
     const images: any[] = [];
     for (let i = 0; i < 4; i++) {
       const index = (this.currentImageIndex + i) % this.campusImages.length;
-      images.push({ ...this.campusImages[index], position: i, isFeatured: i === 0 });
+      images.push({
+        ...this.campusImages[index],
+        position: i,
+        isFeatured: i === 0,
+      });
     }
     return images;
   }
 
   nextImage() {
-    this.currentImageIndex = (this.currentImageIndex + 1) % this.campusImages.length;
+    this.currentImageIndex =
+      (this.currentImageIndex + 1) % this.campusImages.length;
   }
 
   prevImage() {
     this.currentImageIndex =
-      (this.currentImageIndex - 1 + this.campusImages.length) % this.campusImages.length;
+      (this.currentImageIndex - 1 + this.campusImages.length) %
+      this.campusImages.length;
   }
 
   selectImage(index: number) {
@@ -155,11 +182,13 @@ export class LandingPage implements OnInit, OnDestroy {
 
   @HostListener('touchstart', ['$event'])
   onTouchStart(event: TouchEvent) {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.touchStartX = event.touches[0].clientX;
   }
 
   @HostListener('touchend', ['$event'])
   onTouchEnd(event: TouchEvent) {
+    if (!isPlatformBrowser(this.platformId)) return;
     const touchEndX = event.changedTouches[0].clientX;
     const diff = touchEndX - this.touchStartX;
     if (Math.abs(diff) > 50) diff > 0 ? this.prevImage() : this.nextImage();
@@ -173,6 +202,7 @@ export class LandingPage implements OnInit, OnDestroy {
   }
 
   scrollToSection(sectionId: string) {
+    if (!isPlatformBrowser(this.platformId)) return;
     const el = document.getElementById(sectionId);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     this.isMobileMenuOpen = false;
@@ -193,9 +223,11 @@ export class LandingPage implements OnInit, OnDestroy {
   private scrollObserver: IntersectionObserver | null = null;
 
   ngOnInit() {
-    this.autoSlideInterval = setInterval(() => this.nextImage(), 4000);
-
-    setTimeout(() => this.initScrollAnimations(), 100);
+    // ✅ Browser-only: timers, DOM, IntersectionObserver
+    if (isPlatformBrowser(this.platformId)) {
+      this.autoSlideInterval = setInterval(() => this.nextImage(), 4000);
+      setTimeout(() => this.initScrollAnimations(), 100);
+    }
   }
 
   ngOnDestroy() {
@@ -204,6 +236,11 @@ export class LandingPage implements OnInit, OnDestroy {
   }
 
   private initScrollAnimations() {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // safety: if missing in some browsers/environments
+    if (typeof IntersectionObserver === 'undefined') return;
+
     this.scrollObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
