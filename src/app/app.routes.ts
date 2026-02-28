@@ -1,6 +1,32 @@
 import { Routes } from '@angular/router';
+// import { authGuard } from './core/guard/auth.guard';
+
 import { LandingPage } from './features/landing/pages/landing.page';
 
 export const routes: Routes = [
-      { path: '', component: LandingPage },
+  //LANDING PAGE
+  { path: '', component: LandingPage },
+
+  // PROTECTED: With sidebar + header
+  {
+    path: 'ats',
+    // canActivate: [authGuard],
+    loadChildren: () => import('./features/ats/ats.routes').then((m) => m.ATS_ROUTES),
+  },
+  {
+    path: 'gps',
+    // canActivate: [authGuard],
+    loadChildren: () => import('./features/gps/gps.routes').then((m) => m.GPS_ROUTES),
+  },
+  //PUBLIC PAGE
+  {
+    path: 'general',
+    loadChildren: () => import('./features/general/general.routes').then((m) => m.GENERAL_ROUTES),
+  },
+  {
+    path: 'others',
+    loadChildren: () => import('./features/others/others.routes').then((m) => m.OTHERS_ROUTES),
+  },
+
+  { path: '**', redirectTo: '' },
 ];

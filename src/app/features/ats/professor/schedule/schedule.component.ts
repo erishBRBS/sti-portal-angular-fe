@@ -1,10 +1,10 @@
 import { Component} from '@angular/core';
 
 @Component({
-  selector: 'app-schedule',
+  selector: 'app-professor-schedule',
   standalone: true,
   templateUrl: './schedule.component.html',
 })
-export class ScheduleComponent {
+export class ProfessorScheduleComponent {
   
 }

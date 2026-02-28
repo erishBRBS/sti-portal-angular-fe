@@ -5,6 +5,6 @@ import { Component} from '@angular/core';
   standalone: true,
   templateUrl: './subject-attendance.component.html',
 })
-export class SubjectAttendanceComponent {
+export class StudentSubjectAttendanceComponent {
   
 }

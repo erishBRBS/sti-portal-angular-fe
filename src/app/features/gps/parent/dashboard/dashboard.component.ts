@@ -1,10 +1,10 @@
 import { Component} from '@angular/core';
 
 @Component({
-  selector: 'app-dashboard',
+  selector: 'app-parent-dashboard',
   standalone: true,
   templateUrl: './dashboard.component.html',
 })
-export class DashboardComponent {
+export class ParentDashboardComponent {
   
 }
