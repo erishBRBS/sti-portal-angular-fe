@@ -14,6 +14,8 @@ import { GradeComponent } from './student/grades/grades.component';
 
 //PARENT
 import { ParentDashboardComponent } from './parent/dashboard/dashboard.component';
+import { ChildScheduleComponent } from './parent/childs-schedule/childs-schedule.component';
+import { ChildGradeComponent } from './parent/childs-grade/childs-grade.component';
 
 export const GPS_ROUTES: Routes = [
   //============================================
@@ -65,6 +67,18 @@ export const GPS_ROUTES: Routes = [
     // canActivate: [roleGuard],
     data: { roles: ['Parent'] },
     component: ParentDashboardComponent,
+  },
+  {
+    path: 'parent/childs-schedule',
+    // canActivate: [roleGuard],
+    data: { roles: ['Parent'] },
+    component: ChildScheduleComponent
+  },
+  {
+    path: 'parent/childs-grade',
+    // canActivate: [roleGuard],
+    data: { roles: ['Parent'] },
+    component: ChildGradeComponent
   },
   //============================================
   // DEFAULT
