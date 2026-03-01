@@ -1,10 +1,29 @@
 <div class="flex h-screen w-full bg-slate-50 dark:bg-slate-950">
-  <app-sidenav></app-sidenav>
+  <!-- DESKTOP SIDENAV -->
+  <div class="hidden lg:block">
+    <app-sidenav></app-sidenav>
+  </div>
 
+  <!-- MOBILE DRAWER -->
+  <div class="lg:hidden fixed inset-0 z-[70]" *ngIf="mobileNavOpen">
+    <!-- overlay -->
+    <div class="absolute inset-0 bg-black/50" (click)="closeMobileNav()"></div>
+
+    <!-- panel -->
+    <div class="absolute left-0 top-0 h-full w-72 max-w-[85vw] bg-white dark:bg-[#1e1e1e] shadow-xl">
+      <app-sidenav (navClick)="closeMobileNav()"></app-sidenav>
+    </div>
+  </div>
+
+  <!-- MAIN -->
   <div class="flex min-w-0 flex-1 flex-col">
-    <app-header></app-header>
+    <!-- HEADER (keep it above everything when drawer is closed) -->
+    <div class="relative z-[60]">
+      <app-header (menuClick)="toggleMobileNav()"></app-header>
+    </div>
 
-    <div class="min-h-0 flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 p-6">
+    <!-- CONTENT -->
+    <div class="min-h-0 flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 p-4 sm:p-6">
       <router-outlet></router-outlet>
     </div>
   </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -19,6 +19,8 @@ import { RouterModule } from '@angular/router';
   `],
 })
 export class HeaderComponent implements OnInit {
+  @Output() menuClick = new EventEmitter<void>();
+
   isDarkMode = false;
   lastName = 'Prof. Santos';
   currentDate = new Date();
@@ -27,7 +29,6 @@ export class HeaderComponent implements OnInit {
   ngOnInit() {
     this.setGreeting();
 
-    // avoid SSR crash
     if (typeof window === 'undefined') return;
 
     const savedTheme = localStorage.getItem('theme');
@@ -52,7 +53,6 @@ export class HeaderComponent implements OnInit {
   private applyTheme(dark: boolean) {
     this.isDarkMode = dark;
 
-    // avoid SSR crash
     if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
 
     if (dark) {
