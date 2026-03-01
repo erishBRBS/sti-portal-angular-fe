@@ -5,7 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 type UserRole = 'admin' | 'professor' | 'teacher' | 'student' | 'parent';
 
 @Component({
-  selector: 'app-sidebar',
+  selector: 'app-sidenav',
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './sidenav.component.html',

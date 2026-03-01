@@ -88,6 +88,6 @@ export const ATS_ROUTES: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'dashboard',
+    redirectTo: 'admin/dashboard',
   },
 ];
