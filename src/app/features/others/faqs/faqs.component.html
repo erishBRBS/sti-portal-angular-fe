@@ -1,6 +1,40 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
+<main class="max-w mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
       Frequently Asked Questions
-    </h1>
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      Find answers to common portal concerns
+    </p>
   </div>
+
+  <div class="flex justify-center ">
+    <section
+        class="w-full max-w-4xl rounded-2xl p-2 sm:p-3
+         border border-slate-200 dark:border-slate-800
+         bg-white dark:bg-slate-900"
+    >
+      <p-accordion [value]="activeValues" [multiple]="false">
+        <p-accordion-panel *ngFor="let f of faqs; let i = index" [value]="i.toString()">
+          <p-accordion-header>{{ f.question }}</p-accordion-header>
+          <p-accordion-content>
+            <p class="m-0 text-slate-700 dark:text-slate-300">
+              {{ f.answer }}
+            </p>
+          </p-accordion-content>
+        </p-accordion-panel>
+      </p-accordion>
+    </section>
+  </div>
+
+    <div class="flex justify-center ">
+  <div
+    class=" w-full max-w-4xl text-center p-6 bg-blue-50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30"
+  >
+    <p class="text-sm text-blue-800 dark:text-blue-300 font-medium">
+      Still need help? Email us at
+      <a href="mailto:oneapp@sti.edu" class="font-black underline">oneapp&#64;sti.edu</a>
+    </p>
+  </div>
+  </div>
+</main>

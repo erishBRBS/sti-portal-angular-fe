@@ -1,6 +1,147 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Mission, Vision, and STI Hymn
-    </h1>
+<main class="max-w mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+      Core Values
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      Discover the foundation that guides STI’s commitment to education
+    </p>
   </div>
+
+  <!-- Center cards container -->
+  <div class="flex justify-center">
+    <div class="w-full max-w-4xl space-y-6">
+      <!-- Mission + Vision cards (centered within max-w-4xl) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Mission -->
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
+                 p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1
+                 transition-all duration-300 group"
+        >
+          <div
+            class="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400
+                   rounded-2xl flex items-center justify-center text-3xl mb-6
+                   group-hover:scale-110 transition-transform"
+          >
+            <i class="pi pi-bullseye"></i>
+          </div>
+
+          <h3 class="text-lg font-black mb-4 uppercase tracking-tighter text-slate-900 dark:text-slate-100">
+            Mission
+          </h3>
+
+          <div class="space-y-4 text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+            <p>
+              We are an institution committed to provide knowledge through the development and delivery of superior learning
+              systems.
+            </p>
+            <p>
+              We strive to provide optimum value to all our stakeholders—our students, our faculty members, our employees,
+              our partners, our shareholders, and our community.
+            </p>
+            <p>
+              We will pursue this mission with utmost integrity, dedication, transparency, and creativity.
+            </p>
+          </div>
+        </div>
+
+        <!-- Vision -->
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
+                 p-8 rounded-3xl shadow-sm hover:shadow-xl hover:-translate-y-1
+                 transition-all duration-300 group"
+        >
+          <div
+            class="w-16 h-16 bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400
+                   rounded-2xl flex items-center justify-center text-3xl mb-6
+                   group-hover:scale-110 transition-transform"
+          >
+            <i class="pi pi-eye"></i>
+          </div>
+
+          <h3 class="text-lg font-black mb-4 uppercase tracking-tighter text-slate-900 dark:text-slate-100">
+            Vision
+          </h3>
+
+          <p class="text-slate-600 dark:text-slate-400 leading-relaxed text-sm">
+            To be the leader in innovative and relevant education that nurtures individuals to become competent and
+            responsible members of society.
+          </p>
+        </div>
+      </div>
+
+      <!-- Hymn (same centered max width) -->
+      <section class="bg-slate-900 dark:bg-blue-950 rounded-[2.5rem] overflow-hidden shadow-2xl relative print-white">
+        <div class="absolute top-0 right-0 p-10 opacity-10 pointer-events-none">
+          <i class="pi pi-music text-[150px] text-white print-black"></i>
+        </div>
+
+        <div class="p-8 md:p-12">
+          <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-10">
+            <div class="text-center md:text-left">
+              <h3 class="text-lg font-black text-white mb-2 uppercase tracking-widest print-black">
+                STI Hymn
+              </h3>
+              <p class="text-blue-300 font-bold uppercase text-xs tracking-widest print-black">
+                The official school anthem
+              </p>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-3">
+              <button
+                (click)="toggleHymn()"
+                [class]="isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'"
+                class="px-6 py-3 rounded-2xl text-white font-black text-xs uppercase flex items-center gap-2 transition-all shadow-lg"
+              >
+                <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i>
+                {{ isPlaying ? 'Pause' : 'Play' }} Hymn
+              </button>
+
+              <button
+                (click)="printHymn()"
+                class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-all"
+                pTooltip="Print"
+              >
+                <i class="pi pi-print"></i>
+              </button>
+
+              <button
+                (click)="shareHymn()"
+                class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-all"
+                pTooltip="Share"
+              >
+                <i class="pi pi-share-alt"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="max-w-2xl mx-auto text-center">
+            <div class="space-y-6 text-blue-50/90 font-bold text-md md:text-sm leading-relaxed italic print-black">
+              <p class="animate-pulse-slow">
+                Aim high with STI<br />
+                The future is here today<br />
+                Fly high with STI<br />
+                Be the best that you can be
+              </p>
+
+              <p>
+                Onward to tomorrow<br />
+                With dignity and pride<br />
+                A vision of excellence<br />
+                Our resounding battle cry
+              </p>
+
+              <p>
+                Aim high with STI<br />
+                The future is here today<br />
+                Fly high with STI<br />
+                Be the best that you can be
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
