@@ -150,6 +150,7 @@
           </p>
           <a
             routerLink="/gps/admin/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Dashboard
@@ -160,12 +161,14 @@
           </p>
           <a
             routerLink="/gps/professor/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Dashboard
           </a>
           <a
             routerLink="/gps/professor/grade-management"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Grade Management
@@ -176,12 +179,14 @@
           </p>
           <a
             routerLink="/gps/student/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Dashboard
           </a>
           <a
             routerLink="/gps/student/grades"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Grades
@@ -192,18 +197,21 @@
           </p>
           <a
             routerLink="/gps/parent/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Dashboard
           </a>
           <a
             routerLink="/gps/parent/childs-grade"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Child's Grades
           </a>
           <a
             routerLink="/gps/parent/childs-schedule"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Child's Schedule
@@ -219,12 +227,12 @@
           (click)="isAdminPanelOpen = !isAdminPanelOpen"
           class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
         >
-          <i class="pi pi-user-edit mr-3 text-[12px] group-hover:text-blue-600 transition-colors"></i>
+          <i class="pi pi-user-edit mr-3 text-[12px] group-hover:text-yellow-600 transition-colors"></i>
           <span>Admin Panel</span>
 
           <span class="ml-auto w-5 h-5 flex items-center justify-center">
             <i
-              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-blue-600 dark:group-hover:text-blue-400"
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-yellow-600 dark:group-hover:text-yellow-400"
               [ngClass]="{ 'rotate-180 translate-y-[1px]': isAdminPanelOpen }"
             ></i>
           </span>
@@ -256,24 +264,28 @@
             >
               <a
                 routerLink="/panel/admin/user-management/admin"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Admin
               </a>
               <a
                 routerLink="/panel/admin/user-management/parent"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Parent
               </a>
               <a
                 routerLink="/panel/admin/user-management/professor"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Professor
               </a>
               <a
                 routerLink="/panel/admin/user-management/student"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Student
@@ -303,30 +315,35 @@
             >
               <a
                 routerLink="/panel/admin/curriculum-management/course"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Course
               </a>
               <a
                 routerLink="/panel/admin/curriculum-management/room"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Room
               </a>
               <a
                 routerLink="/panel/admin/curriculum-management/schedule"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Schedule
               </a>
               <a
                 routerLink="/panel/admin/curriculum-management/section"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Section
               </a>
               <a
                 routerLink="/panel/admin/curriculum-management/subject"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
               >
                 Subject
@@ -337,6 +354,7 @@
           <!-- Guardian Management -->
           <a
             routerLink="/panel/admin/guardian-management"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
            Guardian
@@ -345,6 +363,7 @@
           <!-- Announcement Management -->
           <a
             routerLink="/panel/admin/announcement-management"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
             class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Announcement
