@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
@@ -11,56 +11,55 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, AvatarModule, ButtonModule, BadgeModule, TooltipModule, RouterModule],
   templateUrl: './header.component.html',
-  styles: [`
-    :host ::ng-deep .p-avatar.p-avatar-lg {
-      width: 2.5rem;
-      height: 2.5rem;
-    }
-  `],
+  styles: [
+    `
+      :host ::ng-deep .p-avatar.p-avatar-lg {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+    `,
+  ],
 })
 export class HeaderComponent implements OnInit {
+  @Output() menuClick = new EventEmitter<void>();
+
   isDarkMode = false;
-  lastName = 'Prof. Santos';
+  lastName = 'Dela Cruz';
   currentDate = new Date();
   greeting = '';
 
   ngOnInit() {
     this.setGreeting();
-
-    // avoid SSR crash
-    if (typeof window === 'undefined') return;
-
-    const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia?.('(prefers-color-scheme: dark)')?.matches ?? false;
-
-    if (savedTheme === 'dark' || (!savedTheme && systemPrefersDark)) {
-      this.applyTheme(true);
-    }
   }
 
+  // AM / NN / PM
   setGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) this.greeting = 'Good Morning';
-    else if (hour < 17) this.greeting = 'Good Afternoon';
+    else if (hour < 18) this.greeting = 'Good Afternoon';
     else this.greeting = 'Good Evening';
   }
 
   toggleTheme() {
-    this.applyTheme(!this.isDarkMode);
+    if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
+
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    this.isDarkMode = isDark;
+
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
 
   private applyTheme(dark: boolean) {
     this.isDarkMode = dark;
 
     // avoid SSR crash
-    if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
+    if (typeof document === 'undefined') return;
 
     if (dark) {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 
@@ -11,15 +11,16 @@ type UserRole = 'admin' | 'professor' | 'teacher' | 'student' | 'parent';
   templateUrl: './sidenav.component.html',
 })
 export class SidenavComponent {
+  @Output() navClick = new EventEmitter<void>();
+
   isAttendanceOpen = true;
   isGradesOpen = false;
 
-  // ✅ Admin Panel toggles
+  // Admin Panel toggle
   isAdminPanelOpen = false;
   isUserManagementOpen = false;
   isCurriculumManagementOpen = false;
 
-  // ✅ TEMP: palitan mo nalang kapag may auth ka na
   currentRole: UserRole = 'student';
 
   get roleLabel(): string {
@@ -38,16 +39,8 @@ export class SidenavComponent {
     }
   }
 
-  isRole(role: string): boolean {
-    return String(this.currentRole).toLowerCase() === role.toLowerCase();
-  }
-
-  canSeeAttendancePortal(): boolean {
-    const r = String(this.currentRole).toLowerCase();
-    return r === 'admin' || r === 'professor' || r === 'teacher' || r === 'student';
-  }
-
   logout(): void {
     this.router.navigateByUrl('/');
+    this.navClick.emit();
   }
 }
