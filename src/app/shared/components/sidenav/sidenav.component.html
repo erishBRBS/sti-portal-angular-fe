@@ -3,7 +3,7 @@
 >
   <div class="flex flex-col flex-1 overflow-hidden">
     <!-- Header -->
-    <div class="py-10 px-8 flex-shrink-0">
+    <div class="py-3 px-8 flex-shrink-0">
       <div class="flex items-center space-x-4">
         <img src="assets/sti-logo.png" alt="STI Logo" class="w-12 h-12 object-contain rounded-sm" />
 
@@ -19,20 +19,26 @@
         </div>
       </div>
     </div>
+
     <!-- Nav -->
-    <nav class="flex-1 overflow-y-auto px-4 pb-6 thin-scrollbar">
+    <nav class="flex-1 overflow-y-auto mt-5 px-4 pb-6 thin-scrollbar">
       <!-- Attendance Portal -->
       <div class="mb-4">
         <button
           (click)="isAttendanceOpen = !isAttendanceOpen"
-          class="w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+          class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
         >
-          <i class="pi pi-calendar-plus mr-3 text-[12px]"></i>
-          <span>Attendance Portal</span>
           <i
-            class="pi pi-chevron-down ml-auto text-[10px] transition-transform duration-300"
-            [ngClass]="{ 'rotate-180': isAttendanceOpen }"
+            class="pi pi-calendar-plus mr-3 text-[12px] group-hover:text-blue-600 transition-colors"
           ></i>
+          <span>Attendance Portal</span>
+
+          <span class="ml-auto w-5 h-5 flex items-center justify-center">
+            <i
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-blue-600 dark:group-hover:text-blue-400"
+              [ngClass]="{ 'rotate-180 translate-y-[1px]': isAttendanceOpen }"
+            ></i>
+          </span>
         </button>
 
         <div
@@ -116,18 +122,23 @@
         </div>
       </div>
 
-      <!-- Grade Portal (placeholder muna since wala ka pang gps/grade routes dito) -->
+      <!-- Grade Portal -->
       <div class="mb-4">
         <button
           (click)="isGradesOpen = !isGradesOpen"
-          class="w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+          class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
         >
-          <i class="pi pi-chart-bar mr-3 text-[12px]"></i>
-          <span>Grade Portal</span>
           <i
-            class="pi pi-chevron-down ml-auto text-[10px] transition-transform duration-300"
-            [ngClass]="{ 'rotate-180': isGradesOpen }"
+            class="pi pi-chart-bar mr-3 text-[12px] group-hover:text-green-600 transition-colors"
           ></i>
+          <span>Grade Portal</span>
+
+          <span class="ml-auto w-5 h-5 flex items-center justify-center">
+            <i
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-green-600 dark:group-hover:text-green-400"
+              [ngClass]="{ 'rotate-180 translate-y-[1px]': isGradesOpen }"
+            ></i>
+          </span>
         </button>
 
         <div
@@ -196,6 +207,147 @@
             class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
           >
             Child's Schedule
+          </a>
+        </div>
+      </div>
+
+      <!-- =======================
+     ADMIN PANEL
+     ======================= -->
+      <div class="mt-3">
+        <button
+          (click)="isAdminPanelOpen = !isAdminPanelOpen"
+          class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+        >
+          <i class="pi pi-user-edit mr-3 text-[12px] group-hover:text-blue-600 transition-colors"></i>
+          <span>Admin Panel</span>
+
+          <span class="ml-auto w-5 h-5 flex items-center justify-center">
+            <i
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-blue-600 dark:group-hover:text-blue-400"
+              [ngClass]="{ 'rotate-180 translate-y-[1px]': isAdminPanelOpen }"
+            ></i>
+          </span>
+        </button>
+
+        <div
+          *ngIf="isAdminPanelOpen"
+          class="mt-2 space-y-2 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+        >
+          <!-- User Management -->
+          <div>
+            <button
+              (click)="isUserManagementOpen = !isUserManagementOpen"
+              class="group w-full flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
+              <span>Users</span>
+
+              <span class="ml-auto w-5 h-5 flex items-center justify-center">
+                <i
+                  class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out"
+                  [ngClass]="{ 'rotate-180 translate-y-[1px]': isUserManagementOpen }"
+                ></i>
+              </span>
+            </button>
+
+            <div
+              *ngIf="isUserManagementOpen"
+              class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+            >
+              <a
+                routerLink="/panel/admin/user-management/admin"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Admin
+              </a>
+              <a
+                routerLink="/panel/admin/user-management/parent"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Parent
+              </a>
+              <a
+                routerLink="/panel/admin/user-management/professor"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Professor
+              </a>
+              <a
+                routerLink="/panel/admin/user-management/student"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Student
+              </a>
+            </div>
+          </div>
+
+          <!-- Curriculum Management -->
+          <div>
+            <button
+              (click)="isCurriculumManagementOpen = !isCurriculumManagementOpen"
+              class="group w-full flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
+              <span>Curriculum</span>
+
+              <span class="ml-auto w-5 h-5 flex items-center justify-center">
+                <i
+                  class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out"
+                  [ngClass]="{ 'rotate-180 translate-y-[1px]': isCurriculumManagementOpen }"
+                ></i>
+              </span>
+            </button>
+
+            <div
+              *ngIf="isCurriculumManagementOpen"
+              class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+            >
+              <a
+                routerLink="/panel/admin/curriculum-management/course"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Course
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/room"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Room
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/schedule"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Schedule
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/section"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Section
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/subject"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Subject
+              </a>
+            </div>
+          </div>
+
+          <!-- Guardian Management -->
+          <a
+            routerLink="/panel/admin/guardian-management"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+           Guardian
+          </a>
+
+          <!-- Announcement Management -->
+          <a
+            routerLink="/panel/admin/announcement-management"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Announcement
           </a>
         </div>
       </div>

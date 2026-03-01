@@ -24,6 +24,11 @@ export const routes: Routes = [
         // canActivate: [authGuard],
         loadChildren: () => import('./features/gps/gps.routes').then((m) => m.GPS_ROUTES),
       },
+      {
+        path: 'panel',
+        // canActivate: [authGuard],
+        loadChildren: () => import('./features/admin-panel/admin.routes').then((m) => m.AP_ROUTES),
+      },
       //PUBLIC PAGE
       {
         path: 'general',

@@ -14,10 +14,14 @@ export class SidenavComponent {
   isAttendanceOpen = true;
   isGradesOpen = false;
 
+  // ✅ Admin Panel toggles
+  isAdminPanelOpen = false;
+  isUserManagementOpen = false;
+  isCurriculumManagementOpen = false;
+
   // ✅ TEMP: palitan mo nalang kapag may auth ka na
   currentRole: UserRole = 'student';
 
-  // For UI label sa sidebar header
   get roleLabel(): string {
     const r = String(this.currentRole || '').toLowerCase();
     if (r === 'admin') return 'Admin';
@@ -28,7 +32,6 @@ export class SidenavComponent {
   }
 
   constructor(private router: Router) {
-    // ✅ mimic your old behavior: parents default open grades
     if (this.currentRole === 'parent') {
       this.isAttendanceOpen = false;
       this.isGradesOpen = true;
@@ -45,7 +48,6 @@ export class SidenavComponent {
   }
 
   logout(): void {
-    // ✅ TEMP: kapag may auth ka na, dito mo tatawagin logout()
     this.router.navigateByUrl('/');
   }
 }
