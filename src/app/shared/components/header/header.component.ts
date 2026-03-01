@@ -11,12 +11,14 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, AvatarModule, ButtonModule, BadgeModule, TooltipModule, RouterModule],
   templateUrl: './header.component.html',
-  styles: [`
-    :host ::ng-deep .p-avatar.p-avatar-lg {
-      width: 2.5rem;
-      height: 2.5rem;
-    }
-  `],
+  styles: [
+    `
+      :host ::ng-deep .p-avatar.p-avatar-lg {
+        width: 2.5rem;
+        height: 2.5rem;
+      }
+    `,
+  ],
 })
 export class HeaderComponent implements OnInit {
   @Output() menuClick = new EventEmitter<void>();
@@ -39,7 +41,13 @@ export class HeaderComponent implements OnInit {
   }
 
   toggleTheme() {
-    this.applyTheme(!this.isDarkMode);
+    if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
+
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    this.isDarkMode = isDark;
+
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
 
   private applyTheme(dark: boolean) {
