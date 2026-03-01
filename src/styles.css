@@ -77,3 +77,27 @@ html, body {
   .animate-pulseSlow { animation: pulse-slow 8s ease-in-out infinite; }
   .animate-binaryFlow { animation: binary-flow 6s linear infinite; }
 }
+
+/* Thin scrollbar (WebKit: Chrome/Edge/Safari) */
+.thin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35); /* slate-ish */
+  border-radius: 9999px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.55);
+}
+
+/* Firefox */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+}

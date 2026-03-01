@@ -5,7 +5,7 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet],
-  template: `<router-outlet />`,
+  template: `<router-outlet></router-outlet>`,
 })
 export class App {
   protected readonly title = signal('sti-portal-angular-fe');

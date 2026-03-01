@@ -1,0 +1,465 @@
+<div
+  class="h-screen sticky top-0 bg-white dark:bg-[#1e1e1e] border-r border-gray-100 dark:border-white/5 w-72 flex flex-col justify-between shadow-sm overflow-hidden transition-colors duration-300"
+>
+  <div class="flex flex-col flex-1 overflow-hidden">
+    <!-- Header -->
+    <div class="py-3 px-8 flex-shrink-0">
+      <div class="flex items-center space-x-4">
+        <img src="assets/sti-logo.png" alt="STI Logo" class="w-12 h-12 object-contain rounded-sm" />
+
+        <div>
+          <h1 class="text-lg font-black text-gray-900 dark:text-white tracking-tight leading-none">
+            STI EduNexus
+          </h1>
+          <p
+            class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mt-1"
+          >
+            {{ roleLabel }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="flex-1 overflow-y-auto mt-5 px-4 pb-6 thin-scrollbar">
+      <!-- Attendance Portal -->
+      <div class="mb-4">
+        <button
+          (click)="isAttendanceOpen = !isAttendanceOpen"
+          class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+        >
+          <i
+            class="pi pi-calendar-plus mr-3 text-[12px] group-hover:text-blue-600 transition-colors"
+          ></i>
+          <span>Attendance Portal</span>
+
+          <span class="ml-auto w-5 h-5 flex items-center justify-center">
+            <i
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-blue-600 dark:group-hover:text-blue-400"
+              [ngClass]="{ 'rotate-180 translate-y-[1px]': isAttendanceOpen }"
+            ></i>
+          </span>
+        </button>
+
+        <div
+          *ngIf="isAttendanceOpen"
+          class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+        >
+          <p class="px-4 pt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Admin
+          </p>
+          <a
+            routerLink="/ats/admin/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+          <a
+            routerLink="/ats/admin/gate-attendance"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Gate Attendance
+          </a>
+
+          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Professor
+          </p>
+          <a
+            routerLink="/ats/professor/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+          <a
+            routerLink="/ats/professor/student-attendance"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Student Attendance
+          </a>
+          <a
+            routerLink="/ats/professor/schedule"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Schedule
+          </a>
+
+          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Student
+          </p>
+          <a
+            routerLink="/ats/student/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+          <a
+            routerLink="/ats/student/gate-attendance"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Gate Attendance
+          </a>
+          <a
+            routerLink="/ats/student/subject-attendance"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Subject Attendance
+          </a>
+          <a
+            routerLink="/ats/student/schedule"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Schedule
+          </a>
+        </div>
+      </div>
+
+      <!-- Grade Portal -->
+      <div class="mb-4">
+        <button
+          (click)="isGradesOpen = !isGradesOpen"
+          class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+        >
+          <i
+            class="pi pi-chart-bar mr-3 text-[12px] group-hover:text-green-600 transition-colors"
+          ></i>
+          <span>Grade Portal</span>
+
+          <span class="ml-auto w-5 h-5 flex items-center justify-center">
+            <i
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-green-600 dark:group-hover:text-green-400"
+              [ngClass]="{ 'rotate-180 translate-y-[1px]': isGradesOpen }"
+            ></i>
+          </span>
+        </button>
+
+        <div
+          *ngIf="isGradesOpen"
+          class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+        >
+          <p class="px-4 pt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Admin
+          </p>
+          <a
+            routerLink="/gps/admin/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+
+          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Professor
+          </p>
+          <a
+            routerLink="/gps/professor/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+          <a
+            routerLink="/gps/professor/grade-management"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Grade Management
+          </a>
+
+          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Student
+          </p>
+          <a
+            routerLink="/gps/student/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+          <a
+            routerLink="/gps/student/grades"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Grades
+          </a>
+
+          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+            Parent
+          </p>
+          <a
+            routerLink="/gps/parent/dashboard"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Dashboard
+          </a>
+          <a
+            routerLink="/gps/parent/childs-grade"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Child's Grades
+          </a>
+          <a
+            routerLink="/gps/parent/childs-schedule"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Child's Schedule
+          </a>
+        </div>
+      </div>
+
+      <!-- =======================
+     ADMIN PANEL
+     ======================= -->
+      <div class="mt-3">
+        <button
+          (click)="isAdminPanelOpen = !isAdminPanelOpen"
+          class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+        >
+          <i class="pi pi-user-edit mr-3 text-[12px] group-hover:text-yellow-600 transition-colors"></i>
+          <span>Admin Panel</span>
+
+          <span class="ml-auto w-5 h-5 flex items-center justify-center">
+            <i
+              class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out group-hover:text-yellow-600 dark:group-hover:text-yellow-400"
+              [ngClass]="{ 'rotate-180 translate-y-[1px]': isAdminPanelOpen }"
+            ></i>
+          </span>
+        </button>
+
+        <div
+          *ngIf="isAdminPanelOpen"
+          class="mt-2 space-y-2 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+        >
+          <!-- User Management -->
+          <div>
+            <button
+              (click)="isUserManagementOpen = !isUserManagementOpen"
+              class="group w-full flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
+              <span>Users</span>
+
+              <span class="ml-auto w-5 h-5 flex items-center justify-center">
+                <i
+                  class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out"
+                  [ngClass]="{ 'rotate-180 translate-y-[1px]': isUserManagementOpen }"
+                ></i>
+              </span>
+            </button>
+
+            <div
+              *ngIf="isUserManagementOpen"
+              class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+            >
+              <a
+                routerLink="/panel/admin/user-management/admin"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Admin
+              </a>
+              <a
+                routerLink="/panel/admin/user-management/parent"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Parent
+              </a>
+              <a
+                routerLink="/panel/admin/user-management/professor"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Professor
+              </a>
+              <a
+                routerLink="/panel/admin/user-management/student"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Student
+              </a>
+            </div>
+          </div>
+
+          <!-- Curriculum Management -->
+          <div>
+            <button
+              (click)="isCurriculumManagementOpen = !isCurriculumManagementOpen"
+              class="group w-full flex items-center rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
+              <span>Curriculum</span>
+
+              <span class="ml-auto w-5 h-5 flex items-center justify-center">
+                <i
+                  class="pi pi-chevron-down !text-[10px] !leading-none transition-transform duration-300 ease-in-out"
+                  [ngClass]="{ 'rotate-180 translate-y-[1px]': isCurriculumManagementOpen }"
+                ></i>
+              </span>
+            </button>
+
+            <div
+              *ngIf="isCurriculumManagementOpen"
+              class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
+            >
+              <a
+                routerLink="/panel/admin/curriculum-management/course"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Course
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/room"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Room
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/schedule"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Schedule
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/section"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Section
+              </a>
+              <a
+                routerLink="/panel/admin/curriculum-management/subject"
+                routerLinkActive="bg-slate-100 dark:bg-white/5"
+                class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+              >
+                Subject
+              </a>
+            </div>
+          </div>
+
+          <!-- Guardian Management -->
+          <a
+            routerLink="/panel/admin/guardian-management"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+           Guardian
+          </a>
+
+          <!-- Announcement Management -->
+          <a
+            routerLink="/panel/admin/announcement-management"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            Announcement
+          </a>
+        </div>
+      </div>
+
+      <!-- General -->
+      <div class="mt-10 pt-6 border-t border-gray-100 dark:border-white/5">
+        <h3 class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">
+          General
+        </h3>
+
+        <div class="space-y-1">
+          <a
+            routerLink="/general/notifications"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-bell mr-3 text-[12px]"></i> Notifications
+            <span
+              class="ml-auto bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black"
+              >3</span
+            >
+          </a>
+
+          <a
+            routerLink="/general/announcements"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-megaphone mr-3 text-[12px]"></i> Announcements
+            <span
+              class="ml-auto bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full font-black"
+              >3</span
+            >
+          </a>
+
+          <a
+            routerLink="/general/profile"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-user mr-3 text-[12px]"></i> My Profile
+          </a>
+
+          <a
+            routerLink="/general/settings"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-cog mr-3 text-[12px]"></i> Settings
+          </a>
+
+          <h3
+            class="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4 mt-6"
+          >
+            Others
+          </h3>
+
+          <a
+            routerLink="/others/mvh"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-bookmark mr-3 text-[12px]"></i> Mission, Vision & STI Hymn
+          </a>
+
+          <a
+            routerLink="/others/about"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-flag mr-3 text-[12px]"></i> About
+          </a>
+
+          <a
+            routerLink="/others/faqs"
+            routerLinkActive="bg-slate-100 dark:bg-white/5"
+            class="flex items-center rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+          >
+            <i class="pi pi-question-circle mr-3 text-[12px]"></i> Faqs
+          </a>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Footer -->
+  <div class="p-6 flex-shrink-0">
+    <button
+      (click)="logout()"
+      class="w-full group flex items-center justify-center space-x-3 py-4 bg-gray-900 dark:bg-[#2a2a2a] hover:bg-red-600 dark:hover:bg-red-600 text-white rounded-[1.25rem] transition-all duration-300 shadow-sm border border-transparent dark:border-white/5"
+    >
+      <i class="pi pi-power-off text-xs group-hover:scale-110 transition-transform"></i>
+      <span class="font-black text-[10px] uppercase tracking-[0.2em]">Logout System</span>
+    </button>
+  </div>
+</div>
