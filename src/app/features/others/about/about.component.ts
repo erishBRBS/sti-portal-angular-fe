@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastModule } from 'primeng/toast';
-import { TooltipModule } from 'primeng/tooltip';
-import { MessageService } from 'primeng/api';
+import { ToastService } from '../../../shared/services/toast.service';
 
 type Feature = {
   title: string;
@@ -19,30 +17,14 @@ type Contact = {
 @Component({
   selector: 'app-about',
   standalone: true,
-  imports: [CommonModule, ToastModule, TooltipModule],
-  providers: [MessageService],
+  imports: [CommonModule],
   templateUrl: './about.component.html',
 })
 export class AboutComponent {
   features: Feature[] = [
-    {
-      title: 'Grade Tracking',
-      icon: 'pi pi-star-fill',
-      colorClass: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20',
-      desc: 'Detailed grade breakdowns and progress tracking.',
-    },
-    {
-      title: 'Class Schedule',
-      icon: 'pi pi-calendar',
-      colorClass: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20',
-      desc: 'Daily room assignments and professor info.',
-    },
-    {
-      title: 'Announcements',
-      icon: 'pi pi-megaphone',
-      colorClass: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20',
-      desc: 'Campus news and important notices in real-time.',
-    },
+    { title: 'Grade Tracking', icon: 'pi pi-star-fill', colorClass: 'bg-yellow-50 text-yellow-600 dark:bg-yellow-900/20', desc: 'Detailed grade breakdowns and progress tracking.' },
+    { title: 'Class Schedule', icon: 'pi pi-calendar', colorClass: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20', desc: 'Daily room assignments and professor info.' },
+    { title: 'Announcements', icon: 'pi pi-megaphone', colorClass: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20', desc: 'Campus news and important notices in real-time.' },
   ];
 
   portalPoints: string[] = [
@@ -58,7 +40,7 @@ export class AboutComponent {
     { label: 'Student Affairs', value: 'studentaffairs@stibacoor.edu.ph' },
   ];
 
-  constructor(private messageService: MessageService) {}
+  constructor(private toast: ToastService) {}
 
   copyToClipboard(contact: Contact) {
     if (typeof window === 'undefined') return;
@@ -69,11 +51,7 @@ export class AboutComponent {
       navigator.clipboard
         .writeText(text)
         .then(() => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Copied!',
-            detail: `${contact.label} info copied to clipboard.`,
-          });
+          this.toast.success('Copied!', `${contact.label} info copied to clipboard.`);
         })
         .catch(() => {});
     }

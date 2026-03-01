@@ -1,13 +1,14 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
 import { HeaderComponent } from '../header/header.component';
 import { SidenavComponent } from '../sidenav/sidenav.component';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidenavComponent, HeaderComponent],
+  imports: [CommonModule, RouterOutlet, SidenavComponent, HeaderComponent, ToastModule],
   templateUrl: './layout.component.html'
 })
 export class LayoutComponent {

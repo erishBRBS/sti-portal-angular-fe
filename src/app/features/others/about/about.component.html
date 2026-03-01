@@ -1,11 +1,9 @@
-<p-toast></p-toast>
-
 <main class="max-w mx-auto w-full space-y-8 animate-fadeIn">
   <div class="space-y-2 text-center md:text-left">
-    <h2 class="text-4xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
       About STI Student Portal
     </h2>
-    <p class="text-slate-500 dark:text-slate-400 font-medium text-lg">
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
       Your gateway to academic information and campus resources
     </p>
   </div>
@@ -19,12 +17,12 @@
     >
       <div
         [class]="feature.colorClass"
-        class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mb-6
+        class="w-14 h-14 rounded-2xl flex items-center justify-center text-lg mb-6
                group-hover:rotate-12 transition-transform"
       >
         <i [class]="feature.icon"></i>
       </div>
-      <h3 class="text-xl font-black mb-2 text-slate-900 dark:text-slate-100">
+      <h3 class="text-lg font-black mb-2 text-slate-900 dark:text-slate-100">
         {{ feature.title }}
       </h3>
       <p class="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
@@ -39,7 +37,7 @@
         class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-8 rounded-[2.5rem]
                border border-slate-200 dark:border-slate-800 shadow-sm"
       >
-        <h2 class="text-2xl font-black mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
+        <h2 class="text-lg font-black mb-6 flex items-center gap-3 text-slate-900 dark:text-slate-100">
           <i class="pi pi-info-circle text-blue-500"></i>
           Digital Campus
         </h2>
@@ -90,7 +88,7 @@
           <div
             *ngFor="let contact of contacts"
             (click)="copyToClipboard(contact)"
-            pTooltip="Click to copy"
+            title="Click to copy"
             class="group cursor-pointer p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-all"
           >
             <p class="text-[10px] font-black text-blue-500 uppercase">
