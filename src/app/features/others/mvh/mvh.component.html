@@ -92,32 +92,47 @@
                 </p>
               </div>
 
-              <div class="flex flex-wrap justify-center gap-3">
-                <button
-                  (click)="toggleHymn()"
-                  [class]="isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'"
-                  class="px-6 py-3 rounded-2xl text-white font-black text-xs uppercase flex items-center gap-2 transition-all shadow-lg"
-                >
-                  <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i>
-                  {{ isPlaying ? 'Pause' : 'Play' }} Hymn
-                </button>
+<!-- ACTIONS TOOLBAR -->
+<div class="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+  <!-- Play / Pause -->
+  <button
+    type="button"
+    (click)="toggleHymn()"
+    [ngClass]="isPlaying ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-600 hover:bg-blue-700'"
+    class="w-full sm:w-auto px-6 py-3 rounded-2xl text-white font-black text-xs uppercase
+           flex items-center justify-center gap-2 transition-all shadow-lg"
+  >
+    <i [class]="isPlaying ? 'pi pi-pause' : 'pi pi-play'"></i>
+    {{ isPlaying ? 'Pause' : 'Play' }} Hymn
+  </button>
 
-                <button
-                  (click)="printHymn()"
-                  class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-all"
-                  pTooltip="Print"
-                >
-                  <i class="pi pi-print"></i>
-                </button>
+  <!-- Icon buttons -->
+  <div class="flex items-center justify-center sm:justify-end gap-2">
+    <button
+      type="button"
+      (click)="printHymn()"
+      class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 text-white
+             transition-all flex items-center justify-center"
+      pTooltip="Print"
+      tooltipPosition="top"
+      aria-label="Print"
+    >
+      <i class="pi pi-print text-lg"></i>
+    </button>
 
-                <button
-                  (click)="shareHymn()"
-                  class="p-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white transition-all"
-                  pTooltip="Share"
-                >
-                  <i class="pi pi-share-alt"></i>
-                </button>
-              </div>
+    <button
+      type="button"
+      (click)="shareHymn()"
+      class="w-11 h-11 rounded-2xl bg-white/10 hover:bg-white/20 text-white
+             transition-all flex items-center justify-center"
+      pTooltip="Share"
+      tooltipPosition="top"
+      aria-label="Share"
+    >
+      <i class="pi pi-share-alt text-lg"></i>
+    </button>
+  </div>
+</div>
             </div>
 
             <!-- Lyrics area (scrolls inside, not the whole page) -->
