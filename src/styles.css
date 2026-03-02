@@ -95,3 +95,21 @@ html.dark {
 }
 .thin-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.55); }
 .thin-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(148, 163, 184, 0.45) transparent; }
+
+/* PrimeNG input focus (blue instead of green) */
+.p-inputtext:enabled:focus,
+.p-password input:enabled:focus,
+.p-inputnumber input:enabled:focus,
+.p-dropdown:not(.p-disabled).p-focus,
+.p-multiselect:not(.p-disabled).p-focus,
+.p-textarea:enabled:focus {
+  border-color: #3b82f6 !important; /* blue */
+  box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25) !important;
+}
+
+/* Optional: hover border to match */
+.p-inputtext:enabled:hover,
+.p-password input:enabled:hover,
+.p-inputnumber input:enabled:hover {
+  border-color: rgba(59, 130, 246, 0.6) !important;
+}

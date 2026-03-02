@@ -1,6 +1,94 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Settings
-    </h1>
+<main class="mx-w-4xl w-full space-y-8 animate-fadeIn">
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+      Account Settings
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      Configure your portal and security preferences
+    </p>
   </div>
+
+  <div class="flex justify-center">
+    <div class="w-full max-w-4xl space-y-6">
+      <section
+        class="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800
+               overflow-hidden shadow-sm divide-y dark:divide-slate-800"
+      >
+        <!-- Security -->
+        <div class="p-8">
+          <h3 class="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em] mb-6">
+            Security & Authentication
+          </h3>
+
+          <div class="flex items-center justify-between gap-4 py-4">
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-white">Change Password</p>
+              <p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">
+                Last changed 3 months ago
+              </p>
+            </div>
+
+            <button
+              type="button"
+              (click)="openChangePassword()"
+              class="px-5 py-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl
+                     text-[10px] font-black uppercase tracking-widest
+                     text-slate-600 dark:text-slate-300 hover:opacity-90 transition"
+            >
+              Update
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ✅ INSERT REUSABLE DIALOG HERE -->
+  <app-dialog
+    [(visible)]="changePasswordVisible"
+    title="Change Password"
+    description="Enter your current password and set a new one."
+    [width]="'30rem'"
+    [confirmLabel]="'Update Password'"
+    [cancelLabel]="'Cancel'"
+    [closeOnConfirm]="false"
+    [confirmDisabled]="changePasswordForm.invalid"
+    [loading]="isSavingPassword"
+    (cancel)="closeChangePassword()"
+    (confirm)="saveChangePassword()"
+  >
+    <div dialog-body>
+      <form [formGroup]="changePasswordForm" class="space-y-4">
+        <!-- <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            Current Password
+          </label>
+          <input pInputText type="password" class="w-full" formControlName="currentPassword" />
+          <small *ngIf="f.currentPassword.touched && f.currentPassword.invalid" class="text-rose-500 text-xs font-bold">
+            Required
+          </small>
+        </div> -->
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            New Password
+          </label>
+          <input pInputText type="password" class="w-full" formControlName="newPassword" />
+          <small *ngIf="f.newPassword.touched && f.newPassword.errors?.['minlength']" class="text-rose-500 text-xs font-bold">
+            Minimum 8 characters
+          </small>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            Confirm Password
+          </label>
+          <input pInputText type="password" class="w-full" formControlName="confirmPassword" />
+          <small *ngIf="(f.confirmPassword.touched || f.newPassword.touched) && mismatch" class="text-rose-500 text-xs font-bold">
+            Passwords do not match
+          </small>
+        </div>
+      </form>
+    </div>
+  </app-dialog>
+</main>
