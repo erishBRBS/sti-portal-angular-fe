@@ -1,0 +1,73 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="setVisible($event)"
+  [modal]="modal"
+  [appendTo]="'body'"
+  [style]="{ width: width }"
+  [closable]="closable"
+  [dismissableMask]="dismissableMask"
+  [draggable]="draggable"
+  [resizable]="resizable"
+  [styleClass]="styleClass"
+>
+  <ng-template pTemplate="header" *ngIf="hasHeader">
+    <div class="flex items-center gap-3">
+      <p-avatar
+        *ngIf="avatarUrl"
+        [image]="avatarUrl"
+        shape="circle"
+        styleClass="ring-2 ring-slate-200 dark:ring-slate-700"
+      />
+      <div class="leading-tight">
+        <div class="text-sm font-black text-slate-900 dark:text-slate-100">
+          {{ title }}
+        </div>
+        <div
+          *ngIf="subtitle"
+          class="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400"
+        >
+          {{ subtitle }}
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="space-y-4">
+    <p *ngIf="description" class="text-sm text-slate-600 dark:text-slate-400">
+      {{ description }}
+    </p>
+
+    <ng-content select="[dialog-body]"></ng-content>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <!-- If you want custom footer, set showDefaultFooter=false -->
+    <ng-container *ngIf="!showDefaultFooter">
+      <ng-content select="[dialog-footer]"></ng-content>
+    </ng-container>
+
+    <div *ngIf="showDefaultFooter" class="flex justify-end gap-2">
+      <button
+        type="button"
+        class="px-4 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest
+               bg-slate-100 hover:bg-slate-200 text-slate-700
+               dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-200 transition-all"
+        (click)="onCancel()"
+        [disabled]="loading"
+      >
+        {{ cancelLabel }}
+      </button>
+
+      <button
+        type="button"
+        class="px-5 py-2 rounded-2xl text-[11px] font-black uppercase tracking-widest
+               bg-blue-600 hover:bg-blue-700 text-white transition-all
+               disabled:opacity-60 disabled:cursor-not-allowed"
+        (click)="onConfirm()"
+        [disabled]="confirmDisabled || loading"
+      >
+        {{ loading ? 'Saving...' : confirmLabel }}
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

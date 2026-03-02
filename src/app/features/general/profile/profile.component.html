@@ -1,6 +1,153 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
       My Profile
-    </h1>
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      View and manage your professional information
+    </p>
   </div>
+
+  <div class="flex justify-center">
+    <div class="w-full max-w-5xl space-y-6">
+      <section
+        class="bg-yellow dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800
+               shadow-sm overflow-hidden"
+      >
+        <!-- Banner -->
+        <div class="h-32 bg-blue-700 w-full relative">
+          <div class="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.2),transparent)]"></div>
+        </div>
+
+        <div class="px-8 pb-8">
+          <!-- Header row -->
+          <div class="relative flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 mb-8">
+            <!-- PHOTO -->
+            <div class="w-32 h-32 bg-yellow-300 p-2 rounded-3xl shadow-xl">
+              <div class="relative w-full h-full rounded-2xl overflow-hidden">
+                <!-- ✅ Preview first, fallback to saved photo -->
+                <img
+                  *ngIf="photoPreviewUrl || user.photoUrl; else initialsAvatar"
+                  [src]="photoPreviewUrl || user.photoUrl"
+                  alt="Profile photo"
+                  class="w-full h-full object-cover"
+                />
+
+                <!-- Fallback initials -->
+                <ng-template #initialsAvatar>
+                  <div
+                    class="w-full h-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center
+                           text-3xl font-black text-blue-600 dark:text-blue-400"
+                  >
+                    {{ user.initials }}
+                  </div>
+                </ng-template>
+
+                <!-- Overlay change button (only when editing) -->
+                <label
+                  *ngIf="isEditing"
+                  class="absolute inset-x-0 bottom-0 px-3 py-2 cursor-pointer
+                         bg-black/55 text-white text-[10px] font-black uppercase tracking-widest
+                         flex items-center justify-center gap-2"
+                >
+                  <span>Change Photo</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    (change)="onPhotoSelected($event)"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <!-- Name + Dept -->
+            <div class="text-center md:text-left flex-1 w-full">
+              <div *ngIf="!isEditing; else editTitle">
+                <h1 class="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">
+                  {{ user.name }}
+                </h1>
+                <p class="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                  {{ user.department }}
+                </p>
+              </div>
+
+              <ng-template #editTitle>
+                <input
+                  [(ngModel)]="user.name"
+                  class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                         rounded-2xl text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight
+                         px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+                />
+                <input
+                  [(ngModel)]="user.department"
+                  class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700
+                         rounded-2xl text-[11px] font-bold text-slate-500 dark:text-slate-300 uppercase tracking-widest
+                         px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Details -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <!-- Static fields -->
+            <div class="space-y-6">
+              <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Employee ID</label>
+                <p class="font-bold dark:text-white mt-1 uppercase">{{ user.id }}</p>
+              </div>
+
+              <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email Address</label>
+                <p class="font-bold dark:text-white mt-1 lowercase">{{ user.email }}</p>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div>
+                <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Current Load</label>
+                <p class="font-bold dark:text-white mt-1 uppercase">{{ user.load }}</p>
+              </div>
+
+              <!-- Actions -->
+              <div class="pt-2">
+                <button
+                  *ngIf="!isEditing"
+                  type="button"
+                  (click)="startEdit()"
+                  class="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-white
+                         rounded-2xl font-black text-[10px] uppercase tracking-widest
+                         hover:bg-blue-600 hover:text-white transition-all"
+                >
+                  Change Profile
+                </button>
+
+                <div *ngIf="isEditing" class="flex gap-2">
+                  <button
+                    type="button"
+                    (click)="saveChanges()"
+                    class="flex-1 py-3 bg-blue-600 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest
+                           hover:bg-blue-700 transition-all"
+                  >
+                    Save Changes
+                  </button>
+
+                  <button
+                    type="button"
+                    (click)="cancelEdit()"
+                    class="flex-1 py-3 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-white
+                           rounded-2xl font-black text-[10px] uppercase tracking-widest
+                           hover:bg-slate-300 dark:hover:bg-slate-600 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>

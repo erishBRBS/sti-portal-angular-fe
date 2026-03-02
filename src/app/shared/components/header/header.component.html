@@ -31,13 +31,16 @@
 
     <!-- RIGHT -->
     <div class="flex items-center">
-      <button
-        pButton
-        [icon]="isDarkMode ? 'pi pi-sun' : 'pi pi-moon'"
-        class="p-button-rounded p-button-text p-button-secondary dark:text-gray-300 transition-transform active:scale-90"
-        pTooltip="Toggle Mode"
-        (click)="toggleTheme()"
-      ></button>
+  <button
+    pButton
+    [icon]="isDarkMode ? 'pi pi-sun' : 'pi pi-moon'"
+    class="p-button-rounded p-button-text p-button-secondary
+           !text-yellow-500 hover:!text-yellow-500
+           dark:!text-yellow-500 dark:hover:!text-yellow-300
+           transition-transform active:scale-90"
+    pTooltip="Toggle Mode"
+    (click)="toggleTheme()"
+  ></button>
 
       <div class="relative mr-2">
         <button
