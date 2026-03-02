@@ -113,3 +113,8 @@ html.dark {
 .p-inputnumber input:enabled:hover {
   border-color: rgba(59, 130, 246, 0.6) !important;
 }
+
+.theme-toggle,
+.theme-toggle .pi {
+  color: #facc15 !important; /* yellow-400 */
+}
