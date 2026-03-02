@@ -1,6 +1,184 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Announcements
-    </h1>
+<main class="x-auto w-full space-y-8 animate-fadeIn">
+  <!-- HEADER (spacing/layout natin) -->
+  <div class="flex justify-between items-end">
+    <div class="space-y-2">
+      <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+        Announcement
+      </h2>
+      <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+        Monitor all announcements
+      </p>
+    </div>
   </div>
+
+  <!-- CENTER WRAP -->
+  <div class="flex justify-center">
+    <div class="w-full max-w-4xl space-y-6">
+
+      <!-- FILTER + LIST CONTAINER (same mo, adjusted radius) -->
+      <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden">
+
+        <!-- FILTER HEADER -->
+        <div class="p-6 border-b border-gray-100 dark:border-slate-800 space-y-4">
+
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-gray-700 dark:text-gray-200">
+              All Announcements
+            </h3>
+            <button
+              (click)="resetFilters()"
+              class="text-sm bg-gray-100 dark:bg-slate-800 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition">
+              <i class="fas fa-redo mr-1"></i> Reset
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <!-- SEARCH -->
+            <input type="text"
+              [(ngModel)]="searchTerm"
+              (input)="filterAnnouncements()"
+              placeholder="Search..."
+              class="bg-gray-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
+
+            <!-- PRIORITY -->
+            <select [(ngModel)]="filterPriority"
+              (change)="filterAnnouncements()"
+              class="bg-gray-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
+              <option value="all">All Priorities</option>
+              <option value="urgent">Urgent</option>
+              <option value="high">High</option>
+              <option value="normal">Normal</option>
+              <option value="low">Low</option>
+            </select>
+
+            <!-- AUDIENCE -->
+            <select [(ngModel)]="filterAudience"
+              (change)="filterAnnouncements()"
+              class="bg-gray-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
+              <option value="all">All Audiences</option>
+              <option value="students">Students</option>
+              <option value="teachers">Teachers</option>
+              <option value="organizations">Organizations</option>
+              <option value="staff">Staff</option>
+              <option value="parents">Parents</option>
+            </select>
+
+            <!-- COURSE -->
+            <select [(ngModel)]="filterCourse"
+              (change)="filterAnnouncements()"
+              class="bg-gray-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
+              <option value="all">All Courses</option>
+              <option value="BSIT">BSIT</option>
+              <option value="BSCS">BSCS</option>
+              <option value="BSTM">BSTM</option>
+              <option value="BSPSYCH">BSPSYCH</option>
+              <option value="STEM">STEM</option>
+              <option value="HUMMS">HUMMS</option>
+              <option value="ICT">ICT</option>
+              <option value="ABM">ABM</option>
+            </select>
+
+            <!-- STATUS -->
+            <select [(ngModel)]="filterStatus"
+              (change)="filterAnnouncements()"
+              class="bg-gray-50 dark:bg-slate-800 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 dark:text-white">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="scheduled">Scheduled</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ANNOUNCEMENT LIST -->
+        <div class="p-6 space-y-6">
+
+          <div *ngIf="filteredAnnouncements.length === 0"
+            class="text-center text-gray-400 italic py-12">
+            No announcements found matching your filters.
+          </div>
+
+          <div *ngFor="let ann of filteredAnnouncements"
+            class="bg-gray-50 dark:bg-slate-800/40 p-6 rounded-2xl border border-gray-100 dark:border-slate-700 space-y-4 hover:shadow-lg transition">
+
+            <!-- HEADER -->
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white">
+                  {{ ann.title }}
+                </h3>
+
+                <div class="flex flex-wrap gap-3 text-xs text-gray-400 mt-2">
+                  <span><i class="fas fa-user mr-1"></i> {{ ann.author }}</span>
+                  <span><i class="fas fa-calendar mr-1"></i> {{ formatDate(ann.date) }}</span>
+                  <span><i class="fas fa-eye mr-1"></i> {{ ann.views }} views</span>
+
+                  <span
+                    class="px-2 py-1 rounded-md text-[10px] font-bold uppercase"
+                    [ngClass]="{
+                      'bg-red-100 text-red-600': ann.priority === 'urgent',
+                      'bg-orange-100 text-orange-600': ann.priority === 'high',
+                      'bg-blue-100 text-blue-600': ann.priority === 'normal',
+                      'bg-gray-200 text-gray-600': ann.priority === 'low'
+                    }">
+                    {{ ann.priority }}
+                  </span>
+                </div>
+              </div>
+
+              <div *ngIf="ann.pinned" class="text-yellow-500">
+                <i class="fas fa-thumbtack"></i>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <p class="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
+                {{ ann.content | slice:0:200 }}{{ ann.content.length > 200 ? '...' : '' }}
+              </p>
+
+              <!-- ATTACHMENTS BELOW CONTENT -->
+              <div *ngIf="ann.attachments.length" class="pt-2">
+                <div class="flex flex-wrap gap-4">
+                  <div *ngFor="let file of ann.attachments"
+                    class="w-32 h-32 rounded-xl border border-gray-200 dark:border-slate-700 overflow-hidden bg-gray-100 dark:bg-slate-800 flex items-center justify-center shadow-sm hover:shadow-md transition">
+
+                    <img *ngIf="file.type.startsWith('image/')" [src]="file.url" class="w-full h-full object-cover rounded-xl" />
+
+                    <video *ngIf="file.type.startsWith('video/')" [src]="file.url" controls class="w-full h-full object-cover rounded-xl"></video>
+
+                    <div *ngIf="!file.type.startsWith('image/') && !file.type.startsWith('video/')"
+                      class="text-xs text-gray-500 text-center px-2">
+                      <i class="fas fa-file text-lg mb-1"></i>
+                      <p class="truncate w-full">{{ file.name }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ACTIONS -->
+            <div class="flex flex-wrap gap-2 pt-4 border-t border-gray-200 dark:border-slate-700">
+              <button (click)="viewAnnouncement(ann)"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                <i class="fas fa-eye mr-1"></i> View
+              </button>
+
+              <button (click)="togglePin(ann.id)"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg text-sm transition">
+                {{ ann.pinned ? 'Unpin' : 'Pin' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✅ KEEP YOUR MODALS EXACTLY AS YOU HAVE THEM (PASTE YOUR VIEW + CREATE MODALS HERE) -->
+      <!-- VIEW ANNOUNCEMENT MODAL -->
+      <!-- (paste your existing modal code below; no changes needed) -->
+
+      <!-- CREATE ANNOUNCEMENT MODAL -->
+      <!-- (paste your existing modal code below; no changes needed) -->
+
+    </div>
+  </div>
+</main>
