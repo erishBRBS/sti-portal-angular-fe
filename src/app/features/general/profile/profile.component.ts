@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ToastService } from '../../../shared/services/toast.service';
 
 type UserProfile = {
   name: string;
@@ -34,6 +35,8 @@ export class ProfileComponent {
   private originalName = '';
   private originalDepartment = '';
   private originalPhotoUrl = '';
+
+  constructor(private toast: ToastService) {}
 
   // ✅ for instant preview (shows immediately after selecting a file)
   photoPreviewUrl: string | null = null;
@@ -69,21 +72,18 @@ export class ProfileComponent {
   }
 
   saveChanges() {
-    // update initials
     this.user.initials = this.computeInitials(this.user.name);
 
-    // ✅ keep preview visible after save (optional UX)
-    // NOTE: in real app, after upload, replace user.photoUrl with returned URL from backend
     if (this.photoPreviewUrl) {
       this.user.photoUrl = this.photoPreviewUrl;
     }
 
-    // TODO:
-    // 1) update profile: { name, department }
-    // 2) if (this.selectedPhotoFile) upload photo (multipart/form-data)
-
+    // TODO: API calls (update profile + upload photo)
     this.selectedPhotoFile = null;
     this.isEditing = false;
+
+    // ✅ Toast
+    this.toast.success('Profile Updated', 'Your profile changes were saved.');
   }
 
   onPhotoSelected(event: Event) {

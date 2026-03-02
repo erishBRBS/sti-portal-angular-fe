@@ -10,6 +10,7 @@ import {
 import { InputTextModule } from 'primeng/inputtext';
 
 import { DialogComponent } from '../../../shared/ui/primeng/dialog/dialog.component';
+import { ToastService } from '../../../shared/services/toast.service'; // ✅ add this
 
 function matchFields(a: string, b: string) {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -31,6 +32,8 @@ export class SettingsComponent {
 
   changePasswordVisible = false;
   isSavingPassword = false;
+
+  constructor(private toast: ToastService) {} // ✅ add this
 
   changePasswordForm = this.fb.group(
     {
@@ -59,12 +62,15 @@ export class SettingsComponent {
 
     const payload = this.changePasswordForm.value;
     // TODO: call API here (service)
-    // this.settingsService.changePassword(payload).subscribe(() => ...)
+    // this.settingsService.changePassword(payload).subscribe(() => { ... })
 
     // demo close
     setTimeout(() => {
       this.isSavingPassword = false;
       this.changePasswordVisible = false;
+
+      // ✅ SUCCESS TOAST HERE
+      this.toast.success('Success', 'Password updated successfully.');
     }, 300);
   }
 
