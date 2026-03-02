@@ -1,6 +1,49 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Notifications
-    </h1>
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="flex justify-between items-end">
+    <div class="space-y-2">
+      <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+        Notifications
+      </h2>
+      <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+        Updates from your faculty portals
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="markAllAsRead()"
+      class="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline"
+    >
+      Mark all as read
+    </button>
   </div>
+
+  <div class="flex justify-center">
+    <div class="w-full max-w-5xl space-y-4">
+      <div
+        *ngFor="let n of alerts"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800
+               p-5 rounded-3xl flex gap-4 items-start hover:shadow-md transition-all"
+      >
+        <div [ngClass]="n.color" class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <i [class]="n.icon + ' text-lg'"></i>
+        </div>
+
+        <div class="flex-1">
+          <div class="flex justify-between gap-3">
+            <h3 class="font-bold text-slate-800 dark:text-white text-sm">
+              {{ n.title }}
+            </h3>
+            <span class="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">
+              {{ n.time }}
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+            {{ n.desc }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
