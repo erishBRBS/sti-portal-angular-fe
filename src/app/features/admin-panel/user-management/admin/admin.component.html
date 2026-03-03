@@ -1,6 +1,18 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Admin Management
-    </h1>
-  </div>
+<div>
+  <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">Admin Management</h1>
+
+  <sti-data-table
+    title="Users"
+    subtitle="Dynamic PrimeNG table + Tailwind"
+    [value]="rows"
+    [columns]="cols"
+    [loading]="loading"
+    [paginator]="true"
+    [rows]="10"
+    [showColumnFilters]="true"
+    [showActions]="true"
+    [actions]="actions"
+    (rowClicked)="onRow($event)"
+    (actionClicked)="onAction($event)"
+  ></sti-data-table>
+</div>

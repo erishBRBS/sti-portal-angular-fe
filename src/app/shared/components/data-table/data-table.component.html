@@ -1,0 +1,170 @@
+<div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <!-- Header -->
+  <div class="flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <div class="text-lg font-semibold text-slate-900" *ngIf="title">{{ title }}</div>
+      <div class="text-sm text-slate-500" *ngIf="subtitle">{{ subtitle }}</div>
+    </div>
+
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <!-- Global Search -->
+      <div *ngIf="showGlobalSearch" class="w-full sm:w-72">
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input
+            pInputText
+            class="w-full"
+            [(ngModel)]="globalSearchValue"
+            [placeholder]="globalSearchPlaceholder"
+            (input)="dt.filterGlobal(globalSearchValue, 'contains')"
+          />
+        </span>
+      </div>
+
+      <!-- Column toggler -->
+      <div *ngIf="showColumnToggler" class="w-full sm:w-64">
+        <p-multiSelect
+          class="w-full"
+          [options]="columns"
+          optionLabel="header"
+          [(ngModel)]="selectedColumns"
+          display="chip"
+          placeholder="Columns"
+        ></p-multiSelect>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <p-table
+    #dt
+    [value]="value"
+    [columns]="visibleColumns"
+    [loading]="loading"
+    [paginator]="paginator"
+    [rows]="rows"
+    [rowsPerPageOptions]="rowsPerPageOptions"
+    [globalFilterFields]="globalFilterFields"
+    [rowHover]="rowHover"
+    [stripedRows]="striped"
+    sortMode="multiple"
+    responsiveLayout="scroll"
+    class="p-4"
+  >
+    <!-- Header -->
+    <ng-template pTemplate="header" let-cols>
+      <tr>
+        <th
+          *ngFor="let col of cols"
+          [ngClass]="[getAlignClass(col), col.headerClass || '']"
+          [ngStyle]="getWidthStyle(col)"
+          [pSortableColumn]="col.sortable ? col.field : null"
+        >
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-slate-700">{{ col.header }}</span>
+            <p-sortIcon *ngIf="col.sortable" [field]="col.field"></p-sortIcon>
+          </div>
+        </th>
+
+        <th *ngIf="showActions" class="text-right w-28">
+          <span class="font-semibold text-slate-700">Actions</span>
+        </th>
+      </tr>
+
+      <!-- Optional column filters row -->
+      <tr *ngIf="showColumnFilters">
+        <th *ngFor="let col of cols">
+          <p-columnFilter
+            *ngIf="col.filter"
+            [field]="col.field"
+            [matchMode]="col.filterMatchMode || 'contains'"
+            [showMenu]="false"
+            type="text"
+            placeholder="Filter..."
+          ></p-columnFilter>
+        </th>
+        <th *ngIf="showActions"></th>
+      </tr>
+    </ng-template>
+
+    <!-- Body -->
+    <ng-template pTemplate="body" let-row let-cols="columns">
+      <tr class="cursor-pointer hover:bg-slate-50" (click)="onRowClick(row)">
+        <td
+          *ngFor="let col of cols"
+          [ngClass]="[getAlignClass(col), col.class || '']"
+          [ngStyle]="getWidthStyle(col)"
+        >
+          <ng-container [ngSwitch]="col.type || 'text'">
+            <!-- DATE -->
+            <span *ngSwitchCase="'date'" class="text-slate-800">
+              {{ getCellValue(row, col) | date:(col.dateFormat || 'MMM d, y') }}
+            </span>
+
+            <!-- DATETIME -->
+            <span *ngSwitchCase="'datetime'" class="text-slate-800">
+              {{ getCellValue(row, col) | date:(col.dateFormat || 'MMM d, y • h:mm a') }}
+            </span>
+
+            <!-- CURRENCY -->
+            <span *ngSwitchCase="'currency'" class="text-slate-800">
+              {{ getCellValue(row, col) | currency:(col.currencyCode || 'PHP'):'symbol':'1.0-2' }}
+            </span>
+
+            <!-- BOOLEAN -->
+            <span *ngSwitchCase="'boolean'" class="inline-flex items-center gap-2">
+              <i
+                class="pi"
+                [ngClass]="getCellValue(row, col) ? 'pi-check text-emerald-600' : 'pi-times text-rose-600'"
+              ></i>
+              <span class="text-slate-700">{{ getCellValue(row, col) ? 'Yes' : 'No' }}</span>
+            </span>
+
+            <!-- TAG -->
+            <p-tag
+              *ngSwitchCase="'tag'"
+              [value]="col.tagLabel ? col.tagLabel(row) : (getCellValue(row, col) ?? '')"
+              [severity]="col.tagSeverity ? col.tagSeverity(row) : 'secondary'"
+            ></p-tag>
+
+            <!-- DEFAULT TEXT -->
+            <span *ngSwitchDefault class="text-slate-800">
+              {{ getCellValue(row, col) }}
+            </span>
+          </ng-container>
+        </td>
+
+        <!-- Actions -->
+        <td *ngIf="showActions" class="text-right">
+          <div class="flex justify-end gap-1">
+            <ng-container *ngFor="let a of actions">
+              <button
+                *ngIf="isActionVisible(a, row)"
+                pButton
+                type="button"
+                class="p-button-text p-button-sm"
+                [ngClass]="a.buttonClass || ''"
+                [icon]="a.icon || 'pi pi-ellipsis-v'"
+                [pTooltip]="a.tooltip || a.label"
+                tooltipPosition="top"
+                (click)="fireAction(a.key, row, $event)"
+              ></button>
+            </ng-container>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <!-- Empty -->
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td
+          class="p-8 text-center text-slate-500"
+          [attr.colspan]="visibleColumns.length + (showActions ? 1 : 0)"
+        >
+          No records found.
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
