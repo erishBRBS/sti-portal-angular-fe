@@ -3,16 +3,30 @@
 
   <sti-data-table
     title="Users"
-    subtitle="Dynamic PrimeNG table + Tailwind"
+    subtitle=""
     [value]="rows"
     [columns]="cols"
     [loading]="loading"
     [paginator]="true"
-    [rows]="10"
-    [showColumnFilters]="true"
+    [lazy]="true"
+    [totalRecords]="total"
+    [first]="first"
+    [(rows)]="rowsPerPage"
+    [rowsPerPageOptions]="[12, 25, 50]"
+    (pageChanged)="onPageChanged($event)"
+    [showColumnFilters]="false"
     [showActions]="true"
     [actions]="actions"
     (rowClicked)="onRow($event)"
     (actionClicked)="onAction($event)"
+    [showImportCsv]="true"
+    [showAdd]="true"
+    (importCsvClicked)="openImportCsv()"
+    (addClicked)="openAddModal()"
   ></sti-data-table>
 </div>
+
+<sti-admin-modal 
+  [(visible)]="openModal"
+  (saved)="onSave($event)">
+</sti-admin-modal>
