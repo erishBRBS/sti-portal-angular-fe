@@ -1,6 +1,32 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Admin Management
-    </h1>
-  </div>
+<div>
+  <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">Admin Management</h1>
+
+  <sti-data-table
+    title="Users"
+    subtitle=""
+    [value]="rows"
+    [columns]="cols"
+    [loading]="loading"
+    [paginator]="true"
+    [lazy]="true"
+    [totalRecords]="total"
+    [first]="first"
+    [(rows)]="rowsPerPage"
+    [rowsPerPageOptions]="[12, 25, 50]"
+    (pageChanged)="onPageChanged($event)"
+    [showColumnFilters]="false"
+    [showActions]="true"
+    [actions]="actions"
+    (rowClicked)="onRow($event)"
+    (actionClicked)="onAction($event)"
+    [showImportCsv]="true"
+    [showAdd]="true"
+    (importCsvClicked)="openImportCsv()"
+    (addClicked)="openAddModal()"
+  ></sti-data-table>
+</div>
+
+<sti-admin-modal 
+  [(visible)]="openModal"
+  (saved)="onSave($event)">
+</sti-admin-modal>

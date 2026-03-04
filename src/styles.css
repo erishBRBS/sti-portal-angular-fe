@@ -1,6 +1,6 @@
 /* Global styles + Tailwind v4 */
-@custom-variant dark (&:where(.dark, .dark *));
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 /* Base layout */
 html,

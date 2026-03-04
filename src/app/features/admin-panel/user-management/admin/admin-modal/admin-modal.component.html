@@ -1,0 +1,123 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(1100px, 95vw)' }"
+  [contentStyle]="{ 'max-height': '78vh', overflow: 'auto' }"
+  (onHide)="close()"
+>
+  <ng-template pTemplate="header">
+    <div class="w-full flex items-center justify-center">
+      <div class="text-lg font-bold text-red-700">{{ dialogTitle }}</div>
+    </div>
+  </ng-template>
+
+  <div class="p-4" [formGroup]="form">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- LEFT -->
+      <div class="space-y-5">
+        <!-- Full Name -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Full Name:
+          </label>
+          <input
+            pInputText
+            class="w-full"
+            placeholder="Input full Name"
+            formControlName="full_name"
+            [ngClass]="isInvalid('full_name') ? 'ng-invalid ng-dirty' : ''"
+          />
+          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('full_name')">Full Name is required.</p>
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Email:
+          </label>
+          <input
+            pInputText
+            class="w-full"
+            placeholder="Input Email"
+            formControlName="email"
+            [ngClass]="isInvalid('email') ? 'ng-invalid ng-dirty' : ''"
+          />
+          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('email')">Email is required.</p>
+        </div>
+
+         <!-- Mobile Number -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Mobile Number:
+          </label>
+          <input
+            pInputText
+            class="w-full"
+            placeholder="Input Mobile Number"
+            formControlName="mobile_number"
+            [ngClass]="isInvalid('mobile_number') ? 'ng-invalid ng-dirty' : ''"
+          />
+          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('mobile_number')">Mobile number is required.</p>
+        </div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="space-y-5">
+        <!-- Username -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Username:
+          </label>
+          <input
+            pInputText
+            class="w-full"
+            placeholder="Input Username"
+            formControlName="mobile_number"
+            [ngClass]="isInvalid('mobile_number') ? 'ng-invalid ng-dirty' : ''"
+          />
+          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('mobile_number')">Username is required.</p>
+        </div>
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Password:
+          </label>
+          <input
+            pInputText
+            class="w-full"
+            placeholder="Input Password"
+            formControlName="password"
+            [ngClass]="isInvalid('password') ? 'ng-invalid ng-dirty' : ''"
+          />
+          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('password')">Password is required.</p>
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="w-full flex items-center justify-end gap-3">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        class="p-button-outlined"
+        (click)="close()"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        label="Add Record"
+        class="p-button-success"
+        (click)="submit()"
+      ></button>
+    </div>
+  </ng-template>
+</p-dialog>

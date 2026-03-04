@@ -9,10 +9,14 @@
   "projects": {
     "sti-portal-angular-fe": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "type": "component"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "sti",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
