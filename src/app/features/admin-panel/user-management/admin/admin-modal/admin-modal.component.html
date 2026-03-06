@@ -15,109 +15,148 @@
     </div>
   </ng-template>
 
-  <div class="p-4" [formGroup]="form">
+  <form #adminForm="ngForm" (ngSubmit)="onSave(adminForm)" class="p-4">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
       <!-- LEFT -->
       <div class="space-y-5">
-        <!-- Full Name -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Full Name:
           </label>
           <input
-            pInputText
-            class="w-full"
+            pInputText class="w-full" name="full_name"
+            [(ngModel)]="full_name"
+            #fullNameCtrl="ngModel"
+            required
             placeholder="Input full Name"
-            formControlName="full_name"
-            [ngClass]="isInvalid('full_name') ? 'ng-invalid ng-dirty' : ''"
+            [ngClass]="{ 'ng-invalid ng-dirty': fullNameCtrl.invalid && (fullNameCtrl.touched || submitted) }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('full_name')">Full Name is required.</p>
+          <p class="mt-1 text-xs text-rose-600" *ngIf="fullNameCtrl.invalid && (fullNameCtrl.touched || submitted)">
+            Full Name is required.
+          </p>
         </div>
 
-        <!-- Email -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Email:
           </label>
           <input
-            pInputText
-            class="w-full"
+            pInputText class="w-full" name="email"
+            [(ngModel)]="email"
+            #emailCtrl="ngModel"
+            required
+            email
             placeholder="Input Email"
-            formControlName="email"
-            [ngClass]="isInvalid('email') ? 'ng-invalid ng-dirty' : ''"
+            [ngClass]="{ 'ng-invalid ng-dirty': emailCtrl.invalid && (emailCtrl.touched || submitted) }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('email')">Email is required.</p>
+          <p class="mt-1 text-xs text-rose-600" *ngIf="emailCtrl.invalid && (emailCtrl.touched || submitted)">
+            Email is required / must be valid.
+          </p>
         </div>
 
-         <!-- Mobile Number -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Mobile Number:
           </label>
           <input
-            pInputText
-            class="w-full"
+            pInputText class="w-full" name="mobile_number"
+            [(ngModel)]="mobile_number"
+            #mobileCtrl="ngModel"
+            required
             placeholder="Input Mobile Number"
-            formControlName="mobile_number"
-            [ngClass]="isInvalid('mobile_number') ? 'ng-invalid ng-dirty' : ''"
+            [ngClass]="{ 'ng-invalid ng-dirty': mobileCtrl.invalid && (mobileCtrl.touched || submitted) }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('mobile_number')">Mobile number is required.</p>
+          <p class="mt-1 text-xs text-rose-600" *ngIf="mobileCtrl.invalid && (mobileCtrl.touched || submitted)">
+            Mobile number is required.
+          </p>
         </div>
       </div>
 
       <!-- RIGHT -->
       <div class="space-y-5">
-        <!-- Username -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Username:
           </label>
           <input
-            pInputText
-            class="w-full"
+            pInputText class="w-full" name="username"
+            [(ngModel)]="username"
+            #usernameCtrl="ngModel"
+            required
             placeholder="Input Username"
-            formControlName="mobile_number"
-            [ngClass]="isInvalid('mobile_number') ? 'ng-invalid ng-dirty' : ''"
+            [ngClass]="{ 'ng-invalid ng-dirty': usernameCtrl.invalid && (usernameCtrl.touched || submitted) }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('mobile_number')">Username is required.</p>
+          <p class="mt-1 text-xs text-rose-600" *ngIf="usernameCtrl.invalid && (usernameCtrl.touched || submitted)">
+            Username is required.
+          </p>
         </div>
-        <!-- Password -->
+
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Password:
           </label>
           <input
-            pInputText
-            class="w-full"
+            pInputText class="w-full" name="password"
+            [(ngModel)]="password"
+            #passCtrl="ngModel"
+            required
             placeholder="Input Password"
-            formControlName="password"
-            [ngClass]="isInvalid('password') ? 'ng-invalid ng-dirty' : ''"
+            [ngClass]="{ 'ng-invalid ng-dirty': passCtrl.invalid && (passCtrl.touched || submitted) }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="isInvalid('password')">Password is required.</p>
+          <p class="mt-1 text-xs text-rose-600" *ngIf="passCtrl.invalid && (passCtrl.touched || submitted)">
+            Password is required.
+          </p>
         </div>
 
+        <!-- ✅ Image Upload (PUP style: hidden input + custom label) -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Profile Image (optional)
+          </label>
+
+          <div class="flex items-start gap-4">
+            <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
+              <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
+              <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
+            </div>
+
+            <div class="flex-1 space-y-2">
+              <input
+                #fileInput
+                type="file"
+                hidden
+                accept="image/*"
+                (change)="onFileSelected($event)"
+              />
+
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
+                  {{ fileName?.trim() || 'Click to choose file' }}
+                </span>
+
+                <button type="button" pButton class="p-button-sm" label="Choose File" (click)="fileInput.click()"></button>
+
+                <button
+                  *ngIf="fileName || previewUrl"
+                  type="button"
+                  pButton
+                  class="p-button-text p-button-sm"
+                  label="Remove"
+                  (click)="removeImage()"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>
-  </div>
 
-  <ng-template pTemplate="footer">
-    <div class="w-full flex items-center justify-end gap-3">
-      <button
-        pButton
-        type="button"
-        label="Cancel"
-        class="p-button-outlined"
-        (click)="close()"
-      ></button>
-
-      <button
-        pButton
-        type="button"
-        label="Add Record"
-        class="p-button-success"
-        (click)="submit()"
-      ></button>
+    <!-- Footer -->
+    <div class="w-full flex items-center justify-end gap-3 mt-6">
+      <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="close()"></button>
+      <button pButton type="submit" label="Add Record" class="p-button-success"></button>
     </div>
-  </ng-template>
+  </form>
 </p-dialog>

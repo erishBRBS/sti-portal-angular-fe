@@ -27,6 +27,6 @@
 </div>
 
 <sti-admin-modal 
-  [(visible)]="openModal"
-  (saved)="onSave($event)">
+  (onSuccess)="onModalSuccess()"
+  (onCancel)="onModalCancel()">
 </sti-admin-modal>
