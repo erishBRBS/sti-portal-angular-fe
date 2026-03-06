@@ -49,9 +49,9 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
 
   // ✅ Removed "Reports"
   quickActions: QuickAction[] = [
-    { label: 'Gate Attendance', icon: 'pi pi-sign-in', action: 'gate', route: '' },
-    { label: 'Subject Attendance', icon: 'pi pi-book', action: 'subject', route: '' },
-    { label: 'Schedule', icon: 'pi pi-list', action: 'schedule', route: '' },
+    { label: 'Gate Attendance', icon: 'pi pi-sign-in', action: 'gate', route: '/ats/student/gate-attendance' },
+    { label: 'Subject Attendance', icon: 'pi pi-book', action: 'subject', route: '/ats/student/subject-attendance' },
+    { label: 'Schedule', icon: 'pi pi-list', action: 'schedule', route: '/ats/student/schedule' },
   ];
 
   classes: TodayClass[] = [

@@ -122,13 +122,13 @@ export class ProfessorDashboardComponent implements OnInit {
   quickActions: QuickAction[] = [
     {
       label: 'Student Attendance',
-      icon: 'fas fa-calendar-check',
+      icon: 'pi pi-calendar-plus',
       action: 'attendance',
       route: '/ats/professor/student-attendance',
     },
     {
       label: 'Schedule',
-      icon: 'fas fa-bullhorn',
+      icon: 'pi pi-list',
       action: 'announcements',
       route: '/ats/professor/schedule',
     },

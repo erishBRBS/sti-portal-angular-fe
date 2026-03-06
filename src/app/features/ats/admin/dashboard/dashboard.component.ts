@@ -50,14 +50,14 @@ export class AdminDashboardComponent {
       {
         value: this.totalStudents.toLocaleString(),
         label: 'Total Students',
-        icon: 'fas fa-users',
+        icon: 'pi pi-users',
         color: 'blue',
       },
-      { value: '18', label: 'Active Announcements', icon: 'fas fa-bullhorn', color: 'purple' },
+      { value: '18', label: 'Active Announcements', icon: 'pi pi-megaphone', color: 'purple' },
       {
         value: `${this.attendancePercent}%`,
         label: 'Attendance Percentage',
-        icon: 'fas fa-calendar-check',
+        icon: 'pi pi-calendar-plus',
         color: 'green',
       },
     ];
@@ -67,13 +67,13 @@ export class AdminDashboardComponent {
   quickActions: QuickAction[] = [
     {
       label: 'Gate Attendance',
-      icon: 'fas fa-calendar-check',
+      icon: 'pi pi-calendar-plus',
       action: 'attendance',
       route: '/ats/admin/gate-attendance',
     },
     {
       label: 'Announcements',
-      icon: 'fas fa-bullhorn',
+      icon: 'pi pi-megaphone',
       action: 'announcements',
       route: '/general/announcements',
     },
@@ -84,22 +84,22 @@ export class AdminDashboardComponent {
     {
       time: '08:15 AM',
       text: 'Face Recognition attendance recorded for Jane Smith',
-      icon: 'fas fa-camera',
+      icon: 'pi pi-camera',
     },
     {
       time: '08:22 AM',
       text: 'Face Recognition attendance recorded for Mark Dela Cruz',
-      icon: 'fas fa-camera',
+      icon: 'pi pi-camera',
     },
     {
       time: '08:41 AM',
       text: 'Face Recognition attendance recorded for Angela Reyes',
-      icon: 'fas fa-camera',
+      icon: 'pi pi-camera',
     },
     {
       time: '09:03 AM',
       text: 'Face Recognition attendance recorded for John Santos',
-      icon: 'fas fa-camera',
+      icon: 'pi pi-camera',
     },
   ];
 
