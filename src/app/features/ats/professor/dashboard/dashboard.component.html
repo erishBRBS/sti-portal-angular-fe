@@ -1,6 +1,148 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Dashboard
-    </h1>
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <!-- Header (spacing/layout natin) -->
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">Dashboard</h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      Monitor and manage student attendance effectively
+    </p>
   </div>
+
+  <!-- Center container -->
+  <div class="flex justify-center">
+    <div class="w-full max-w-6xl space-y-6">
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Weekly Classes</p>
+              <p class="text-3xl font-black text-slate-900 dark:text-white mt-2">12</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center"
+            >
+              <i class="pi pi-calendar text-xl text-blue-600 dark:text-blue-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Total Students</p>
+              <p class="text-3xl font-black text-slate-900 dark:text-white mt-2">85</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center"
+            >
+              <i class="pi pi-users text-xl text-green-600 dark:text-green-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">Today's Classes</p>
+              <p class="text-3xl font-black text-slate-900 dark:text-white mt-2">3</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center"
+            >
+              <i class="pi pi-calendar-clock text-xl text-purple-600 dark:text-purple-400"></i>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
+        >
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-slate-500 dark:text-slate-400 text-sm font-medium">
+                Today's Attendance Rate
+              </p>
+              <p class="text-3xl font-black text-slate-900 dark:text-white mt-2">94%</p>
+            </div>
+            <div
+              class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center"
+            >
+              <i class="pi pi-chart-line text-xl text-orange-600 dark:text-orange-400"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Today's Classes -->
+        <section
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-sm overflow-hidden"
+        >
+          <div class="p-8 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              Today's Classes
+            </h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
+              Quick actions for in-progress sessions
+            </p>
+          </div>
+
+          <div class="p-6 overflow-x-auto">
+            <p-table [value]="todaysClasses" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-l-lg">
+                    Subject
+                  </th>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-r-lg">
+                    Section
+                  </th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-class>
+                <tr class="dark:text-slate-200">
+                  <td class="font-semibold py-4">{{ class.subject }}</td>
+                  <td>{{ class.section }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </section>
+
+        <!-- Weekly Attendance Chart -->
+        <section
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] shadow-sm overflow-hidden"
+        >
+          <div class="p-8 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase tracking-tight">
+              Weekly Attendance
+            </h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
+              Present, Late, and Absent distribution
+            </p>
+          </div>
+
+          <div class="p-6">
+            <div class="h-[320px]">
+              <p-chart
+                *ngIf="isBrowser"
+                type="bar"
+                [data]="attendanceChartData"
+                [options]="chartOptions"
+                height="100%"
+              ></p-chart>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</main>
