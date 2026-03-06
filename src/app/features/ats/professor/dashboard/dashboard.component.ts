@@ -7,7 +7,9 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { inject, PLATFORM_ID } from '@angular/core';
+import { Router } from '@angular/router';
 import { isPlatformBrowser } from '@angular/common';
+
 
 interface TodayClass {
   subject: string;
@@ -21,6 +23,13 @@ interface Announcement {
   title: string;
   meta: string;
   content: string;
+}
+
+interface QuickAction {
+  label: string;
+  icon: string;
+  action: string;
+  route: string;
 }
 
 @Component({
@@ -38,19 +47,6 @@ interface Announcement {
   templateUrl: './dashboard.component.html',
   styles: [
     `
-      .animate-fadeIn {
-        animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(20px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
       :host ::ng-deep .p-datatable .p-datatable-tbody > tr {
         background: transparent !important;
         border-color: #1e293b !important;
@@ -60,6 +56,7 @@ interface Announcement {
 })
 export class ProfessorDashboardComponent implements OnInit {
   isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private router = inject(Router);
 
   todaysClasses: TodayClass[] = [
     {
@@ -103,14 +100,14 @@ export class ProfessorDashboardComponent implements OnInit {
     },
   ];
 
-attendanceChartData = {
-  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-  datasets: [
-    { label: 'Present', backgroundColor: '#10B981', borderRadius: 6, data: [45, 43, 47, 46, 44] },
-    { label: 'Late', backgroundColor: '#FACC15', borderRadius: 6, data: [3, 4, 2, 5, 3] },
-    { label: 'Absent', backgroundColor: '#EF4444', borderRadius: 6, data: [5, 7, 3, 4, 6] },
-  ],
-};
+  attendanceChartData = {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    datasets: [
+      { label: 'Present', backgroundColor: '#10B981', borderRadius: 6, data: [45, 43, 47, 46, 44] },
+      { label: 'Late', backgroundColor: '#FACC15', borderRadius: 6, data: [3, 4, 2, 5, 3] },
+      { label: 'Absent', backgroundColor: '#EF4444', borderRadius: 6, data: [5, 7, 3, 4, 6] },
+    ],
+  };
 
   chartOptions = {
     responsive: true,
@@ -121,6 +118,21 @@ attendanceChartData = {
       y: { grid: { color: 'rgba(148, 163, 184, 0.1)' }, ticks: { color: '#94a3b8', stepSize: 10 } },
     },
   };
+
+  quickActions: QuickAction[] = [
+    {
+      label: 'Student Attendance',
+      icon: 'fas fa-calendar-check',
+      action: 'attendance',
+      route: '/ats/professor/student-attendance',
+    },
+    {
+      label: 'Schedule',
+      icon: 'fas fa-bullhorn',
+      action: 'announcements',
+      route: '/ats/professor/schedule',
+    },
+  ];
 
   ngOnInit() {
     this.updateClassStatuses();
@@ -159,6 +171,11 @@ attendanceChartData = {
     if (modifier === 'AM' && hours === 12) hours = 0;
 
     return hours * 60 + minutes;
+  }
+
+  handleQuickAction(action: QuickAction): void {
+    const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
+    this.router.navigateByUrl(url);
   }
 
   onAction(cls: TodayClass) {
