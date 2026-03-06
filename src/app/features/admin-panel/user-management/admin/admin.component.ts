@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -8,6 +8,8 @@ import { AdminService } from '../../../../services/admin-panel/user-management/a
 import { finalize } from 'rxjs';
 import { AdminData } from '../../../../models/admin-panel/user-management/admin/admin.model';
 import { AdminModalComponent } from './admin-modal/admin-modal.component';
+import { ToastService } from '../../../../shared/services/toast.service';
+import { ModalMode } from '../../../../enums/modal.mode';
 
 type UserRow = {
   id: number;
@@ -23,7 +25,7 @@ type UserStatus = UserRow['status'];
   selector: 'sti-admin',
   standalone: true,
   imports: [
-    DataTableComponent,
+    DataTableComponent, 
     AdminModalComponent
   ],
   templateUrl: './admin.component.html',
@@ -50,9 +52,12 @@ export class AdminManagementComponent {
     { key: 'edit', label: 'Edit', icon: 'pi pi-pencil' },
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
-  
+
   private readonly adminService = inject(AdminService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly toast = inject(ToastService);
+
+  @ViewChild(AdminModalComponent) showAdminModalForm!: AdminModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -82,24 +87,26 @@ export class AdminManagementComponent {
   }
 
   openAddModal() {
-    this.modalMode = 'add';
-    this.openModal = true;
-    console.log('add clicked');
+     this.showAdminModalForm?.showDialog();
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
-    this.first = e.first;          
-    this.rowsPerPage = e.perPage;  
+    this.first = e.first;
+    this.rowsPerPage = e.perPage;
     this.loadAdmins(e.page, e.perPage);
   }
 
-  onSave(payload: any) {
-    console.log('payload', payload);
-    // call your API here
+  onModalSuccess(): void {
+    this.loadAdmins(1, this.rowsPerPage);
+  }
+
+  onModalCancel(): void {
+    // Handle cancel if needed
+    console.log('Add form cancelled');
   }
 
   // MARK: - This part is for API call function
-   loadAdmins(page: number, perPage: number) {
+  loadAdmins(page: number, perPage: number) {
     this.loading = true;
 
     this.adminService
@@ -130,14 +137,16 @@ export class AdminManagementComponent {
       });
   }
 
+
+
   private mapStatus(status: string): UserStatus {
-  switch (status) {
-    case 'active':
-      return 'Active';
-    case 'inactive':
-      return 'Inactive';
-    default:
-      return 'Pending'; // or 'Inactive' depende sa backend mo
+    switch (status) {
+      case 'active':
+        return 'Active';
+      case 'inactive':
+        return 'Inactive';
+      default:
+        return 'Pending'; // or 'Inactive' depende sa backend mo
+    }
   }
-}
 }

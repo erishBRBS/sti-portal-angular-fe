@@ -1,138 +1,174 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Input, Output, EventEmitter, SimpleChange } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Input,
+  Output,
+  ViewChild,
+} from '@angular/core';
+import { FormsModule, NgForm } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { MultiSelectModule } from 'primeng/multiselect';
-import { SelectButtonModule } from 'primeng/selectbutton';
+import { CreateAdminPayload } from '../../../../../payloads/admin-panel/user-management/admin/create-admin.payload';
+import { ModalMode } from '../../../../../enums/modal.mode';
+import { AdminService } from '../../../../../services/admin-panel/user-management/admin/admin.service';
+import { ToastService } from '../../../../../shared/services/toast.service';
 
-type Option<T = any> = { label: string; value: T };
 export type AdminModalMode = 'add' | 'edit';
 
 @Component({
   selector: 'sti-admin-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    DialogModule,
-    ButtonModule,
-    InputTextModule,
-    MultiSelectModule,
-    SelectButtonModule
-  ],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule],
   templateUrl: './admin-modal.component.html',
   styleUrl: './admin-modal.component.css',
 })
 export class AdminModalComponent {
-   private fb = inject(FormBuilder);
+  @Output() onSuccess = new EventEmitter<void>();
+  @Output() onCancel = new EventEmitter<void>();
+  @ViewChild('adminForm') adminFormRef?: NgForm;
+  @ViewChild('fileInput') fileInputRef?: ElementRef<HTMLInputElement>;
 
-  // two-way dialog open/close
-  @Input() visible = false;
-  @Input() mode: AdminModalMode = 'add';
-  @Input() initialData: any | null = null;
-  @Input() titleOverride?: string;
+  private readonly adminService = inject(AdminService);
+  private readonly toast = inject(ToastService);
 
-  @Output() visibleChange = new EventEmitter<boolean>();
-  @Output() saved = new EventEmitter<any>();
+  submitted = false;
+  visible = false;
+  mode: ModalMode = ModalMode.ADD;
+
+  // template-driven fields
+  full_name = '';
+  email = '';
+  mobile_number = '';
+  username = '';
+  password = '';
+
+  // file state
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  fileName = '';
+  currentID: number | null = null;
+
+  @ViewChild('imagePathInput') imagePathInputRef!: ElementRef<HTMLInputElement>;
 
   get dialogTitle(): string {
-    if (this.titleOverride?.trim()) return this.titleOverride;
-    return this.mode === 'edit' ? 'Update Admin' : 'Add Admin';
+    return this.mode === ModalMode.ADD ? 'Add Admin' : 'Update Admin';
   }
 
+  showDialog(): void {
+    this.currentID = null;
+    this.visible = true;
+    this.resetForm();
+  }
 
-  // mock options (replace with API-driven options)
-  videoTypeOptions: Option<string>[] = [
-    { label: 'Lecture', value: 'lecture' },
-    { label: 'Training', value: 'training' },
-    { label: 'Webinar', value: 'webinar' },
-  ];
+  private resetForm(preserveResearchId: boolean = false): void {
+    this.submitted = false;
 
-  sdgOptions: Option<number>[] = Array.from({ length: 17 }).map((_, i) => ({
-    label: `SDG ${i + 1}`,
-    value: i + 1,
-  }));
+    this.full_name = '';
+    this.email = '';
+    this.mobile_number = '';
 
-  tierOptions: Option<string>[] = [
-    { label: 'Tier 1', value: 'tier1' },
-    { label: 'Tier 2', value: 'tier2' },
-    { label: 'Tier 3', value: 'tier3' },
-  ];
+    this.username = '';
+    this.password = '';
 
-  level1Options: Option<string>[] = [
-    { label: 'Level 1 - A', value: 'l1a' },
-    { label: 'Level 1 - B', value: 'l1b' },
-  ];
+    this.clearFileControls();
 
-  level2Options: Option<string>[] = [
-    { label: 'Level 2 - A', value: 'l2a' },
-    { label: 'Level 2 - B', value: 'l2b' },
-  ];
+    if (!preserveResearchId) {
+      this.currentID = null;
+    }
 
-  level3Options: Option<string>[] = [
-    { label: 'Level 3 - A', value: 'l3a' },
-    { label: 'Level 3 - B', value: 'l3b' },
-  ];
-
-  sourceOptions: Option<'local' | 'external'>[] = [
-    { label: 'Local', value: 'local' },
-    { label: 'External', value: 'external' },
-  ];
-
-  form = this.fb.group({
-    full_name: ['', [Validators.required]],
-    email: ['', [Validators.required]],
-    mobile_number: ['', [Validators.required]],
-    username: ['', [Validators.required]],
-    password: ['', [Validators.required]],
-    shortDescription: ['', [Validators.required]],
-    videoType: [null as string | null, [Validators.required]],
-    sdgs: [[] as number[]],
-    tier: [null as string | null, [Validators.required]],
-    level1: [null as string | null],
-    level2: [null as string | null],
-    level3: [null as string | null],
-    keywords: [''],
-    source: ['local' as 'local' | 'external'],
-  });
-
-  // MARK: - For Button action
-  close() {
-    this.visibleChange.emit(false);
-      this.form.reset({
-      full_name: '',
-      email: '',
-      mobile_number: '',
-      username: '',
-      password: null,
-      shortDescription: '',
-      videoType: null,
-      sdgs: [],
-      tier: null,
-      level1: null,
-      level2: null,
-      level3: null,
-      keywords: '',
-      source: 'local',
+    setTimeout(() => {
+      this.adminFormRef?.resetForm();
     });
   }
 
-  submit() {
-    this.form.markAllAsTouched();
-    if (this.form.invalid) return;
+  private clearFileControls(): void {
+    if (this.previewUrl) {
+      URL.revokeObjectURL(this.previewUrl);
+    }
 
-    // send raw payload to parent
-    this.saved.emit(this.form.getRawValue());
+    this.fileName = '';
+    this.selectedFile = null;
+    this.previewUrl = null;
 
-    // optional: close after save
-    this.close();
+    // reset actual <input type="file"> values
+    // setTimeout to ensure ViewChild exists (esp. after dialog hide/show)
+    setTimeout(() => {
+      if (this.imagePathInputRef?.nativeElement) this.imagePathInputRef.nativeElement.value = '';
+    });
   }
 
-  // simple helpers
-  isInvalid(name: keyof typeof this.form.controls) {
-    const c = this.form.controls[name];
-    return !!c && c.invalid && (c.touched || c.dirty);
+  // MARK: - Button Function
+  close() {
+    // reset state first
+    this.submitted = false;
+
+    this.full_name = '';
+    this.email = '';
+    this.mobile_number = '';
+    this.username = '';
+    this.password = '';
+
+    this.clearFileControls();
+
+    // emit last
+    this.visible = false;
+  }
+
+  onSave(form: NgForm) {
+    if (form.invalid) {
+      // show errors again if something changed
+      console.log('form invalid');
+      this.submitted = true;
+      form.control.markAllAsTouched();
+      return;
+    }
+    this.submitAction();
+  }
+
+  onFileSelected(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    // cleanup old blob preview
+    if (this.previewUrl?.startsWith('blob:')) URL.revokeObjectURL(this.previewUrl);
+
+    this.selectedFile = file;
+    this.fileName = file?.name ?? '';
+
+    this.previewUrl = file ? URL.createObjectURL(file) : null;
+  }
+
+  removeImage() {
+    this.clearFileControls();
+  }
+
+  private submitAction(): void {
+    const payload: CreateAdminPayload = {
+      full_name: this.full_name,
+      email: this.email,
+      mobile_number: this.mobile_number,
+      username: this.username,
+      password: this.password,
+    };
+
+    this.adminService.createAdmin(payload, this.selectedFile).subscribe({
+      next: (res) => {
+        // success
+        console.log(res.message);
+        this.toast.success('Success', res.message);
+        this.resetForm();
+        this.onSuccess.emit();
+        this.close();
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Something went wrong.';
+        this.toast.error('Error', msg);
+        console.error(msg);
+      },
+    });
   }
 }
