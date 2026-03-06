@@ -5,7 +5,7 @@ import { LandingPage } from './features/landing/pages/landing.page';
 
 export const routes: Routes = [
   //LANDING PAGE
-  { path: '', component: LandingPage },
+  { path: '', component: LandingPage, pathMatch: 'full' },
 
   // PROTECTED ROUTES
   {
