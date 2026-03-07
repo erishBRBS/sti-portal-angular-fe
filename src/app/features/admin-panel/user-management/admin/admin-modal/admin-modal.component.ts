@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectorRef,
   Component,
   ElementRef,
   EventEmitter,
@@ -34,6 +35,7 @@ export class AdminModalComponent {
 
   private readonly adminService = inject(AdminService);
   private readonly toast = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   submitted = false;
   visible = false;
@@ -51,6 +53,7 @@ export class AdminModalComponent {
   previewUrl: string | null = null;
   fileName = '';
   currentID: number | null = null;
+  pendingEditId: number | null = null;
 
   @ViewChild('imagePathInput') imagePathInputRef!: ElementRef<HTMLInputElement>;
 
@@ -59,30 +62,45 @@ export class AdminModalComponent {
   }
 
   showDialog(): void {
+    this.mode = ModalMode.ADD;
     this.currentID = null;
     this.visible = true;
     this.resetForm();
   }
 
-  private resetForm(preserveResearchId: boolean = false): void {
+
+  updateDialog(id: number): void {
+    this.mode = ModalMode.UPDATE;
+    this.currentID = id;
+    this.pendingEditId = id;
+    this.visible = true;
+    this.resetForm(true);
+    setTimeout(() => {
+      this.getAdminById(id);
+    });
+  }
+
+  onDialogShown(): void {
+    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+      this.getAdminById(this.pendingEditId);
+      this.pendingEditId = null;
+    }
+  }
+
+  private resetForm(preserveCurrentId: boolean = false): void {
     this.submitted = false;
 
     this.full_name = '';
     this.email = '';
     this.mobile_number = '';
-
     this.username = '';
     this.password = '';
 
     this.clearFileControls();
 
-    if (!preserveResearchId) {
+    if (!preserveCurrentId) {
       this.currentID = null;
     }
-
-    setTimeout(() => {
-      this.adminFormRef?.resetForm();
-    });
   }
 
   private clearFileControls(): void {
@@ -145,7 +163,7 @@ export class AdminModalComponent {
   removeImage() {
     this.clearFileControls();
   }
-
+  // MARK: - API Function
   private submitAction(): void {
     const payload: CreateAdminPayload = {
       full_name: this.full_name,
@@ -168,6 +186,31 @@ export class AdminModalComponent {
         const msg = err?.error?.message ?? 'Something went wrong.';
         this.toast.error('Error', msg);
         console.error(msg);
+      },
+    });
+  }
+
+  private getAdminById(id: number): void {
+    this.adminService.getAdminById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.full_name = data.full_name;
+        this.email = data.email;
+        this.mobile_number = data.mobile_number;
+        this.username = data.username;
+
+        // para sa existing image preview
+        this.previewUrl = this.adminService.fileAPIUrl + data.image_path;
+        console.log('fileDito', this.previewUrl);
+        this.cdr.detectChanges();
+        // this.fileName = data.image_path;
+        // this.selectedFile = null;
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
       },
     });
   }

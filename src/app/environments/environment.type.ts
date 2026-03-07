@@ -5,6 +5,7 @@ export interface Environment {
   version: string;
   apiTimeout: number;
   staticFilesUrl: string;
+  fileUrl: string;
   appUrls: {
     id: string;
   };

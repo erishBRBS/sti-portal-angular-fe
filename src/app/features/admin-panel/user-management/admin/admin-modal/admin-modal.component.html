@@ -1,5 +1,6 @@
 <p-dialog
   [(visible)]="visible"
+  (onShow)="onDialogShown()"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
@@ -132,7 +133,7 @@
 
               <div class="flex items-center gap-3">
                 <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
-                  {{ fileName?.trim() || 'Click to choose file' }}
+                  {{ fileName || 'Click to choose file' }}
                 </span>
 
                 <button type="button" pButton class="p-button-sm" label="Choose File" (click)="fileInput.click()"></button>
