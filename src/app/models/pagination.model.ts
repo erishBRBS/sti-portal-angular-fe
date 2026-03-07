@@ -12,6 +12,11 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface ApiResponseNoData {
+  success: boolean;
+  message: string;
+}
+
 export type PaginatedResponse<TItem> = ApiResponse<TItem[]> & {
   pagination: PaginationMeta;
 };
