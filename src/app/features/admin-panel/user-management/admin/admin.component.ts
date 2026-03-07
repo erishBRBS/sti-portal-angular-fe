@@ -49,6 +49,7 @@ export class AdminManagementComponent {
   ];
 
   actions: RowAction<UserRow>[] = [
+        { key: 'delete', label: 'View', icon: 'pi pi-eye', buttonClass: 'text-rose-600' },
     { key: 'edit', label: 'Edit', icon: 'pi pi-pencil' },
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
@@ -80,6 +81,11 @@ export class AdminManagementComponent {
 
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
+    if(e.actionKey === 'edit'){
+      this.showAdminModalForm?.updateDialog(e.row.id);
+    } else {
+
+    }
   }
 
   openImportCsv() {

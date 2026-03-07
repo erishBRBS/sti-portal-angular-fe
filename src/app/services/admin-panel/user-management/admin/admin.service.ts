@@ -2,12 +2,13 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 import { Observable } from "rxjs";
-import { AdminData, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
+import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
 import { CreateAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
 
 export enum AdminEndPoints {
   getAdmin = '/get/admin',
   createAdmin = '/create/admin',
+  getAdminById = '/get/admin/{id}',
 }
 
 export type CreateAdminResponse = {
@@ -23,9 +24,11 @@ export type CreateAdminResponse = {
 export class AdminService {
   private http = inject(HttpClient);
   private baseAPIUrl = `${environment.apiUrl}`;
+  fileAPIUrl = `${environment.fileUrl}`;
 
   private readonly getAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.getAdmin}`;
   private readonly createAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.createAdmin}`;
+  private readonly getAdminByIdUrl = `${this.baseAPIUrl}${AdminEndPoints.getAdminById}`;
 
   private authHeaders(): HttpHeaders {
   //  const token = localStorage.getItem('access_token'); 
@@ -33,6 +36,13 @@ export class AdminService {
     return new HttpHeaders({
       Authorization: token ? `Bearer ${token}` : '',
       Accept: 'application/json',
+    });
+  }
+
+ getAdminById(id: number) {
+    const url = this.getAdminByIdUrl.replace('{id}', String(id));
+    return this.http.get<AdminDetailResponse>(url, {
+      headers: this.authHeaders(),
     });
   }
 
