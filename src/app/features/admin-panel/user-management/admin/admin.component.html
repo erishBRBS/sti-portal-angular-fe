@@ -6,6 +6,8 @@
     subtitle=""
     [value]="rows"
     [columns]="cols"
+    [showSelection]="true"
+    [(selection)]="selectedRows"
     [loading]="loading"
     [paginator]="true"
     [lazy]="true"
@@ -21,8 +23,10 @@
     (actionClicked)="onAction($event)"
     [showImportCsv]="true"
     [showAdd]="true"
+    [showDelete]="true"
     (importCsvClicked)="openImportCsv()"
     (addClicked)="openAddModal()"
+    (deleteClicked)="openDeleteModal()"
   ></sti-data-table>
 </div>
 

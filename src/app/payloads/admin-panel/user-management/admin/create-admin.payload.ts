@@ -5,3 +5,6 @@ export interface CreateAdminPayload {
   username?: string;
   password?: string;
 }
+export interface DeleteAdminPayload {
+  id: number[];
+}

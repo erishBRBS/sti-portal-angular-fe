@@ -57,7 +57,7 @@ export interface ActionEvent<T = any> {
 
 @Component({
   selector: 'sti-data-table',
-  standalone: true, // ✅ IMPORTANT
+  standalone: true,
   imports: [
     CommonModule,
     FormsModule,
@@ -93,8 +93,15 @@ export class DataTableComponent<T = any> implements OnChanges {
   // Header buttons flags
   @Input() showImportCsv = false;
   @Input() showAdd = false;
+  @Input() showDelete = false;
   @Input() importCsvLabel = 'Import .CSV';
   @Input() addLabel = 'Add';
+  @Input() deleteLabel = 'Delete';
+
+  // Checkbox selection
+  @Input() showSelection = false;
+  @Input() selection: T[] = [];
+  @Output() selectionChange = new EventEmitter<T[]>();
 
   // Pagination (two-way)
   private _rows = 10;
@@ -123,6 +130,7 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Output() actionClicked = new EventEmitter<ActionEvent<T>>();
   @Output() importCsvClicked = new EventEmitter<void>();
   @Output() addClicked = new EventEmitter<void>();
+  @Output() deleteClicked = new EventEmitter<void>();
 
   @Input() totalRecords = 0;
   @Input() lazy = false;
@@ -181,8 +189,18 @@ export class DataTableComponent<T = any> implements OnChanges {
   onImportCsv() {
     this.importCsvClicked.emit();
   }
+
   onAdd() {
     this.addClicked.emit();
+  }
+
+  onDelete() {
+    this.deleteClicked.emit();
+  }
+
+  onSelectionChange(selected: T[]) {
+    this.selection = selected;
+    this.selectionChange.emit(selected);
   }
 
   // Helpers

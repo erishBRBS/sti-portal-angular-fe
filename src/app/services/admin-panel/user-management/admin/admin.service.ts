@@ -3,12 +3,13 @@ import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 import { Observable } from "rxjs";
 import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
-import { CreateAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
 
 export enum AdminEndPoints {
   getAdmin = '/get/admin',
   createAdmin = '/create/admin',
   getAdminById = '/get/admin/{id}',
+  deleteAdmin = '/delete/admin',
 }
 
 export type CreateAdminResponse = {
@@ -16,6 +17,10 @@ export type CreateAdminResponse = {
   message: string;
   data: AdminData;
 };
+export type DeleteAdminResponse = {
+  success: boolean;
+  message: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -29,6 +34,7 @@ export class AdminService {
   private readonly getAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.getAdmin}`;
   private readonly createAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.createAdmin}`;
   private readonly getAdminByIdUrl = `${this.baseAPIUrl}${AdminEndPoints.getAdminById}`;
+  private readonly deleteAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.deleteAdmin}`;
 
   private authHeaders(): HttpHeaders {
   //  const token = localStorage.getItem('access_token'); 
@@ -71,6 +77,12 @@ export class AdminService {
 
     return this.http.post<CreateAdminResponse>(this.createAdminUrl, fd, {
       headers: this.authHeaders(),
+    });
+  }
+
+  deleteAdmins(payload: DeleteAdminPayload): Observable<DeleteAdminResponse> {
+    return this.http.post<DeleteAdminResponse>(this.deleteAdminUrl, payload, {
+      headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
 }

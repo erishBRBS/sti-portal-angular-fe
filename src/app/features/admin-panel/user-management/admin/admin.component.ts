@@ -9,7 +9,6 @@ import { finalize } from 'rxjs';
 import { AdminData } from '../../../../models/admin-panel/user-management/admin/admin.model';
 import { AdminModalComponent } from './admin-modal/admin-modal.component';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { ModalMode } from '../../../../enums/modal.mode';
 
 type UserRow = {
   id: number;
@@ -24,16 +23,13 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-admin',
   standalone: true,
-  imports: [
-    DataTableComponent, 
-    AdminModalComponent
-  ],
+  imports: [DataTableComponent, AdminModalComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css',
 })
 export class AdminManagementComponent {
   cols: TableColumn<UserRow>[] = [
-    { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
+    // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'name', header: 'Full Name', sortable: true, filter: true },
     { field: 'email', header: 'Email', sortable: true, filter: true },
     {
@@ -49,7 +45,7 @@ export class AdminManagementComponent {
   ];
 
   actions: RowAction<UserRow>[] = [
-        { key: 'delete', label: 'View', icon: 'pi pi-eye', buttonClass: 'text-rose-600' },
+    { key: 'view', label: 'View', icon: 'pi pi-eye', buttonClass: 'text-rose-600' },
     { key: 'edit', label: 'Edit', icon: 'pi pi-pencil' },
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
@@ -69,7 +65,8 @@ export class AdminManagementComponent {
   first = 0;
 
   openModal = false;
-  modalMode: 'add' | 'edit' = 'add';
+
+  selectedRows: any[] = [];
 
   ngOnInit(): void {
     this.loadAdmins(1, this.rowsPerPage);
@@ -81,19 +78,24 @@ export class AdminManagementComponent {
 
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
-    if(e.actionKey === 'edit'){
+    if (e.actionKey === 'edit') {
       this.showAdminModalForm?.updateDialog(e.row.id);
-    } else {
+    } else if (e.actionKey === 'view'){
 
     }
   }
 
   openImportCsv() {
-    console.log('import csv clicked');
+    console.log('import csv clicked', this.selectedRows);
   }
 
   openAddModal() {
-     this.showAdminModalForm?.showDialog();
+    this.showAdminModalForm?.showDialog();
+  }
+
+  openDeleteModal() {
+    console.log("clicked!")
+    this.deleteSelectedAdmins();
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
@@ -143,7 +145,23 @@ export class AdminManagementComponent {
       });
   }
 
+  deleteSelectedAdmins(): void {
+    const payload = {
+      id: this.selectedRows.map((row) => row.id),
+    };
 
+    this.adminService.deleteAdmins(payload).subscribe({
+      next: (res) => {
+        console.log(res.message);
+        this.toast.success('Success', res.message);
+        this.onModalSuccess();
+        this.selectedRows = [];
+      },
+      error: (err) => {
+        console.error(err);
+      },
+    });
+  }
 
   private mapStatus(status: string): UserStatus {
     switch (status) {
