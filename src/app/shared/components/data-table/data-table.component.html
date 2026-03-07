@@ -9,7 +9,15 @@
     </div>
 
     <!-- Right actions -->
-    <div class="flex items-center gap-2 md:ml-auto" *ngIf="showImportCsv || showAdd">
+    <div class="flex items-center gap-2 md:ml-auto" *ngIf="showImportCsv || showAdd || showDelete">
+      <button
+        *ngIf="showDelete"
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        (click)="onDelete()"
+      >
+        {{ deleteLabel }}
+      </button>
       <button
         *ngIf="showImportCsv"
         type="button"
@@ -51,10 +59,17 @@
     sortMode="multiple"
     responsiveLayout="scroll"
     class="p-4"
+    [selection]="selection"
+    (selectionChange)="onSelectionChange($event)"
+    dataKey="id"
   >
     <!-- Header -->
     <ng-template pTemplate="header" let-cols>
       <tr>
+        <th *ngIf="showSelection" class="w-12 text-center">
+          <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+        </th>
+
         <th
           *ngFor="let col of cols"
           [ngClass]="[getAlignClass(col), col.headerClass || '']"
@@ -74,6 +89,8 @@
 
       <!-- Optional column filters row -->
       <tr *ngIf="showColumnFilters">
+        <th *ngIf="showSelection"></th>
+
         <th *ngFor="let col of cols">
           <p-columnFilter
             *ngIf="col.filter"
@@ -91,6 +108,10 @@
     <!-- Body -->
     <ng-template pTemplate="body" let-row let-cols="columns">
       <tr class="cursor-pointer hover:bg-slate-50" (click)="onRowClick(row)">
+        <td *ngIf="showSelection" class="w-12 text-center" (click)="$event.stopPropagation()">
+          <p-tableCheckbox [value]="row"></p-tableCheckbox>
+        </td>
+
         <td
           *ngFor="let col of cols"
           [ngClass]="[getAlignClass(col), col.class || '']"
@@ -165,7 +186,7 @@
       <tr>
         <td
           class="p-8 text-center text-slate-500"
-          [attr.colspan]="visibleColumns.length + (showActions ? 1 : 0)"
+          [attr.colspan]="visibleColumns.length + (showActions ? 1 : 0) + (showSelection ? 1 : 0)"
         >
           No records found.
         </td>
