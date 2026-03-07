@@ -4,6 +4,7 @@ import { environment } from "../../../../environments/environment";
 import { Observable } from "rxjs";
 import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
 import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
 
 export enum AdminEndPoints {
   getAdmin = '/get/admin',
@@ -12,15 +13,8 @@ export enum AdminEndPoints {
   deleteAdmin = '/delete/admin',
 }
 
-export type CreateAdminResponse = {
-  success: boolean;
-  message: string;
-  data: AdminData;
-};
-export type DeleteAdminResponse = {
-  success: boolean;
-  message: string;
-}
+export type CreateAdminResponse = ApiResponse<AdminData>;
+export type DeleteAdminResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
