@@ -23,7 +23,7 @@ export type AdminModalMode = 'add' | 'edit';
 @Component({
   selector: 'sti-admin-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule,],
   templateUrl: './admin-modal.component.html',
   styleUrl: './admin-modal.component.css',
 })
@@ -47,7 +47,19 @@ export class AdminModalComponent {
   mobile_number = '';
   username = '';
   password = '';
+  showPassword = false;
 
+  togglePassword() {
+  this.showPassword = !this.showPassword;
+}
+allowNumbersOnly(event: KeyboardEvent) {
+  const charCode = event.which ? event.which : event.keyCode;
+
+  // allow numbers 0-9 only
+  if (charCode < 48 || charCode > 57) {
+    event.preventDefault();
+  }
+}
   // file state
   selectedFile: File | null = null;
   previewUrl: string | null = null;
@@ -129,6 +141,7 @@ export class AdminModalComponent {
     this.mobile_number = '';
     this.username = '';
     this.password = '';
+
 
     this.clearFileControls();
 
@@ -215,3 +228,4 @@ export class AdminModalComponent {
     });
   }
 }
+
