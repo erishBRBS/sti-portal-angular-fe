@@ -28,6 +28,7 @@ export class ParentService {
   private http = inject(HttpClient);
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
+  token = `${environment.temp_token}`;
 
   private readonly getParentUrl = `${this.baseAPIUrl}${ParentEndPoints.getParent}`;
   private readonly createParentUrl = `${this.baseAPIUrl}${ParentEndPoints.createParent}`;
@@ -36,9 +37,9 @@ export class ParentService {
 
   private authHeaders(): HttpHeaders {
   //  const token = localStorage.getItem('access_token'); 
-    const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
+  //  const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: token ? `Bearer ${token}` : '',
+      Authorization: this.token ? `Bearer ${this.token}` : '',
       Accept: 'application/json',
     });
   }
