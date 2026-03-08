@@ -51,7 +51,7 @@ export class CourseComponent {
   selectedRows: any[] = [];
 
   ngOnInit(): void {
-    this.loadStudent(1, this.rowsPerPage);
+    this.loadCourse(1, this.rowsPerPage);
   }
   // MARK: - This part is for all button function
   onRow(row: UserRow) {
@@ -82,11 +82,11 @@ export class CourseComponent {
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
     this.rowsPerPage = e.perPage;
-    this.loadStudent(e.page, e.perPage);
+    this.loadCourse(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
-    this.loadStudent(1, this.rowsPerPage);
+    this.loadCourse(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
@@ -95,7 +95,7 @@ export class CourseComponent {
   }
 
   // MARK: - This part is for API call function
-  loadStudent(page: number, perPage: number) {
+  loadCourse(page: number, perPage: number) {
     this.loading = true;
 
     this.courseService
