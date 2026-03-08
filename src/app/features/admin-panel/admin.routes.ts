@@ -9,9 +9,9 @@ import { SectionComponent } from './curriculum-management/section/section.compon
 import { SubjectComponent } from './curriculum-management/subject/subject.component';
 import { GuardianManagementComponent } from './guardian-management/guardian-management';
 import { AdminManagementComponent } from './user-management/admin/admin.component';
-import { ParentManagementComponent } from './user-management/parent/parent.component';
 import { StudentManagementComponent } from './user-management/student/student.component';
 import { ProfessorManagementComponent } from './user-management/professor/professor.component';
+import { ParentManagementComponent } from './user-management/parent/parent.component';
 
 
 export const AP_ROUTES: Routes = [
