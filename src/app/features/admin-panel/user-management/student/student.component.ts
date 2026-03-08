@@ -80,7 +80,7 @@ export class StudentManagementComponent {
   selectedRows: any[] = [];
 
   ngOnInit(): void {
-    this.loadAdmins(1, this.rowsPerPage);
+    this.loadStudent(1, this.rowsPerPage);
   }
   // MARK: - This part is for all button function
   onRow(row: UserRow) {
@@ -111,11 +111,11 @@ export class StudentManagementComponent {
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
     this.rowsPerPage = e.perPage;
-    this.loadAdmins(e.page, e.perPage);
+    this.loadStudent(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
-    this.loadAdmins(1, this.rowsPerPage);
+    this.loadStudent(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
@@ -124,7 +124,7 @@ export class StudentManagementComponent {
   }
 
   // MARK: - This part is for API call function
-  loadAdmins(page: number, perPage: number) {
+  loadStudent(page: number, perPage: number) {
     this.loading = true;
 
     this.studentService
