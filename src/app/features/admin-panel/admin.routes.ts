@@ -13,6 +13,7 @@ import { ParentManagementComponent } from './user-management/parent/parent.compo
 import { ProfessorManagementComponent } from './user-management/professor/professor.component';
 import { StudentManagementComponent } from './user-management/student/student.component';
 
+
 export const AP_ROUTES: Routes = [
   //ANNOUNCEMENT MANAGEMENT
   {
