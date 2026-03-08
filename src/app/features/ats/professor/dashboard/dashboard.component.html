@@ -1,6 +1,168 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Dashboard
-    </h1>
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">Professor Dashboard</h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      Monitor and manage student attendance effectively
+    </p>
   </div>
+
+  <!-- ✅ layout/spacing natin -->
+  <div class="flex justify-center px-4 sm:px-6 pb-6">
+    <div class="w-full space-y-6">
+
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:translate-y-[-4px] transition-all duration-300"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
+          >
+            <i class="pi pi-calendar"></i>
+          </div>
+          <div class="w-full">
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">12</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Weekly Classes</p>
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:translate-y-[-4px] transition-all duration-300"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400"
+          >
+            <i class="pi pi-users"></i>
+          </div>
+          <div class="w-full">
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">85</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Total Students</p>
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:translate-y-[-4px] transition-all duration-300"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"
+          >
+            <i class="pi pi-calendar-clock"></i>
+          </div>
+          <div class="w-full">
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">3</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Today's Classes</p>
+          </div>
+        </div>
+
+        <div
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:translate-y-[-4px] transition-all duration-300"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400"
+          >
+            <i class="pi pi-chart-line"></i>
+          </div>
+          <div class="w-full">
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">94%</p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+              Today's Attendance Rate
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <section
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
+      >
+        <h3 class="text-lg font-bold mb-4 text-slate-900 dark:text-white tracking-tight">
+          Quick Actions
+        </h3>
+
+        <div class="grid grid-cols-2 md:grid-cols-2 gap-4">
+          <button
+            type="button"
+            *ngFor="let action of quickActions"
+            (click)="handleQuickAction(action)"
+            class="flex flex-col items-center justify-center p-6 cursor-pointer rounded-2xl
+                   bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-200
+                   transition-all duration-300 group border border-slate-200 dark:border-slate-700
+                   hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400"
+          >
+            <i
+              [class]="action.icon"
+              class="text-2xl mb-2 group-hover:scale-110 transition-transform"
+            ></i>
+            <span class="text-sm font-semibold tracking-wide">{{ action.label }}</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Main content -->
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- Today's Classes -->
+        <section
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden"
+        >
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Today's Classes
+            </h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
+              Subject list for today
+            </p>
+          </div>
+
+          <div class="p-6 overflow-x-auto">
+            <p-table [value]="todaysClasses" styleClass="p-datatable-sm">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-l-lg">
+                    Subject
+                  </th>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-r-lg">
+                    Section
+                  </th>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="body" let-class>
+                <tr class="dark:text-slate-200">
+                  <td class="font-semibold py-4">{{ class.subject }}</td>
+                  <td>{{ class.section }}</td>
+                </tr>
+              </ng-template>
+            </p-table>
+          </div>
+        </section>
+
+        <!-- Weekly Attendance -->
+        <section
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden"
+        >
+          <div class="p-6 border-b border-slate-200 dark:border-slate-800">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+              Weekly Attendance
+            </h3>
+            <p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
+              Present, Late, and Absent distribution
+            </p>
+          </div>
+
+          <div class="p-6">
+            <div class="h-[320px]">
+              <p-chart
+                *ngIf="isBrowser"
+                type="bar"
+                [data]="attendanceChartData"
+                [options]="chartOptions"
+                height="100%"
+              ></p-chart>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </div>
+  </div>
+</main>
