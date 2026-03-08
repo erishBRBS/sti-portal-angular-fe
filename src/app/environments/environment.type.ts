@@ -9,4 +9,5 @@ export interface Environment {
   appUrls: {
     id: string;
   };
+  temp_token: string;
 }

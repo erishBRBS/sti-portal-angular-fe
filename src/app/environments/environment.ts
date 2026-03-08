@@ -11,4 +11,5 @@ export const environment: Environment = {
   appUrls: {
     id: 'http://localhost:4200',
   },
+  temp_token: "10|WgWoNPkpsTCLjV3P9UBPG6fyr6YGSQemBhs9xHAA180ab19d",
 };
