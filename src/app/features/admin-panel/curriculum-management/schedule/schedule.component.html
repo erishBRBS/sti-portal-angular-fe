@@ -1,6 +1,31 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Schedule Management
-    </h1>
-  </div>
+<div>
+  <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">Schedule Management</h1>
+
+  <sti-data-table
+    title="Users"
+    subtitle=""
+    [value]="rows"
+    [columns]="cols"
+    [showSelection]="true"
+    [(selection)]="selectedRows"
+    [loading]="loading"
+    [paginator]="true"
+    [lazy]="true"
+    [totalRecords]="total"
+    [first]="first"
+    [(rows)]="rowsPerPage"
+    [rowsPerPageOptions]="[12, 25, 50]"
+    (pageChanged)="onPageChanged($event)"
+    [showColumnFilters]="false"
+    [showActions]="true"
+    [actions]="actions"
+    (rowClicked)="onRow($event)"
+    (actionClicked)="onAction($event)"
+    [showImportCsv]="true"
+    [showAdd]="true"
+    [showDelete]="true"
+    (importCsvClicked)="openImportCsv()"
+    (addClicked)="openAddModal()"
+    (deleteClicked)="openDeleteModal()"
+  ></sti-data-table>
+</div>
