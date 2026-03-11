@@ -175,7 +175,7 @@
     <!-- Footer -->
     <div class="w-full flex items-center justify-end gap-3 mt-6">
       <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="close()"></button>
-      <button pButton type="submit" label="Add Record" class="p-button-success"></button>
+      <button pButton type="submit" [label]="dialogButtonLabel" class="p-button-success"></button>
     </div>
   </form>
 </p-dialog>

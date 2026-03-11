@@ -64,7 +64,7 @@ allowNumbersOnly(event: KeyboardEvent) {
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   fileName = '';
-  currentID: number | null = null;
+  currentID = 0;
   pendingEditId: number | null = null;
 
   @ViewChild('imagePathInput') imagePathInputRef!: ElementRef<HTMLInputElement>;
@@ -73,9 +73,13 @@ allowNumbersOnly(event: KeyboardEvent) {
     return this.mode === ModalMode.ADD ? 'Add Admin' : 'Update Admin';
   }
 
+  get dialogButtonLabel(): string {
+    return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
+  }
+
   showDialog(): void {
     this.mode = ModalMode.ADD;
-    this.currentID = null;
+    this.currentID = 0;
     this.visible = true;
     this.resetForm();
   }
@@ -111,7 +115,7 @@ allowNumbersOnly(event: KeyboardEvent) {
     this.clearFileControls();
 
     if (!preserveCurrentId) {
-      this.currentID = null;
+      this.currentID = 0;
     }
   }
 
@@ -157,7 +161,11 @@ allowNumbersOnly(event: KeyboardEvent) {
       form.control.markAllAsTouched();
       return;
     }
-    this.submitAction();
+    if(this.mode === ModalMode.ADD) {
+      this.submitAction();
+    } else {
+      this.submitUpdateAction();
+    }
   }
 
   onFileSelected(ev: Event) {
@@ -187,6 +195,32 @@ allowNumbersOnly(event: KeyboardEvent) {
     };
 
     this.adminService.createAdmin(payload, this.selectedFile).subscribe({
+      next: (res) => {
+        // success
+        console.log(res.message);
+        this.toast.success('Success', res.message);
+        this.resetForm();
+        this.onSuccess.emit();
+        this.close();
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Something went wrong.';
+        this.toast.error('Error', msg);
+        console.error(msg);
+      },
+    });
+  }
+
+  private submitUpdateAction(): void {
+    const payload: CreateAdminPayload = {
+      full_name: this.full_name,
+      email: this.email,
+      mobile_number: this.mobile_number,
+      username: this.username,
+      password: this.password,
+    };
+
+    this.adminService.updateAdmin(this.currentID ,payload, this.selectedFile).subscribe({
       next: (res) => {
         // success
         console.log(res.message);

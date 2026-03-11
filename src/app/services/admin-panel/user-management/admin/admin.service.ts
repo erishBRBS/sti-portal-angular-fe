@@ -9,6 +9,7 @@ import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.mo
 export enum AdminEndPoints {
   getAdmin = '/get/admin',
   createAdmin = '/create/admin',
+  updateAdmin = '/update/admin/{id}',
   getAdminById = '/get/admin/{id}',
   deleteAdmin = '/delete/admin',
 }
@@ -28,6 +29,7 @@ export class AdminService {
 
   private readonly getAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.getAdmin}`;
   private readonly createAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.createAdmin}`;
+  private readonly updateAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.updateAdmin}`;
   private readonly getAdminByIdUrl = `${this.baseAPIUrl}${AdminEndPoints.getAdminById}`;
   private readonly deleteAdminUrl = `${this.baseAPIUrl}${AdminEndPoints.deleteAdmin}`;
 
@@ -71,6 +73,25 @@ export class AdminService {
     }
 
     return this.http.post<CreateAdminResponse>(this.createAdminUrl, fd, {
+      headers: this.authHeaders(),
+    });
+  }
+
+  updateAdmin(id: number, payload: CreateAdminPayload, imageFile?: File | null): Observable<CreateAdminResponse> {
+    const url = this.updateAdminUrl.replace('{id}', String(id));
+    const fd = new FormData();
+    fd.append('_method', 'PATCH');
+    fd.append('full_name', payload.full_name ?? '');
+    fd.append('email', payload.email ?? '');
+    fd.append('mobile_number', payload.mobile_number ?? '');
+    fd.append('username', payload.username ?? '');
+    fd.append('password', payload.password ?? '');
+
+    if (imageFile) {
+      fd.append('image_path', imageFile); 
+    }
+
+    return this.http.post<CreateAdminResponse>(url, fd, {
       headers: this.authHeaders(),
     });
   }
