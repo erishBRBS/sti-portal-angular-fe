@@ -9,6 +9,7 @@ export interface ProfessorData {
   status: string;
   created_at: string;
   updated_at: string;
+  image_path?: string;
 }
 
-export type ProfessorModel = PaginatedResponse<ProfessorData>;
+export type ProfessorModel = PaginatedResponse<ProfessorData>;  

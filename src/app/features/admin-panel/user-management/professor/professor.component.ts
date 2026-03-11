@@ -5,7 +5,7 @@ import {
   TableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { ProfesssorService } from '../../../../services/admin-panel/user-management/professor/professor.service';
+import { ProfessorService } from '../../../../services/admin-panel/user-management/professor/professor.service';
 import { ProfessorModalComponent } from './professor-modal/professor-modal.component';
 import { finalize } from 'rxjs';
 import { ProfessorData } from '../../../../models/admin-panel/user-management/professor/professor.model';
@@ -24,7 +24,7 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-professor',
   standalone: true,
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, ProfessorModalComponent],
   templateUrl: './professor.component.html',
   styleUrl: './professor.component.css',
 })
@@ -53,7 +53,7 @@ export class ProfessorManagementComponent {
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
 
-  private readonly professorService = inject(ProfesssorService);
+  private readonly professorService = inject(ProfessorService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
 
@@ -82,7 +82,7 @@ export class ProfessorManagementComponent {
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
+       this.showProfessorModalForm?.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
     }
   }
@@ -92,12 +92,12 @@ export class ProfessorManagementComponent {
   }
 
   openAddModal() {
-    // this.showAdminModalForm?.showDialog();
+    this.showProfessorModalForm?.showDialog();
   }
 
   openDeleteModal() {
     console.log('clicked!');
-    // this.deleteSelectedAdmins();
+  this.deleteSelectedStudent();
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {

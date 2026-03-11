@@ -22,7 +22,7 @@ export type DeleteProfessorResponse = ApiResponseNoData;
   providedIn: 'root',
 })
 
-export class ProfesssorService {
+export class ProfessorService {
   private http = inject(HttpClient);
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
