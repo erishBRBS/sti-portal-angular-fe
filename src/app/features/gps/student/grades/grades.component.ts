@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
 
 interface TermOption {
@@ -24,11 +25,12 @@ interface GradeCard {
 @Component({
   selector: 'app-grades',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule],
+  imports: [CommonModule, FormsModule, SelectModule, DialogModule],
   templateUrl: './grades.component.html',
 })
 export class GradeComponent implements OnInit {
   selectedYear = '2024-2025';
+  showGradingSystemModal = false;
 
   years: TermOption[] = [
     { label: 'A.Y. 2024-2025', value: '2024-2025' },
@@ -37,6 +39,21 @@ export class GradeComponent implements OnInit {
 
   termGpa = '2.25';
   gradeCards: GradeCard[] = [];
+
+  gradingSystem = [
+    '1.00 (97.5-100%) Excellent',
+    '1.25 (94.5-97.49%) Very Good',
+    '1.50 (91.5-94.49%) Very Good',
+    '1.75 (88.5-91.49%) Very Good',
+    '2.00 (85.5-88.49%) Satisfactory',
+    '2.25 (81.5-85.49%) Satisfactory',
+    '2.50 (77.5-81.49%) Satisfactory',
+    '2.75 (73.5-77.49%) Fair',
+    '3.00 (69.5-73.49%) Fair',
+    '5.00 (Below 69.5%) Failed',
+    'DRP (Officially Dropped)',
+    'INC (Incomplete Req.)',
+  ];
 
   ngOnInit(): void {
     this.loadSampleData();
@@ -105,6 +122,10 @@ export class GradeComponent implements OnInit {
         status: 'passed',
       },
     ];
+  }
+
+  openGradingSystemModal(): void {
+    this.showGradingSystemModal = true;
   }
 
   getStatusBadgeClass(status: GradeCard['status']): string {
