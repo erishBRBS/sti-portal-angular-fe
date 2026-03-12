@@ -28,7 +28,7 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-student',
   standalone: true,
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, StudentModalComponent],
   templateUrl: './student.component.html',
   styleUrl: './student.component.css',
 })
@@ -90,7 +90,7 @@ export class StudentManagementComponent {
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
+      this.showStudentModalForm?.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
     }
   }
@@ -100,7 +100,7 @@ export class StudentManagementComponent {
   }
 
   openAddModal() {
-    // this.showAdminModalForm?.showDialog();
+    this.showStudentModalForm?.showDialog();
   }
 
   openDeleteModal() {

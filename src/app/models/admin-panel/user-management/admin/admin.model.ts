@@ -14,6 +14,7 @@
   }
 // MARK: - This model is for Admin Model
   export interface AdminData {
+    student_name: string;
     id: number;
     full_name: string;
     email: string;

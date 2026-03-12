@@ -21,8 +21,7 @@ type UserStatus = UserRow['status'];
   selector: 'sti-parent',
   standalone: true,
   imports: [
-    DataTableComponent
-  ],
+    DataTableComponent, ParentModalComponent],
   templateUrl: './parent.component.html',
   styleUrl: './parent.component.css',
 })
@@ -55,7 +54,7 @@ export class ParentManagementComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
 
-  @ViewChild(ParentModalComponent) showStudentModalForm!: ParentModalComponent;
+@ViewChild(ParentModalComponent) parentModal!: ParentModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -77,21 +76,23 @@ export class ParentManagementComponent {
     console.log('row click', row);
   }
 
-  onAction(e: { actionKey: string; row: UserRow }) {
-    console.log('action', e.actionKey, e.row);
-    if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
-    } else if (e.actionKey === 'view') {
-    }
-  }
+ onAction(e: { actionKey: string; row: UserRow }) {
+  console.log('action', e.actionKey, e.row);
 
+  if (e.actionKey === 'edit') {
+    this.parentModal?.updateDialog(e.row.id);
+  } 
+  else if (e.actionKey === 'view') {
+  }
+}
+  
   openImportCsv() {
     console.log('import csv clicked', this.selectedRows);
   }
 
-  openAddModal() {
-    // this.showAdminModalForm?.showDialog();
-  }
+openAddModal() {
+  this.parentModal?.showDialog();
+}
 
   openDeleteModal() {
     console.log('clicked!');

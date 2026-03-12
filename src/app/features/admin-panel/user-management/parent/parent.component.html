@@ -28,5 +28,10 @@
     (addClicked)="openAddModal()"
     (deleteClicked)="openDeleteModal()"
   ></sti-data-table>
+
 </div>
+<sti-parent-modal
+  (onSuccess)="onModalSuccess()"
+  (onCancel)="onModalCancel()">
+</sti-parent-modal>
 
