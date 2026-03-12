@@ -144,7 +144,7 @@ export class ProfessorDashboardComponent implements OnInit {
   }
 
   getStatusSeverity(status: string) {
-    const map: any = { completed: 'success', 'in-progress': 'warning', upcoming: 'info' };
+    const map: any = { completed: 'success', 'in-progress': 'warn', upcoming: 'info' };
     return map[status] || 'info';
   }
 
