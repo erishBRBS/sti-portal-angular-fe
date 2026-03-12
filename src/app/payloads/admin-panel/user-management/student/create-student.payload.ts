@@ -4,6 +4,9 @@ export interface CreateStudentPayload {
   mobile_number?: string;
   username?: string;
   password?: string;
+  course?: string;
+  year_level?: string;
+  section?: string;
 }
 export interface DeleteStudentPayload {
   id: number[];
