@@ -18,7 +18,7 @@ interface GradeCard {
   finals: string;
   average: string;
   finalGrade: string;
-  status: 'passed' | 'conditional' | 'failed';
+  status: 'in-progress' | 'passed' | 'failed' | 'dropped' | 'incomplete';
 }
 
 @Component({
@@ -102,21 +102,42 @@ export class GradeComponent implements OnInit {
         finals: '75.00',
         average: '72.88',
         finalGrade: '3.00',
-        status: 'conditional',
+        status: 'passed',
       },
     ];
   }
 
-  getFinalGradeBadgeClass(status: GradeCard['status']): string {
+  getStatusBadgeClass(status: GradeCard['status']): string {
     switch (status) {
       case 'passed':
         return 'bg-emerald-500 text-white';
-      case 'conditional':
-        return 'bg-amber-500 text-white';
       case 'failed':
         return 'bg-rose-500 text-white';
+      case 'in-progress':
+        return 'bg-blue-500 text-white';
+      case 'dropped':
+        return 'bg-slate-500 text-white';
+      case 'incomplete':
+        return 'bg-amber-500 text-white';
       default:
         return 'bg-slate-500 text-white';
+    }
+  }
+
+  getStatusLabel(status: GradeCard['status']): string {
+    switch (status) {
+      case 'in-progress':
+        return 'In Progress';
+      case 'passed':
+        return 'Passed';
+      case 'failed':
+        return 'Failed';
+      case 'dropped':
+        return 'Dropped';
+      case 'incomplete':
+        return 'Incomplete';
+      default:
+        return status;
     }
   }
 }
