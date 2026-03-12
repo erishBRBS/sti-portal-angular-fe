@@ -1,0 +1,127 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(980px, 95vw)' }"
+  [contentStyle]="{ padding: '0', overflow: 'hidden', 'border-radius': '20px' }"
+  styleClass="news-details-dialog"
+>
+  <!-- Header -->
+  <div class="flex items-center justify-between px-6 py-5 border-b border-slate-300 bg-white">
+    <h2 class="text-3xl font-extrabold text-[#7A0000] tracking-tight">
+      News Details
+    </h2>
+
+    <button
+      type="button"
+      (click)="close()"
+      class="w-10 h-10 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition"
+      aria-label="Close"
+    >
+      <i class="pi pi-times text-2xl"></i>
+    </button>
+  </div>
+
+  <!-- Content -->
+  <div class="bg-white px-6 py-6 space-y-6">
+    <!-- Thumbnail -->
+    <div>
+      <h3 class="text-xl font-bold text-slate-700 mb-3">Thumbnail:</h3>
+
+      <div class="rounded-3xl bg-[#2E2E2E] p-4 shadow-sm">
+        <img
+          [src]="news.thumbnail"
+          alt="News Thumbnail"
+          class="w-full h-[320px] md:h-[420px] object-cover rounded-2xl border border-slate-300"
+        />
+      </div>
+    </div>
+
+    <!-- SDG -->
+    <div>
+      <h3 class="text-xl font-bold text-slate-700 mb-3">
+        Sustainable Development Goals:
+      </h3>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <img
+          *ngFor="let sdg of news.sdgs"
+          [src]="sdg"
+          alt="SDG"
+          class="h-14 w-auto object-contain rounded"
+        />
+      </div>
+    </div>
+
+    <!-- Info -->
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">Title:</div>
+        <div class="text-lg text-slate-700">{{ news.title || '—' }}</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">Campaign:</div>
+        <div class="text-lg text-slate-700">{{ news.campaign }}</div>
+      </div>
+
+      <div>
+        <div class="text-lg font-bold text-slate-700 mb-2">Body:</div>
+        <div
+          class="min-h-[220px] rounded-3xl border-2 border-slate-300 bg-white px-5 py-4 text-base leading-relaxed text-slate-800"
+        >
+          {{ news.body }}
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">Date Published:</div>
+        <div class="text-lg text-slate-700">{{ news.datePublished }}</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">Authors:</div>
+        <div class="text-lg text-slate-700">{{ news.authors }}</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">News Type:</div>
+        <div class="text-lg text-slate-700">{{ news.newsType }}</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">Uploader Date:</div>
+        <div class="text-lg text-slate-700">{{ news.uploaderDate }}</div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4">
+        <div class="text-lg font-bold text-slate-700">Uploader Name:</div>
+        <div class="text-lg text-slate-700">{{ news.uploaderName }}</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+      <button
+        pButton
+        type="button"
+        label="Save"
+        (click)="save()"
+        class="sm:w-56 !rounded-2xl !bg-[#7A0000] !border-[#7A0000] hover:!bg-[#600000] hover:!border-[#600000] !text-white !font-semibold !py-3"
+      ></button>
+
+      <button
+        pButton
+        type="button"
+        label="Close"
+        severity="secondary"
+        outlined="true"
+        (click)="close()"
+        class="sm:w-56 !rounded-2xl !font-semibold !py-3"
+      ></button>
+    </div>
+  </div>
+</p-dialog>
