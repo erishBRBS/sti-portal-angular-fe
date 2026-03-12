@@ -50,7 +50,7 @@ export class StudentManagementComponent {
       filter: true,
       type: 'tag',
       tagSeverity: (r) =>
-        r.status === 'Active' ? 'success' : r.status === 'Pending' ? 'warning' : 'danger',
+        r.status === 'Active' ? 'success' : r.status === 'Pending' ? 'warn' : 'danger',
     },
     { field: 'createdAt', header: 'Created', sortable: true, filter: true, type: 'datetime' },
   ];

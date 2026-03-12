@@ -10,7 +10,7 @@ import { TagModule } from 'primeng/tag';
 import { MultiSelectModule } from 'primeng/multiselect';
 
 export type StiColType = 'text' | 'date' | 'datetime' | 'currency' | 'boolean' | 'tag' | 'custom';
-export type StiTagSeverity = 'success' | 'info' | 'warning' | 'danger' | 'secondary' | 'contrast';
+export type StiTagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
 export interface PageChangedEvent {
   page: number;
@@ -39,6 +39,7 @@ export interface TableColumn<T = any> {
 
   tagSeverity?: (row: T) => StiTagSeverity;
   tagLabel?: (row: T) => string;
+  tagClass?: (row: T) => string;
 }
 
 export interface RowAction<T = any> {
