@@ -1,6 +1,98 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Grades
-    </h1>
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+    <div class="space-y-2 text-center md:text-left">
+      <h2 class="text-xl font-black tracking-tighter text-blue-600">Academic Performance</h2>
+      <p class="text-slate-500 font-medium text-sm italic">
+        Track your progress for each academic year
+      </p>
+    </div>
   </div>
+
+  <div class="flex px-4 sm:px-6 pb-6">
+    <div class="w-full space-y-6">
+      <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+        <div
+          class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:translate-y-[-4px] transition-all duration-300 md:w-[32rem]"
+        >
+          <div
+            class="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl bg-blue-50 text-blue-600"
+          >
+            <i class="pi pi-chart-bar"></i>
+          </div>
+          <div>
+            <p class="text-2xl font-bold text-slate-900 leading-none tracking-tighter">
+              {{ termGpa }}
+            </p>
+            <p class="text-sm text-slate-500 font-medium mt-1">Term GPA</p>
+          </div>
+        </div>
+
+        <div class="ml-auto flex flex-col items-end md:self-start md:w-56">
+          <label class="text-[10px] font-bold uppercase text-slate-400 mb-1 w-full text-left">
+            Academic Year
+          </label>
+          <p-select
+            [options]="years"
+            [(ngModel)]="selectedYear"
+            placeholder="Select Year"
+            class="w-56"
+          ></p-select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          *ngFor="let subject of gradeCards"
+          class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all"
+        >
+          <div class="flex justify-between items-start gap-4 mb-2">
+            <h4 class="font-bold text-lg text-blue-600 leading-tight">
+              {{ subject.subject }}
+            </h4>
+
+            <span
+              [ngClass]="getFinalGradeBadgeClass(subject.status)"
+              class="px-3 py-1 rounded-lg text-sm font-black leading-none"
+            >
+              {{ subject.finalGrade }}
+            </span>
+          </div>
+
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6">
+            {{ subject.professorName }} • {{ subject.date }}
+          </p>
+
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div class="text-[9px] font-black uppercase text-blue-600">Prelim</div>
+            <div class="text-[9px] font-black uppercase text-blue-600">Midterm</div>
+            <div class="text-[9px] font-black uppercase text-blue-600">Pre-Finals</div>
+            <div class="text-[9px] font-black uppercase text-blue-600">Finals</div>
+
+            <div class="bg-slate-50 text-slate-900 py-2 rounded-lg font-bold text-sm">
+              {{ subject.prelim || '-' }}
+            </div>
+            <div class="bg-slate-50 text-slate-900 py-2 rounded-lg font-bold text-sm">
+              {{ subject.midterm || '-' }}
+            </div>
+            <div class="bg-slate-50 text-slate-900 py-2 rounded-lg font-bold text-sm">
+              {{ subject.preFinals || '-' }}
+            </div>
+            <div class="bg-slate-50 text-slate-900 py-2 rounded-lg font-bold text-sm">
+              {{ subject.finals || '-' }}
+            </div>
+          </div>
+
+          <div class="mt-6 pt-4 border-t border-slate-200 flex justify-between items-center gap-4">
+            <span class="text-xs font-bold text-slate-500 italic">Numerical Equiv.</span>
+
+            <div
+              class="text-[11px] font-black px-4 py-2 rounded-xl uppercase tracking-wider transition-all bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+            >
+              Final Grade: {{ subject.finalGrade }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>

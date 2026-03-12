@@ -1,10 +1,122 @@
-import { Component} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { SelectModule } from 'primeng/select';
+
+interface TermOption {
+  label: string;
+  value: string;
+}
+
+interface GradeCard {
+  subject: string;
+  professorName: string;
+  date: string;
+  prelim: string;
+  midterm: string;
+  preFinals: string;
+  finals: string;
+  average: string;
+  finalGrade: string;
+  status: 'passed' | 'conditional' | 'failed';
+}
 
 @Component({
-  selector: 'app-grade',
+  selector: 'app-grades',
   standalone: true,
+  imports: [CommonModule, FormsModule, SelectModule],
   templateUrl: './grades.component.html',
 })
-export class GradeComponent {
-  
+export class GradeComponent implements OnInit {
+  selectedYear = '2024-2025';
+
+  years: TermOption[] = [
+    { label: 'A.Y. 2024-2025', value: '2024-2025' },
+    { label: 'A.Y. 2023-2024', value: '2023-2024' },
+  ];
+
+  termGpa = '2.25';
+  gradeCards: GradeCard[] = [];
+
+  ngOnInit(): void {
+    this.loadSampleData();
+  }
+
+  loadSampleData(): void {
+    this.gradeCards = [
+      {
+        subject: 'Great Books',
+        professorName: 'L. MANALAYSAY',
+        date: '17 JUN, 2025',
+        prelim: '82.00',
+        midterm: '82.67',
+        preFinals: '90.67',
+        finals: '89.33',
+        average: '86.17',
+        finalGrade: '2.00',
+        status: 'passed',
+      },
+      {
+        subject: 'Information Assurance & Security',
+        professorName: 'J. GUEVARRA',
+        date: '16 JUN, 2025',
+        prelim: '89.00',
+        midterm: '66.15',
+        preFinals: '87.20',
+        finals: '80.00',
+        average: '80.59',
+        finalGrade: '2.50',
+        status: 'passed',
+      },
+      {
+        subject: 'IT Capstone Project 1',
+        professorName: 'R. CAMPOSAGRADO',
+        date: '16 JUN, 2025',
+        prelim: '92.00',
+        midterm: '88.00',
+        preFinals: '85.00',
+        finals: '87.20',
+        average: '88.05',
+        finalGrade: '2.00',
+        status: 'passed',
+      },
+      {
+        subject: 'Web Systems and Technologies',
+        professorName: 'E. ENERLAN',
+        date: '16 JUN, 2025',
+        prelim: '72.67',
+        midterm: '77.42',
+        preFinals: '86.00',
+        finals: '91.33',
+        average: '81.86',
+        finalGrade: '2.25',
+        status: 'passed',
+      },
+      {
+        subject: 'Discrete Mathematics',
+        professorName: 'M. DELA CRUZ',
+        date: '15 JUN, 2025',
+        prelim: '70.00',
+        midterm: '72.50',
+        preFinals: '74.00',
+        finals: '75.00',
+        average: '72.88',
+        finalGrade: '3.00',
+        status: 'conditional',
+      },
+    ];
+  }
+
+  getFinalGradeBadgeClass(status: GradeCard['status']): string {
+    switch (status) {
+      case 'passed':
+        return 'bg-emerald-500 text-white';
+      case 'conditional':
+        return 'bg-amber-500 text-white';
+      case 'failed':
+        return 'bg-rose-500 text-white';
+      default:
+        return 'bg-slate-500 text-white';
+    }
+  }
 }
