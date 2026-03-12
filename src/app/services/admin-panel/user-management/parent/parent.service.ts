@@ -13,6 +13,7 @@ import { ParentModel } from "../../../../models/admin-panel/user-management/pare
 export enum ParentEndPoints {
   getParent = '/get/parent',
   createParent = '/create/admin',
+  updateParent = '/update/admin/{id}',   
   getParentById = '/get/admin/{id}',
   deleteParent = '/delete/admin',
 }
@@ -33,6 +34,7 @@ export class ParentService {
   private readonly getParentUrl = `${this.baseAPIUrl}${ParentEndPoints.getParent}`;
   private readonly createParentUrl = `${this.baseAPIUrl}${ParentEndPoints.createParent}`;
   private readonly getParentByIdUrl = `${this.baseAPIUrl}${ParentEndPoints.getParentById}`;
+  private readonly updateParentUrl = `${this.baseAPIUrl}${ParentEndPoints.updateParent}`;
   private readonly deleteParentUrl = `${this.baseAPIUrl}${ParentEndPoints.deleteParent}`;
 
   private authHeaders(): HttpHeaders {
@@ -70,14 +72,40 @@ export class ParentService {
     fd.append('username', payload.username ?? '');
     fd.append('password', payload.password ?? '');
 
-    if (imageFile) {
-      fd.append('image_path', imageFile); 
-    }
+     if (payload.password) {
+    fd.append('password', payload.password);
+  }
+
+  if (imageFile) {
+    fd.append('image_path', imageFile);
+  }
 
     return this.http.post<ParentResponse>(this.createParentUrl, fd, {
       headers: this.authHeaders(),
     });
   }
+  updateParent(id: number, payload: CreateAdminPayload, imageFile?: File | null): Observable<ParentResponse> {
+
+  const url = this.updateParentUrl.replace('{id}', String(id));
+
+  const fd = new FormData();
+  fd.append('full_name', payload.full_name ?? '');
+  fd.append('email', payload.email ?? '');
+  fd.append('mobile_number', payload.mobile_number ?? '');
+  fd.append('username', payload.username ?? '');
+
+  if (payload.password) {
+    fd.append('password', payload.password);
+  }
+
+  if (imageFile) {
+    fd.append('image_path', imageFile);
+  }
+
+  return this.http.post<ParentResponse>(url, fd, {
+    headers: this.authHeaders(),
+  });
+}
 
   deleteParent(payload: DeletePayload): Observable<DeleteParentResponse> {
     return this.http.post<DeleteParentResponse>(this.deleteParentUrl, payload, {
