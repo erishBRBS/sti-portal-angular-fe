@@ -118,3 +118,21 @@ html.dark {
 .theme-toggle .pi {
   color: #facc15 !important; /* yellow-400 */
 }
+
+.dark .p-dropdown-panel {
+  background: #111827 !important;
+  border: 1px solid #334155 !important;
+}
+
+.dark .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  color: #e2e8f0 !important;
+}
+
+.dark .p-dropdown-panel .p-dropdown-items .p-dropdown-item:hover {
+  background: rgba(30, 41, 59, 0.4) !important;
+}
+
+.dark .p-dropdown-panel .p-dropdown-items .p-dropdown-item.p-highlight {
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #93c5fd !important;
+}

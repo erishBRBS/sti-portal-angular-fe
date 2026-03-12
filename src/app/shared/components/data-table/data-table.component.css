@@ -1,0 +1,197 @@
+:host {
+  display: block;
+}
+
+/* =========================
+   OUTER SHELL
+   ========================= */
+.sti-table-shell {
+  overflow: hidden;
+}
+
+.sti-table-shell-header {
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================
+   PRIME TABLE BASE
+   ========================= */
+:host ::ng-deep .p-datatable {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+:host ::ng-deep .p-datatable-wrapper,
+:host ::ng-deep .p-datatable-table-container,
+:host ::ng-deep .p-datatable-table {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* =========================
+   TABLE HEADER
+   ========================= */
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: #f8fafc !important;
+  color: #475569 !important;
+  border-color: #e2e8f0 !important;
+}
+
+:host-context(.dark) ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: #0f172a !important;
+  color: #94a3b8 !important;
+  border-color: #1e293b !important;
+}
+
+/* =========================
+   TABLE BODY
+   ========================= */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+:host-context(.dark) ::ng-deep .p-datatable .p-datatable-tbody > tr > td {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: #1e293b !important;
+}
+
+/* striped rows */
+:host ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
+  background: #f8fafc !important;
+}
+
+:host-context(.dark) ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
+  background: rgba(30, 41, 59, 0.28) !important;
+}
+
+:host-context(.dark) ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(odd) > td {
+  background: #0f172a !important;
+}
+
+/* hover */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr:hover > td,
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr.p-row-hover > td {
+  background: #f8fafc !important;
+}
+
+:host-context(.dark) ::ng-deep .p-datatable .p-datatable-tbody > tr:hover > td,
+:host-context(.dark) ::ng-deep .p-datatable .p-datatable-tbody > tr.p-row-hover > td {
+  background: rgba(30, 41, 59, 0.38) !important;
+}
+
+/* text consistency */
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td,
+:host ::ng-deep .p-datatable .p-datatable-tbody > tr > td span {
+  color: inherit;
+}
+
+/* =========================
+   SORT ICONS
+   ========================= */
+:host ::ng-deep .p-sortable-column,
+:host ::ng-deep .p-sortable-column .p-sortable-column-icon {
+  color: #64748b !important;
+}
+
+:host-context(.dark) ::ng-deep .p-sortable-column,
+:host-context(.dark) ::ng-deep .p-sortable-column .p-sortable-column-icon {
+  color: #94a3b8 !important;
+}
+
+/* =========================
+   PAGINATOR
+   ========================= */
+:host ::ng-deep .p-paginator {
+  background: #ffffff !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
+  border-bottom-left-radius: 1rem !important;
+  border-bottom-right-radius: 1rem !important;
+}
+
+:host-context(.dark) ::ng-deep .p-paginator {
+  background: #0f172a !important;
+  border-top-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page,
+:host ::ng-deep .p-paginator .p-paginator-prev,
+:host ::ng-deep .p-paginator .p-paginator-next,
+:host ::ng-deep .p-paginator .p-paginator-first,
+:host ::ng-deep .p-paginator .p-paginator-last {
+  color: #64748b !important;
+}
+
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-page,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-prev,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-next,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-first,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-last {
+  color: #94a3b8 !important;
+}
+
+:host ::ng-deep .p-paginator .p-paginator-page:hover,
+:host ::ng-deep .p-paginator .p-paginator-prev:hover,
+:host ::ng-deep .p-paginator .p-paginator-next:hover,
+:host ::ng-deep .p-paginator .p-paginator-first:hover,
+:host ::ng-deep .p-paginator .p-paginator-last:hover {
+  background: #f1f5f9 !important;
+}
+
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-page:hover,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-prev:hover,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-next:hover,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-first:hover,
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-last:hover {
+  background: rgba(30, 41, 59, 0.4) !important;
+}
+
+/* active page = blue */
+:host ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background: #eff6ff !important;
+  border-color: #bfdbfe !important;
+  color: #2563eb !important;
+}
+
+:host-context(.dark) ::ng-deep .p-paginator .p-paginator-page.p-highlight {
+  background: rgba(59, 130, 246, 0.18) !important;
+  border-color: rgba(59, 130, 246, 0.22) !important;
+  color: #93c5fd !important;
+}
+
+/* rows dropdown trigger */
+:host ::ng-deep .p-paginator .p-dropdown {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+:host-context(.dark) ::ng-deep .p-paginator .p-dropdown {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #e2e8f0 !important;
+}
+:host ::ng-deep .sti-status-present.p-tag {
+  background: rgba(34, 197, 94, 0.16) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(34, 197, 94, 0.12) !important;
+}
+
+:host ::ng-deep .sti-status-late.p-tag {
+  background: rgba(234, 179, 8, 0.16) !important;
+  color: #facc15 !important;
+  border: 1px solid rgba(234, 179, 8, 0.12) !important;
+}
+
+:host ::ng-deep .sti-status-absent.p-tag {
+  background: rgba(239, 68, 68, 0.16) !important;
+  color: #fca5a5 !important;
+  border: 1px solid rgba(239, 68, 68, 0.12) !important;
+}

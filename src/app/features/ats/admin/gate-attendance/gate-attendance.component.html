@@ -1,6 +1,41 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Gate Attendance Management
-    </h1>
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <!-- Header -->
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+     Gate Attendance
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      Monitor student gate attendance records
+    </p>
   </div>
+
+  <!-- Center container -->
+  <div class="flex px-4 sm:px-6 pb-6">
+    <div class="w-full space-y-6">
+      <sti-data-table
+        [title]="'Face Recognition Records'"
+        [subtitle]="'List of students gate attendance'"
+        [value]="attendanceRecords"
+        [columns]="columns"
+        [loading]="loading"
+        [striped]="true"
+        [rowHover]="true"
+        [showColumnFilters]="false"
+        [showActions]="false"
+        [showImportCsv]="false"
+        [showAdd]="false"
+        [showDelete]="false"
+        [showSelection]="false"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="first"
+        [totalRecords]="totalRecords"
+        [lazy]="false"
+        [rowsPerPageOptions]="[12, 25, 50]"
+        (rowClicked)="onRowClicked($event)"
+        (pageChanged)="onPageChanged($event)"
+      >
+      </sti-data-table>
+    </div>
+  </div>
+</main>
