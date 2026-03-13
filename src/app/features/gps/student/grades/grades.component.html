@@ -13,9 +13,7 @@
 
     <div class="flex px-4 sm:px-6 pb-6">
       <div class="w-full space-y-6">
-        <!-- Top group -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-          <!-- Term GPA -->
           <div
             class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center gap-4 min-h-[112px] hover:translate-y-[-4px] transition-all duration-300"
           >
@@ -34,7 +32,6 @@
             </div>
           </div>
 
-          <!-- Grading System -->
           <button
             type="button"
             (click)="openGradingSystemModal()"
@@ -64,7 +61,6 @@
             </div>
           </button>
 
-          <!-- Academic Year -->
           <div class="min-h-[112px] flex flex-col justify-center">
             <label
               class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 mb-2 text-left"
@@ -80,7 +76,6 @@
           </div>
         </div>
 
-        <!-- Grade cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div
             *ngFor="let subject of gradeCards"
@@ -147,12 +142,11 @@
             >
               <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Status</span>
 
-              <div
-                [ngClass]="getStatusBadgeClass(subject.status)"
-                class="text-[11px] font-black px-4 py-2 rounded-xl uppercase tracking-wider text-white"
-              >
-                {{ getStatusLabel(subject.status) }}
-              </div>
+              <p-tag
+                [value]="getStatusLabel(subject.status)"
+                [severity]="getStatusSeverity(subject.status)"
+                [styleClass]="getStatusClass(subject.status) + ' text-[11px] font-black px-4 py-2 rounded-xl uppercase tracking-wider border-0'"
+              ></p-tag>
             </div>
           </div>
         </div>

@@ -3,6 +3,9 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { SelectModule } from 'primeng/select';
+import { TagModule } from 'primeng/tag';
+
+import { StiTagSeverity } from '../../../../shared/components/data-table/data-table.component';
 
 interface TermOption {
   label: string;
@@ -13,19 +16,19 @@ interface GradeCard {
   subject: string;
   professorName: string;
   date: string;
-  prelim: string;
-  midterm: string;
-  preFinals: string;
-  finals: string;
-  average: string;
-  finalGrade: string;
+  prelim?: string;
+  midterm?: string;
+  preFinals?: string;
+  finals?: string;
+  average?: string;
+  finalGrade?: string;
   status: 'in-progress' | 'passed' | 'failed' | 'dropped' | 'incomplete';
 }
 
 @Component({
   selector: 'app-grades',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, DialogModule],
+  imports: [CommonModule, FormsModule, SelectModule, DialogModule, TagModule],
   templateUrl: './grades.component.html',
 })
 export class GradeComponent implements OnInit {
@@ -80,10 +83,10 @@ export class GradeComponent implements OnInit {
         prelim: '89.00',
         midterm: '66.15',
         preFinals: '87.20',
-        finals: '80.00',
-        average: '80.59',
-        finalGrade: '2.50',
-        status: 'passed',
+        // finals: '80.00',
+        // average: '80.59',
+        // finalGrade: '2.50',
+        status: 'incomplete',
       },
       {
         subject: 'IT Capstone Project 1',
@@ -128,20 +131,37 @@ export class GradeComponent implements OnInit {
     this.showGradingSystemModal = true;
   }
 
-  getStatusBadgeClass(status: GradeCard['status']): string {
+  getStatusSeverity(status: GradeCard['status']): StiTagSeverity {
     switch (status) {
       case 'passed':
-        return 'bg-emerald-500 text-white';
+        return 'success';
       case 'failed':
-        return 'bg-rose-500 text-white';
+        return 'danger';
       case 'in-progress':
-        return 'bg-blue-500 text-white';
+        return 'warn';
       case 'dropped':
-        return 'bg-slate-500 text-white';
+        return 'secondary';
       case 'incomplete':
-        return 'bg-amber-500 text-white';
+        return 'contrast';
       default:
-        return 'bg-slate-500 text-white';
+        return 'secondary';
+    }
+  }
+
+  getStatusClass(status: GradeCard['status']): string {
+    switch (status) {
+      case 'passed':
+        return 'sti-status-success';
+      case 'failed':
+        return 'sti-status-danger';
+      case 'in-progress':
+        return 'sti-status-warn';
+      case 'dropped':
+        return 'sti-status-dropped';
+      case 'incomplete':
+        return 'sti-status-incomplete';
+      default:
+        return '';
     }
   }
 
