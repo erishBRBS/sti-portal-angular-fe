@@ -76,6 +76,27 @@ export class StudentService {
     });
   }
 
+  updateStudent(id: number, payload: CreateAdminPayload, imageFile?: File | null) {
+
+  const fd = new FormData();
+
+  fd.append('full_name', payload.full_name ?? '');
+  fd.append('email', payload.email ?? '');
+  fd.append('mobile_number', payload.mobile_number ?? '');
+  fd.append('username', payload.username ?? '');
+  fd.append('password', payload.password ?? '');
+
+  if (imageFile) {
+    fd.append('image_path', imageFile);
+  }
+
+  const url = this.getStudentByIdUrl.replace('{id}', String(id));
+
+  return this.http.post<StudentResponse>(url, fd, {
+    headers: this.authHeaders(),
+  });
+}
+
   deleteStudent(payload: DeleteAdminPayload): Observable<DeleteStudentResponse> {
     return this.http.post<DeleteStudentResponse>(this.deleteStudentUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),

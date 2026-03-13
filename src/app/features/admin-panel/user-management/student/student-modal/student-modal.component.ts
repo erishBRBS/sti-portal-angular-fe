@@ -12,12 +12,12 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+
 import { CreateStudentPayload } from '../../../../../payloads/admin-panel/user-management/student/create-student.payload';
 import { ModalMode } from '../../../../../enums/modal.mode';
 import { StudentService } from '../../../../../services/admin-panel/user-management/student/student.service';
 import { ToastService } from '../../../../../shared/services/toast.service';
-
-export type StudentModalMode = 'add' | 'edit';
+import { StudentData } from '../../../../../models/admin-panel/user-management/student/student.model';
 
 @Component({
   selector: 'sti-student-modal',
@@ -27,8 +27,10 @@ export type StudentModalMode = 'add' | 'edit';
   styleUrl: './student-modal.component.css',
 })
 export class StudentModalComponent {
+
   @Output() onSuccess = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
+
   @ViewChild('studentForm') studentFormRef?: NgForm;
   @ViewChild('fileInput') fileInputRef?: ElementRef<HTMLInputElement>;
 
@@ -40,48 +42,45 @@ export class StudentModalComponent {
   visible = false;
   mode: ModalMode = ModalMode.ADD;
 
-  // template-driven fields
+  // form fields
   full_name = '';
   email = '';
   mobile_number = '';
   username = '';
-  password = '';
-  showPassword = false;
-  
+  course = '';
+  section = '';
+  year_level = '';
 
-
-  togglePassword() {
-    this.showPassword = !this.showPassword;
-  }
-
-  allowNumbersOnly(event: KeyboardEvent) {
-    const key = event.key;
-
-    // allow numbers 0-9 only
-    if (!/^\d$/.test(key)) {
-      event.preventDefault();
-    }
-  }
 
   // file state
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   fileName = '';
-  currentID: number | null = null;
-  pendingEditId: number | null = null;
 
-  @ViewChild('imagePathInput') imagePathInputRef!: ElementRef<HTMLInputElement>;
+  currentID = 0;
+  pendingEditId: number | null = null;
 
   get dialogTitle(): string {
     return this.mode === ModalMode.ADD ? 'Add Student' : 'Update Student';
   }
 
+  get dialogButtonLabel(): string {
+    return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
+  }
+
+  allowNumbersOnly(event: KeyboardEvent) {
+    const charCode = event.which ? event.which : event.keyCode;
+
+    if (charCode < 48 || charCode > 57) {
+      event.preventDefault();
+    }
+  }
+
   showDialog(): void {
     this.mode = ModalMode.ADD;
-    this.currentID = null;
+    this.currentID = 0;
     this.visible = true;
     this.resetForm();
-    this.cdr.detectChanges();
   }
 
   updateDialog(id: number): void {
@@ -90,7 +89,7 @@ export class StudentModalComponent {
     this.pendingEditId = id;
     this.visible = true;
     this.resetForm(true);
-    this.cdr.detectChanges();
+
     setTimeout(() => {
       this.getStudentById(id);
     });
@@ -104,22 +103,27 @@ export class StudentModalComponent {
   }
 
   private resetForm(preserveCurrentId: boolean = false): void {
+
     this.submitted = false;
 
     this.full_name = '';
     this.email = '';
     this.mobile_number = '';
     this.username = '';
-    this.password = '';
+    this.course = '';
+    this.section = '';
+    this.year_level = '';
+  
 
     this.clearFileControls();
 
     if (!preserveCurrentId) {
-      this.currentID = null;
+      this.currentID = 0;
     }
   }
 
   private clearFileControls(): void {
+
     if (this.previewUrl) {
       URL.revokeObjectURL(this.previewUrl);
     }
@@ -128,51 +132,55 @@ export class StudentModalComponent {
     this.selectedFile = null;
     this.previewUrl = null;
 
-    // reset actual <input type="file"> values
-    // setTimeout to ensure ViewChild exists (esp. after dialog hide/show)
     setTimeout(() => {
-      if (this.imagePathInputRef?.nativeElement) this.imagePathInputRef.nativeElement.value = '';
+      if (this.fileInputRef?.nativeElement) {
+        this.fileInputRef.nativeElement.value = '';
+      }
     });
   }
 
-  // MARK: - Button Function
+  // BUTTON FUNCTIONS
   close() {
-    // reset state first
+
     this.submitted = false;
 
     this.full_name = '';
     this.email = '';
     this.mobile_number = '';
     this.username = '';
-    this.password = '';
+  
 
     this.clearFileControls();
 
-    // emit last
     this.visible = false;
   }
 
   onSave(form: NgForm) {
+
     if (form.invalid) {
-      // show errors again if something changed
-      console.log('form invalid');
       this.submitted = true;
       form.control.markAllAsTouched();
       return;
     }
-    this.submitAction();
+
+    if (this.mode === ModalMode.ADD) {
+      this.submitAction();
+    } else {
+      this.submitUpdateAction();
+    }
   }
 
   onFileSelected(ev: Event) {
+
     const input = ev.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
-    // cleanup old blob preview
-    if (this.previewUrl?.startsWith('blob:')) URL.revokeObjectURL(this.previewUrl);
+    if (this.previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewUrl);
+    }
 
     this.selectedFile = file;
     this.fileName = file?.name ?? '';
-
     this.previewUrl = file ? URL.createObjectURL(file) : null;
   }
 
@@ -180,53 +188,106 @@ export class StudentModalComponent {
     this.clearFileControls();
   }
 
-  // MARK: - API Function
+  // CREATE STUDENT
   private submitAction(): void {
+
     const payload: CreateStudentPayload = {
       full_name: this.full_name,
       email: this.email,
       mobile_number: this.mobile_number,
       username: this.username,
-      password: this.password,
+      course: this.course,
+      section: this.section,
+      year_level: this.year_level,
+
     };
 
     this.studentService.createStudent(payload, this.selectedFile).subscribe({
+
       next: (res) => {
-        // success
-        console.log(res.message);
+
         this.toast.success('Success', res.message);
+
         this.resetForm();
         this.onSuccess.emit();
         this.close();
       },
+
       error: (err) => {
+
         const msg = err?.error?.message ?? 'Something went wrong.';
         this.toast.error('Error', msg);
-        console.error(msg);
       },
     });
   }
+  
+  private submitUpdateAction(): void {
 
-  private getStudentById(id: number): void {
-    this.studentService.getStudentById(id).subscribe({
-      next: (response) => {
-        const data = response.data;
+  const payload: CreateStudentPayload = {
+    full_name: this.full_name,
+    email: this.email,
+    mobile_number: this.mobile_number,
+    username: this.username,
+    course: this.course,
+    section: this.section,
+    year_level: this.year_level,
+   
+  };
 
-         this.full_name = data.student_name;
-         this.email = data.email;
-         this.mobile_number = data.mobile_number;
-         this.username = data.username;
+  this.studentService.updateStudent(this.currentID, payload, this.selectedFile)
+    .subscribe({
+      next: (res: any) => {
 
-         if (data.image_path) {
-          this.previewUrl = this.studentService.fileAPIUrl + data.image_path;
-        }
+        this.toast.success('Success', res.message);
 
-        this.cdr.detectChanges();
+        this.resetForm();
+        this.onSuccess.emit();
+        this.close();
       },
       error: (err: any) => {
-        const msg = err?.error?.message ?? 'Failed to load student details.';
+
+        const msg = err?.error?.message ?? 'Something went wrong.';
         this.toast.error('Error', msg);
       },
     });
-  }
+}
+private getStudentById(id: number): void {
+
+  this.studentService.getStudentById(id).subscribe({
+
+    next: (response: any) => {
+
+      const data: StudentData = response.data;
+
+      this.full_name =
+        data.first_name +
+        ' ' +
+        (data.middle_name ?? '') +
+        ' ' +
+        data.last_name;
+
+      this.email = data.email;
+      this.mobile_number = data.contact_number ?? '';
+      this.username = data.credentials.username;
+
+      this.course = data.course?.course_name ?? '';
+      this.section = data.section?.section_name ?? '';
+      this.year_level = data.year_level ?? '';
+
+      if (data.image_path) {
+        this.previewUrl =
+          this.studentService.fileAPIUrl + data.image_path;
+      }
+
+      this.cdr.detectChanges();
+    },
+
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to load student details.';
+      this.toast.error('Error', msg);
+    },
+
+  });
+
+}
 }
