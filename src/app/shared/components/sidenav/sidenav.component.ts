@@ -14,7 +14,7 @@ export class SidenavComponent {
   @Output() navClick = new EventEmitter<void>();
 
   isAttendanceOpen = true;
-  isGradesOpen = false;
+  isGradesOpen = true;
 
   // Admin Panel toggle
   isAdminPanelOpen = false;
