@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { environment } from "../../../environments/environment";
 import { CourseData, CourseModel } from "../../../models/admin-panel/curriculum-management/course.model";
 import { Observable } from "rxjs";
-import { CreateAdminPayload } from "../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { CreateSchedulePayload } from "../../../payloads/admin-panel/curriculum/schedule/create-schedule.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
 import { SubjectData, SubjectModel } from "../../../models/admin-panel/curriculum-management/subject.model";
 import { ScheduleData, ScheduleModel } from "../../../models/admin-panel/curriculum-management/schedule.model";
@@ -13,6 +13,7 @@ export enum ScheduleEndPoints {
   getSchedule = '/get/schedule',
   creatSchedule = '/create/course',
   getScheduleById = '/get/course/{id}',
+  updateSchedule = '/update/course/{id}',
   deleteSchedule = '/delete/course',
 }
 
@@ -32,6 +33,7 @@ export class ScheduleService {
   private readonly getScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.getSchedule}`;
   private readonly createScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.creatSchedule}`;
   private readonly getScheduleByIdUrl = `${this.baseAPIUrl}${ScheduleEndPoints.getScheduleById}`;
+  private readonly updateScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.updateSchedule}`;
   private readonly deleteScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.deleteSchedule}`;
 
   private authHeaders(): HttpHeaders {
@@ -61,22 +63,27 @@ export class ScheduleService {
     });
   }
 
-  createSchedule(payload: CreateAdminPayload, imageFile?: File | null): Observable<ScheduleResponse> {
-    const fd = new FormData();
-    fd.append('full_name', payload.full_name ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('mobile_number', payload.mobile_number ?? '');
-    fd.append('username', payload.username ?? '');
-    fd.append('password', payload.password ?? '');
+createSchedule(payload: CreateSchedulePayload): Observable<ScheduleResponse> {
 
-    if (imageFile) {
-      fd.append('image_path', imageFile); 
+  return this.http.post<ScheduleResponse>(
+    this.createScheduleUrl,
+    payload,
+    {
+      headers: this.authHeaders().set('Content-Type', 'application/json'),
     }
+  );
 
-    return this.http.post<ScheduleResponse>(this.createScheduleUrl, fd, {
-      headers: this.authHeaders(),
-    });
-  }
+}
+updateSchedule(id: number, payload: CreateSchedulePayload): Observable<ScheduleResponse> {
+  const url = this.updateScheduleUrl.replace('{id}', String(id));
+  return this.http.post<ScheduleResponse>(
+    url,
+    payload,
+    {
+      headers: this.authHeaders().set('Content-Type', 'application/json'),
+    }
+  );
+}
 
   deleteSchedule(payload: DeletePayload): Observable<DeleteScheduleResponse> {
     return this.http.post<DeleteScheduleResponse>(this.deleteScheduleUrl, payload, {

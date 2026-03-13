@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { environment } from "../../../environments/environment";
 import { CourseData, CourseModel } from "../../../models/admin-panel/curriculum-management/course.model";
 import { Observable } from "rxjs";
-import { CreateAdminPayload } from "../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { CreateSectionPayload } from "../../../payloads/admin-panel/curriculum/section/create-section.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
 import { SectionData, SectionModel } from "../../../models/admin-panel/curriculum-management/section.model";
 
@@ -12,6 +12,7 @@ export enum SectionEndPoints {
   getSection = '/get/section',
   createSection = '/create/section',
   getSectionById = '/get/section/{id}',
+  updateSection = '/update/section/{id}',
   deleteSection = '/delete/section',
 }
 
@@ -31,6 +32,7 @@ export class SectionService {
   private readonly getSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.getSection}`;
   private readonly createSectiontUrl = `${this.baseAPIUrl}${SectionEndPoints.createSection}`;
   private readonly getSectionByIdUrl = `${this.baseAPIUrl}${SectionEndPoints.getSectionById}`;
+  private readonly updateSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.updateSection}`;
   private readonly deleteSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.deleteSection}`;
 
   private authHeaders(): HttpHeaders {
@@ -60,22 +62,24 @@ export class SectionService {
     });
   }
 
-  createSection(payload: CreateAdminPayload, imageFile?: File | null): Observable<SectionResponse> {
-    const fd = new FormData();
-    fd.append('full_name', payload.full_name ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('mobile_number', payload.mobile_number ?? '');
-    fd.append('username', payload.username ?? '');
-    fd.append('password', payload.password ?? '');
+createSection(payload: CreateSectionPayload): Observable<SectionResponse> {
+  const fd = new FormData();
+  fd.append('section_name', payload.section_name);
 
-    if (imageFile) {
-      fd.append('image_path', imageFile); 
-    }
+  return this.http.post<SectionResponse>(this.createSectiontUrl, fd, {
+    headers: this.authHeaders(),
+  });
+}
+ updateSection(id: number, payload: CreateSectionPayload): Observable<SectionResponse> {
+  const url = this.updateSectionUrl.replace('{id}', String(id));
 
-    return this.http.post<SectionResponse>(this.createSectiontUrl, fd, {
-      headers: this.authHeaders(),
-    });
-  }
+  const fd = new FormData();
+  fd.append('section_name', payload.section_name);
+
+  return this.http.post<SectionResponse>(url, fd, {
+    headers: this.authHeaders(),
+  });
+}
 
   deleteSection(payload: DeletePayload): Observable<DeleteSectionResponse> {
     return this.http.post<DeleteSectionResponse>(this.deleteSectionUrl, payload, {
