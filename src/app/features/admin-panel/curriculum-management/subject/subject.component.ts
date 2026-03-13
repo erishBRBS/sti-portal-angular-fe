@@ -6,7 +6,6 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { SubjectService } from '../../../../services/admin-panel/curriculum-management/subject.service';
 import { ToastService } from '../../../../shared/services/toast.service';
-import { SectionModalComponent } from '../section/section-modal/section-modal.component';
 import { SubjectModalComponent } from './subject-modal/subject-modal.component';
 import { finalize } from 'rxjs';
 import { SubjectData } from '../../../../models/admin-panel/curriculum-management/subject.model';
@@ -19,7 +18,7 @@ type UserRow = {
 @Component({
   selector: 'sti-subject',
   standalone: true,
-  imports: [DataTableComponent],
+  imports: [DataTableComponent, SubjectModalComponent ],
   templateUrl: './subject.component.html',
   styleUrl: './subject.component.css',
 })
@@ -65,7 +64,7 @@ export class SubjectComponent {
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
+      this.showSubjectModalForm?.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
     }
   }
@@ -75,7 +74,7 @@ export class SubjectComponent {
   }
 
   openAddModal() {
-    // this.showAdminModalForm?.showDialog();
+    this.showSubjectModalForm?.showDialog();
   }
 
   openDeleteModal() {

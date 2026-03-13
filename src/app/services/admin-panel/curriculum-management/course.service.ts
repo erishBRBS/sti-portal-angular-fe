@@ -4,13 +4,14 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { environment } from "../../../environments/environment";
 import { CourseData, CourseModel } from "../../../models/admin-panel/curriculum-management/course.model";
 import { Observable } from "rxjs";
-import { CreateAdminPayload } from "../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { CreateCoursePayload } from "../../../payloads/admin-panel/curriculum/course/create-course.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
 
 export enum CourseEndPoints {
   getCourse = '/get/course',
   createCourse = '/create/course',
   getCourseById = '/get/course/{id}',
+  updateCourse = '/update/course/{id}',
   deleteCourse = '/delete/course',
 }
 
@@ -30,6 +31,7 @@ export class CourseService {
   private readonly getCourseUrl = `${this.baseAPIUrl}${CourseEndPoints.getCourse}`;
   private readonly createCoursetUrl = `${this.baseAPIUrl}${CourseEndPoints.createCourse}`;
   private readonly getCourseByIdUrl = `${this.baseAPIUrl}${CourseEndPoints.getCourseById}`;
+  private readonly updateCourseUrl = `${this.baseAPIUrl}${CourseEndPoints.updateCourse}`;
   private readonly deleteCoursetUrl = `${this.baseAPIUrl}${CourseEndPoints.deleteCourse}`;
 
   private authHeaders(): HttpHeaders {
@@ -59,22 +61,21 @@ export class CourseService {
     });
   }
 
-  createCourse(payload: CreateAdminPayload, imageFile?: File | null): Observable<CourseResponse> {
-    const fd = new FormData();
-    fd.append('full_name', payload.full_name ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('mobile_number', payload.mobile_number ?? '');
-    fd.append('username', payload.username ?? '');
-    fd.append('password', payload.password ?? '');
-
-    if (imageFile) {
-      fd.append('image_path', imageFile); 
+createCourse(payload: { course_name: string }): Observable<CourseResponse> {
+  return this.http.post<CourseResponse>(
+    this.createCoursetUrl,
+    payload,
+    {
+      headers: this.authHeaders().set('Content-Type', 'application/json'),
     }
-
-    return this.http.post<CourseResponse>(this.createCoursetUrl, fd, {
-      headers: this.authHeaders(),
-    });
-  }
+  );
+}
+  updateCourse(id: number, payload: CreateCoursePayload): Observable<CourseResponse> {
+  const url = this.updateCourseUrl.replace('{id}', String(id));
+  return this.http.post<CourseResponse>(url, payload, {
+    headers: this.authHeaders().set('Content-Type', 'application/json'),
+  });
+}
 
   deleteCourse(payload: DeletePayload): Observable<DeleteCourseResponse> {
     return this.http.post<DeleteCourseResponse>(this.deleteCoursetUrl, payload, {
