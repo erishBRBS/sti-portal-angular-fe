@@ -2,7 +2,6 @@
   class="h-screen sticky top-0 w-72 flex flex-col justify-between overflow-hidden transition-colors duration-300 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-r border-gray-200 dark:border-slate-800"
 >
   <div class="flex flex-col flex-1 overflow-hidden">
-    <!-- Header -->
     <div class="py-2.5 px-8 flex-shrink-0 border-b border-gray-200 dark:border-slate-800">
       <div class="flex items-center space-x-4">
         <img src="assets/sti-logo.png" alt="STI Logo" class="w-12 h-12 object-contain rounded-sm" />
@@ -14,16 +13,15 @@
           <p
             class="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] mt-1"
           >
-            {{ roleLabel }}
+            {{ $roleLabel | async }}
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Nav -->
     <nav class="flex-1 overflow-y-auto mt-5 px-4 pb-6 thin-scrollbar">
       <!-- Attendance Portal -->
-      <div class="mb-4">
+      <div class="mb-4" *ngIf="canSeeAttendancePortal()">
         <button
           (click)="isAttendanceOpen = !isAttendanceOpen"
           class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
@@ -45,89 +43,89 @@
           *ngIf="isAttendanceOpen"
           class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
         >
-          <p class="px-4 pt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Admin
-          </p>
-          <a
-            routerLink="/ats/admin/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
-          <a
-            routerLink="/ats/admin/gate-attendance"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Gate Attendance
-          </a>
+          <!--MARK: ATS Admin -->
+          <ng-container *ngIf="isRole('Admin')">
+            <a
+              routerLink="/ats/admin/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+            <a
+              routerLink="/ats/admin/gate-attendance"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Gate Attendance
+            </a>
+          </ng-container>
 
-          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Professor
-          </p>
-          <a
-            routerLink="/ats/professor/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
-          <a
-            routerLink="/ats/professor/student-attendance"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Student Attendance
-          </a>
-          <a
-            routerLink="/ats/professor/schedule"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Schedule
-          </a>
+          <!--MARK: ATS Professor -->
+          <ng-container *ngIf="isRole('Professor')">
+            <a
+              routerLink="/ats/professor/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+            <a
+              routerLink="/ats/professor/student-attendance"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Student Attendance
+            </a>
+            <a
+              routerLink="/ats/professor/schedule"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Schedule
+            </a>
+          </ng-container>
 
-          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Student
-          </p>
-          <a
-            routerLink="/ats/student/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
-          <a
-            routerLink="/ats/student/gate-attendance"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Gate Attendance
-          </a>
-          <a
-            routerLink="/ats/student/subject-attendance"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Subject Attendance
-          </a>
-          <a
-            routerLink="/ats/student/schedule"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Schedule
-          </a>
+          <!-- MARK: ATS Student -->
+          <ng-container *ngIf="isRole('Student')">
+            <a
+              routerLink="/ats/student/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+            <a
+              routerLink="/ats/student/gate-attendance"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Gate Attendance
+            </a>
+            <a
+              routerLink="/ats/student/subject-attendance"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Subject Attendance
+            </a>
+            <a
+              routerLink="/ats/student/schedule"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Schedule
+            </a>
+          </ng-container>
         </div>
       </div>
 
@@ -154,90 +152,93 @@
           *ngIf="isGradesOpen"
           class="mt-2 space-y-1 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
         >
-          <p class="px-4 pt-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Admin
-          </p>
-          <a
-            routerLink="/gps/admin/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
+          <!--MARK: GPS Admin -->
+          <ng-container *ngIf="isRole('Admin')">
+            <a
+              routerLink="/gps/admin/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+          </ng-container>
 
-          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Professor
-          </p>
-          <a
-            routerLink="/gps/professor/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
-          <a
-            routerLink="/gps/professor/grade-management"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Grade Management
-          </a>
+          <!--MARK: GPS Professor -->
+          <ng-container *ngIf="isRole('Professor')">
+            <a
+              routerLink="/gps/professor/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+            <a
+              routerLink="/gps/professor/grade-management"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Grade Management
+            </a>
+          </ng-container>
 
-          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Student
-          </p>
-          <a
-            routerLink="/gps/student/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
-          <a
-            routerLink="/gps/student/grades"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Grades
-          </a>
+          <!--MARK: GPS Student -->
+          <ng-container *ngIf="isRole('Student')">
+            <a
+              routerLink="/gps/student/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+            <a
+              routerLink="/gps/student/grades"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Grades
+            </a>
+          </ng-container>
 
-          <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-            Parent
-          </p>
-          <a
-            routerLink="/gps/parent/dashboard"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Dashboard
-          </a>
-          <a
-            routerLink="/gps/parent/childs-grade"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Child's Grades
-          </a>
-          <a
-            routerLink="/gps/parent/childs-schedule"
-            routerLinkActive="bg-slate-100 dark:bg-white/5"
-            (click)="navClick.emit()"
-            class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-          >
-            Child's Schedule
-          </a>
+          <!--MARK: GPS Parent -->
+          <ng-container *ngIf="isRole('Parent')">
+            <p class="px-4 pt-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
+              Parent
+            </p>
+            <a
+              routerLink="/gps/parent/dashboard"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Dashboard
+            </a>
+            <a
+              routerLink="/gps/parent/childs-grade"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Child's Grades
+            </a>
+            <a
+              routerLink="/gps/parent/childs-schedule"
+              routerLinkActive="bg-slate-100 dark:bg-white/5"
+              (click)="navClick.emit()"
+              class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
+            >
+              Child's Schedule
+            </a>
+          </ng-container>
         </div>
       </div>
 
-      <!-- Admin Panel -->
-      <div class="mt-3">
+      <!--MARK: Admin Panel -->
+      <div class="mt-3" *ngIf="canSeeAdminPanel()">
         <button
           (click)="isAdminPanelOpen = !isAdminPanelOpen"
           class="group w-full flex items-center rounded-xl px-4 py-2 text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
@@ -259,7 +260,6 @@
           *ngIf="isAdminPanelOpen"
           class="mt-2 space-y-2 pl-4 border-l-2 border-gray-50 dark:border-white/5 ml-6"
         >
-          <!-- Users -->
           <div>
             <button
               (click)="isUserManagementOpen = !isUserManagementOpen"
@@ -283,30 +283,33 @@
                 routerLink="/panel/admin/user-management/admin"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Admin</a
               >
+                Admin
+              </a>
               <a
                 routerLink="/panel/admin/user-management/parent"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Parent</a
               >
+                Parent
+              </a>
               <a
                 routerLink="/panel/admin/user-management/professor"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Professor</a
               >
+                Professor
+              </a>
               <a
                 routerLink="/panel/admin/user-management/student"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Student</a
               >
+                Student
+              </a>
             </div>
           </div>
 
-          <!-- Curriculum -->
           <div>
             <button
               (click)="isCurriculumManagementOpen = !isCurriculumManagementOpen"
@@ -330,32 +333,37 @@
                 routerLink="/panel/admin/curriculum-management/course"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Course</a
               >
+                Course
+              </a>
               <a
                 routerLink="/panel/admin/curriculum-management/room"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Room</a
               >
+                Room
+              </a>
               <a
                 routerLink="/panel/admin/curriculum-management/schedule"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Schedule</a
               >
+                Schedule
+              </a>
               <a
                 routerLink="/panel/admin/curriculum-management/section"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Section</a
               >
+                Section
+              </a>
               <a
                 routerLink="/panel/admin/curriculum-management/subject"
                 (click)="navClick.emit()"
                 class="block rounded-xl px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-white/5"
-                >Subject</a
               >
+                Subject
+              </a>
             </div>
           </div>
 
@@ -465,7 +473,6 @@
     </nav>
   </div>
 
-  <!-- Footer -->
   <div class="p-6 flex-shrink-0">
     <button
       (click)="logout()"
