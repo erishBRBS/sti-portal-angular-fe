@@ -8,13 +8,14 @@ import { CreateSchedulePayload } from "../../../payloads/admin-panel/curriculum/
 import { DeletePayload } from "../../../payloads/common.payload";
 import { SubjectData, SubjectModel } from "../../../models/admin-panel/curriculum-management/subject.model";
 import { ScheduleData, ScheduleModel } from "../../../models/admin-panel/curriculum-management/schedule.model";
+import { TokenStorageService } from "../../../core/services/token-storage.service";
 
 export enum ScheduleEndPoints {
-  getSchedule = '/get/schedule',
-  creatSchedule = '/create/course',
-  getScheduleById = '/get/course/{id}',
-  updateSchedule = '/update/course/{id}',
-  deleteSchedule = '/delete/course',
+  getSchedule = 'get/schedule',
+  creatSchedule = 'create/course',
+  getScheduleById = 'get/course/{id}',
+  updateSchedule = 'update/course/{id}',
+  deleteSchedule = 'delete/course',
 }
 
 export type ScheduleResponse = ApiResponse<ScheduleData>;
@@ -26,6 +27,8 @@ export type DeleteScheduleResponse = ApiResponseNoData;
 
 export class ScheduleService {
   private http = inject(HttpClient);
+  private storage = inject(TokenStorageService);
+
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
   token = `${environment.temp_token}`;
@@ -40,7 +43,7 @@ export class ScheduleService {
   //  const token = localStorage.getItem('access_token'); 
   //   const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.token ? `Bearer ${this.token}` : '',
+      Authorization: this.storage.getToken() ?? '',
       Accept: 'application/json',
     });
   }
