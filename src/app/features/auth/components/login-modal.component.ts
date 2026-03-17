@@ -1,6 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
 
@@ -18,11 +20,10 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
       <div
         class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden relative z-10 animate-zoomIn95 border border-gray-100"
       >
-        <!-- Header -->
         <div class="bg-gradient-to-br from-[#1a4b8c] to-[#2d68b8] p-5 text-center relative">
           <button
             type="button"
-            (click)="close.emit()"
+            (click)="handleClose()"
             class="absolute top-3 right-3 text-white/50 hover:text-white transition-all"
             aria-label="Close"
           >
@@ -36,10 +37,8 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
           <h2 class="text-white font-bold text-base tracking-tight">Portal Login</h2>
         </div>
 
-        <!-- Body -->
         <div class="p-6">
           <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
-            <!-- Roles -->
             <div class="flex bg-gray-100 p-1 rounded-xl mb-4">
               <button
                 *ngFor="let r of roles"
@@ -56,7 +55,6 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
             </div>
 
             <div class="space-y-3">
-              <!-- Username -->
               <div class="relative">
                 <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                 <input
@@ -73,7 +71,6 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
                 Username is required.
               </p>
 
-              <!-- Password -->
               <div class="relative">
                 <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
                 <input
@@ -97,6 +94,14 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
               </a>
             </div>
 
+            <p *ngIf="loginError" class="text-center text-red-600 text-xs font-semibold">
+              {{ loginError }}
+            </p>
+
+            <p *ngIf="message" class="text-center text-emerald-600 text-xs font-semibold">
+              {{ message }}
+            </p>
+
             <button
               type="submit"
               [disabled]="form.invalid || loading"
@@ -104,10 +109,6 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
             >
               {{ loading ? 'Signing in...' : 'Sign In' }}
             </button>
-
-            <p *ngIf="message" class="text-center text-emerald-600 text-xs font-semibold mt-2">
-              {{ message }}
-            </p>
 
             <p class="text-center text-[11px] text-gray-400 mt-4">
               STI College Bacoor • Smart Student Portal
@@ -125,10 +126,15 @@ export class LoginModalComponent {
   roles: RoleUI[] = ['Student', 'Parent', 'Professor', 'Admin'];
   loading = false;
   message: string | null = null;
+  loginError: string | null = null;
 
   form: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router,
+  ) {
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]],
@@ -141,19 +147,63 @@ export class LoginModalComponent {
     return !!(c && c.touched && c.invalid);
   }
 
+  handleClose() {
+    this.form.reset({
+      username: '',
+      password: '',
+      role: 'Student',
+    });
+    this.loading = false;
+    this.message = null;
+    this.loginError = null;
+    this.close.emit();
+  }
+
   submit() {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    // UI-only
     this.loading = true;
     this.message = null;
+    this.loginError = null;
 
-    setTimeout(() => {
-      this.loading = false;
-      this.message = 'UI only: login not wired yet.';
-    }, 600);
+    const { username, password, role } = this.form.value;
+
+    const roleParam = String(role).toLowerCase();
+
+    this.authService.login(roleParam, { username, password }).subscribe({
+      next: (sessionUser) => {
+        this.loading = false;
+        this.message = 'Login successful. Redirecting...';
+
+        const roleName = String(sessionUser.role_name || '').toLowerCase();
+
+        this.close.emit();
+
+        if (roleName === 'admin') {
+          this.router.navigate(['/ats/admin/dashboard']);
+        } else if (roleName === 'student') {
+          this.router.navigate(['/ats/student/dashboard']);
+        } else if (roleName === 'professor') {
+          this.router.navigate(['/ats/professor/dashboard']);
+        } else if (roleName === 'parent') {
+          this.router.navigate(['/gps/parent/dashboard']);
+        } else {
+          this.router.navigate(['/']);
+        }
+
+        this.form.reset({
+          username: '',
+          password: '',
+          role: 'Student',
+        });
+      },
+      error: (err) => {
+        this.loading = false;
+        this.loginError = err?.error?.message ?? 'Login failed. Please try again.';
+      },
+    });
   }
 }
