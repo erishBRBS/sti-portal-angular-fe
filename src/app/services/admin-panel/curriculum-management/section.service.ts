@@ -7,13 +7,14 @@ import { Observable } from "rxjs";
 import { CreateSectionPayload } from "../../../payloads/admin-panel/curriculum/section/create-section.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
 import { SectionData, SectionModel } from "../../../models/admin-panel/curriculum-management/section.model";
+import { TokenStorageService } from "../../../core/services/token-storage.service";
 
 export enum SectionEndPoints {
-  getSection = '/get/section',
-  createSection = '/create/section',
-  getSectionById = '/get/section/{id}',
-  updateSection = '/update/section/{id}',
-  deleteSection = '/delete/section',
+  getSection = 'get/section',
+  createSection = 'create/section',
+  getSectionById = 'get/section/{id}',
+  updateSection = 'update/section/{id}',
+  deleteSection = 'delete/section',
 }
 
 export type SectionResponse = ApiResponse<SectionData>;
@@ -25,6 +26,8 @@ export type DeleteSectionResponse = ApiResponseNoData;
 
 export class SectionService {
   private http = inject(HttpClient);
+  private storage = inject(TokenStorageService);
+
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
   token = `${environment.temp_token}`;
@@ -39,7 +42,7 @@ export class SectionService {
   //  const token = localStorage.getItem('access_token'); 
   //   const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.token ? `Bearer ${this.token}` : '',
+      Authorization: this.storage.getToken() ?? '',
       Accept: 'application/json',
     });
   }

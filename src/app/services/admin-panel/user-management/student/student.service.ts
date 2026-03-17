@@ -6,12 +6,13 @@ import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/a
 import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
 import { StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
+import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum StudentEndPoints {
-  getStudent = '/get/student',
-  createStudent = '/create/admin',
-  getStudentById = '/get/admin/{id}',
-  deleteStudent = '/delete/admin',
+  getStudent = 'get/student',
+  createStudent = 'create/admin',
+  getStudentById = 'get/admin/{id}',
+  deleteStudent = 'delete/admin',
 }
 
 export type StudentResponse = ApiResponse<AdminData>;
@@ -23,6 +24,8 @@ export type DeleteStudentResponse = ApiResponseNoData;
 
 export class StudentService {
   private http = inject(HttpClient);
+  private storage = inject(TokenStorageService);
+
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
   token = `${environment.temp_token}`;
@@ -36,7 +39,7 @@ export class StudentService {
   //  const token = localStorage.getItem('access_token'); 
   //  const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.token ? `Bearer ${this.token}` : '',
+      Authorization: this.storage.getToken() ?? '',
       Accept: 'application/json',
     });
   }
