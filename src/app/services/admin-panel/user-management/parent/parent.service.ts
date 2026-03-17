@@ -44,7 +44,7 @@ export class ParentService {
   //  const token = localStorage.getItem('access_token'); 
   //  const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.storage.getToken() ?? '',
+      Authorization: this.storage.getToken() ? `Bearer ${this.storage.getToken()}` : '',
       Accept: 'application/json',
     });
   }
