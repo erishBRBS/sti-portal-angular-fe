@@ -1,6 +1,37 @@
- <!--Title--> 
-  <div>
-    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
+<main class="mx-auto w-full space-y-8 animate-fadeIn">
+  <div class="space-y-2 text-center md:text-left">
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
       Gate Attendance
-    </h1>
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      View your gate attendance records
+    </p>
   </div>
+
+  <div class="flex px-4 sm:px-6 pb-6">
+    <div class="w-full space-y-6">
+      <sti-data-table
+        [title]="'Gate Logs'"
+        [subtitle]="'List of gate attendance records'"
+        [value]="gateLogs"
+        [columns]="columns"
+        [loading]="loading"
+        [striped]="true"
+        [rowHover]="true"
+        [showColumnFilters]="false"
+        [showActions]="false"
+        [showImportCsv]="false"
+        [showAdd]="false"
+        [showDelete]="false"
+        [showSelection]="false"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="first"
+        [totalRecords]="totalRecords"
+        [lazy]="false"
+        [rowsPerPageOptions]="[10, 25, 50]"
+      >
+      </sti-data-table>
+    </div>
+  </div>
+</main>
