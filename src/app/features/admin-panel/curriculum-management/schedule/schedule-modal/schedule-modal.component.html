@@ -1,1 +1,212 @@
-<p>schedule-modal works!</p>
+<p-dialog
+  [(visible)]="visible"
+  (onShow)="onDialogShown()"
+  (onHide)="close()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(900px, 95vw)' }"
+  [contentStyle]="{ 'max-height': '85vh', overflow: 'auto' }"
+>
+  <!-- HEADER -->
+  <ng-template pTemplate="header">
+    <div class="flex items-center justify-center w-full">
+      <div class="text-lg font-bold text-blue-700">
+        {{ dialogTitle }}
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- FORM -->
+  <form
+    #scheduleForm="ngForm"
+    (ngSubmit)="onSave(scheduleForm)"
+    class="p-4"
+  >
+
+  <!-- GRID START -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- COURSE -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Course
+      </label>
+
+      <p-select
+        name="course_id"
+        [(ngModel)]="course_id"
+        #courseCtrl="ngModel"
+        [options]="courses"
+        required
+        placeholder="Select Course"
+        class="w-full"
+        [ngClass]="{
+          'ng-invalid ng-dirty':
+          courseCtrl.invalid && (courseCtrl.touched || submitted)
+        }"
+      ></p-select>
+
+      <p class="mt-1 text-xs text-rose-600"
+      *ngIf="courseCtrl.invalid && (courseCtrl.touched || submitted)">
+      Course is required.
+      </p>
+    </div>
+
+    <!-- SECTION -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Section
+      </label>
+
+      <p-select
+        name="section_id"
+        [(ngModel)]="section_id"
+        #sectionCtrl="ngModel"
+        [options]="sections"
+        required
+        placeholder="Select Section"
+        class="w-full"
+      ></p-select>
+    </div>
+
+    <!-- PROFESSOR -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Professor
+      </label>
+
+      <p-select
+        name="professor_id"
+        [(ngModel)]="professor_id"
+        #professorCtrl="ngModel"
+        [options]="professors"
+        required
+        placeholder="Select Professor"
+        class="w-full"
+      ></p-select>
+    </div>
+
+    <!-- SUBJECT -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Subject
+      </label>
+
+      <p-select
+        name="subject_id"
+        [(ngModel)]="subject_id"
+        #subjectCtrl="ngModel"
+        [options]="subjects"
+        required
+        placeholder="Select Subject"
+        class="w-full"
+      ></p-select>
+    </div>
+
+    <!-- DAY -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Day
+      </label>
+
+      <p-select
+        name="day"
+        [(ngModel)]="day"
+        #dayCtrl="ngModel"
+        [options]="days"
+        required
+        placeholder="Select Day"
+        class="w-full"
+      ></p-select>
+    </div>
+
+    <!-- START TIME -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Start Time
+      </label>
+
+       <p-datepicker
+        name="start_time"
+        [(ngModel)]="start_time"
+        #startTimeCtrl="ngModel"
+        [required]="true"
+        [showTime]="true"
+        timeOnly="true"
+        hourFormat="24"
+        placeholder="Select Start Time"
+        class="w-full"
+        inputStyleClass="w-full"
+      ></p-datepicker>
+    </div>
+
+    <!-- END TIME -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> End Time
+      </label>
+
+       <p-datepicker
+        name="start_time"
+        [(ngModel)]="start_time"
+        #startTimeCtrl="ngModel"
+        [required]="true"
+        [showTime]="true"
+        timeOnly="true"
+        hourFormat="24"
+        placeholder="Select Start Time"
+        class="w-full"
+        inputStyleClass="w-full"
+      ></p-datepicker>
+    </div>
+
+    <!-- ROOM -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Room
+      </label>
+
+      <input
+        pInputText
+        name="room"
+        [(ngModel)]="room"
+        #roomCtrl="ngModel"
+        class="w-full"
+        required
+        placeholder="Input Room Number/Name"
+      />
+    </div>
+
+  </div>
+  <!-- GRID END -->
+
+  <!-- LOADING -->
+  <div *ngIf="loading" class="flex justify-center mt-4">
+    <i class="pi pi-spin pi-spinner text-2xl text-blue-600"></i>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="flex items-center justify-end gap-3 mt-6">
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      class="p-button-outlined"
+      (click)="close()"
+      [disabled]="loading"
+    ></button>
+
+    <button
+      pButton
+      type="submit"
+      [label]="dialogButtonLabel"
+      class="p-button-success"
+      [disabled]="loading"
+    ></button>
+  </div>
+
+  </form>
+</p-dialog>

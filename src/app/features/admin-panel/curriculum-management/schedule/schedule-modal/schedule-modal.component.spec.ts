@@ -21,3 +21,15 @@ describe('ScheduleModalComponent', () => {
     expect(component).toBeTruthy();
   });
 });
+
+
+
+
+
+
+
+
+
+
+
+

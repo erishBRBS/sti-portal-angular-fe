@@ -6,6 +6,7 @@ import { SectionModalComponent } from './section-modal/section-modal.component';
 import { finalize } from 'rxjs';
 import { SectionData } from '../../../../models/admin-panel/curriculum-management/section.model';
 
+
 type UserRow = {
   id: number;
   section_name: string;
@@ -15,7 +16,7 @@ type UserRow = {
   selector: 'sti-section',
   standalone: true,
   imports: [
-    DataTableComponent
+    DataTableComponent, SectionModalComponent
   ],
   templateUrl: './section.component.html',
   styleUrl: './section.component.css',
@@ -36,7 +37,7 @@ export class SectionComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
 
-  @ViewChild(SectionModalComponent) showCourseModalForm!: SectionModalComponent;
+@ViewChild(SectionModalComponent) showSectionModalForm!: SectionModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -61,7 +62,7 @@ export class SectionComponent {
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
+      this.showSectionModalForm?.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
     }
   }
@@ -71,7 +72,7 @@ export class SectionComponent {
   }
 
   openAddModal() {
-    // this.showAdminModalForm?.showDialog();
+    this.showSectionModalForm?.showDialog();
   }
 
   openDeleteModal() {

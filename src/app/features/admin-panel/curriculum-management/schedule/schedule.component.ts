@@ -24,7 +24,7 @@ type UserRow = {
   selector: 'sti-schedule',
   standalone: true,
   imports: [
-    DataTableComponent
+    DataTableComponent, ScheduleModalComponent
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.css',
@@ -50,11 +50,11 @@ export class ScheduleComponent {
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
 
-  private readonly scheduleService = inject(ScheduleService);
+private readonly scheduleService = inject(ScheduleService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
 
-  @ViewChild(ScheduleModalComponent) showCourseModalForm!: ScheduleModalComponent;
+@ViewChild(ScheduleModalComponent) showScheduleModalForm!: ScheduleModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -79,7 +79,7 @@ export class ScheduleComponent {
   onAction(e: { actionKey: string; row: UserRow }) {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
+      this.showScheduleModalForm?.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
     }
   }
@@ -89,7 +89,7 @@ export class ScheduleComponent {
   }
 
   openAddModal() {
-    // this.showAdminModalForm?.showDialog();
+    this.showScheduleModalForm?.showDialog();
   }
 
   openDeleteModal() {

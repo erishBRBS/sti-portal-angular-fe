@@ -15,7 +15,7 @@ type UserRow = {
   selector: 'sti-course',
   standalone: true,
   imports: [
-    DataTableComponent
+    DataTableComponent, CourseModalComponent
   ],
   templateUrl: './course.component.html',
   styleUrl: './course.component.css',
@@ -58,21 +58,25 @@ export class CourseComponent {
     console.log('row click', row);
   }
 
-  onAction(e: { actionKey: string; row: UserRow }) {
-    console.log('action', e.actionKey, e.row);
-    if (e.actionKey === 'edit') {
-      // this.showAdminModalForm?.updateDialog(e.row.id);
-    } else if (e.actionKey === 'view') {
-    }
-  }
+onAction(e: { actionKey: string; row: UserRow }) {
+  console.log('action', e.actionKey, e.row);
 
-  openImportCsv() {
-    console.log('import csv clicked', this.selectedRows);
-  }
+  if (e.actionKey === 'edit') {
+    this.showCourseModalForm?.updateDialog(e.row.id);
 
-  openAddModal() {
-    // this.showAdminModalForm?.showDialog();
+  } else if (e.actionKey === 'view') {
+    // optional view function
+    this.showCourseModalForm?.updateDialog(e.row.id);
   }
+}
+
+openImportCsv() {
+  console.log('import csv clicked', this.selectedRows);
+}
+
+openAddModal() {
+  this.showCourseModalForm?.showDialog();
+}
 
   openDeleteModal() {
     console.log('clicked!');

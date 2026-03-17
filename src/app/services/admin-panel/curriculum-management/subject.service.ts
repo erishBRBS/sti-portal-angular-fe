@@ -4,7 +4,7 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { environment } from "../../../environments/environment";
 import { CourseData, CourseModel } from "../../../models/admin-panel/curriculum-management/course.model";
 import { Observable } from "rxjs";
-import { CreateAdminPayload } from "../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { CreateSubjectPayload } from "../../../payloads/admin-panel/curriculum/subject/create-subject.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
 import { SubjectData, SubjectModel } from "../../../models/admin-panel/curriculum-management/subject.model";
 
@@ -12,6 +12,7 @@ export enum SubjectEndPoints {
   getSubject = '/get/subject',
   createSubject = '/create/course',
   getSubjectById = '/get/course/{id}',
+  updateSubject = '/update/subject/{id}',
   deleteSubject = '/delete/course',
 }
 
@@ -60,23 +61,26 @@ export class SubjectService {
     });
   }
 
-  createSubject(payload: CreateAdminPayload, imageFile?: File | null): Observable<SubjectResponse> {
-    const fd = new FormData();
-    fd.append('full_name', payload.full_name ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('mobile_number', payload.mobile_number ?? '');
-    fd.append('username', payload.username ?? '');
-    fd.append('password', payload.password ?? '');
+createSubject(payload: CreateSubjectPayload): Observable<SubjectResponse> {
+  const fd = new FormData();
+  fd.append('subject_code', payload.subject_code);
+  fd.append('subject_name', payload.subject_name);
 
-    if (imageFile) {
-      fd.append('image_path', imageFile); 
-    }
+  return this.http.post<SubjectResponse>(this.createSubjectUrl, fd, {
+    headers: this.authHeaders(),
+  });
+}
+updateSubject(id: number, payload: CreateSubjectPayload): Observable<SubjectResponse> {
+  const url = `${this.baseAPIUrl}/update/subject/${id}`;
 
-    return this.http.post<SubjectResponse>(this.createSubjectUrl, fd, {
-      headers: this.authHeaders(),
-    });
-  }
+  const fd = new FormData();
+  fd.append('subject_code', payload.subject_code);
+  fd.append('subject_name', payload.subject_name);
 
+  return this.http.post<SubjectResponse>(url, fd, {
+    headers: this.authHeaders(),
+  });
+}
   deleteSubject(payload: DeletePayload): Observable<DeleteSubjectResponse> {
     return this.http.post<DeleteSubjectResponse>(this.deleteSubjectUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
