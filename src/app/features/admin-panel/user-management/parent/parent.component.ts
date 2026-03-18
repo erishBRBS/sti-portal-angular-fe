@@ -1,10 +1,16 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
-import { DataTableComponent, RowAction, TableColumn } from '../../../../shared/components/data-table/data-table.component';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import {
+  DataTableComponent,
+  RowAction,
+  TableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ParentService } from '../../../../services/admin-panel/user-management/parent/parent.service';
 import { ParentModalComponent } from './parent-modal/parent-modal.component';
 import { finalize } from 'rxjs';
 import { ParentData } from '../../../../models/admin-panel/user-management/parent/parent.model';
+import { DetailModalConfig, ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import { createParentDetailConfig } from '../../../../helper/parent.helper';
 
 type UserRow = {
   id: number;
@@ -21,12 +27,15 @@ type UserStatus = UserRow['status'];
   selector: 'sti-parent',
   standalone: true,
   imports: [
-    DataTableComponent, ParentModalComponent],
+    DataTableComponent,
+    ParentModalComponent,
+    ViewDetailsComponent
+  ],
   templateUrl: './parent.component.html',
   styleUrl: './parent.component.css',
 })
 export class ParentManagementComponent {
- cols: TableColumn<UserRow>[] = [
+  cols: TableColumn<UserRow>[] = [
     // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'first_name', header: 'First Name', sortable: true, filter: true },
     { field: 'middle_name', header: 'Middle Name', sortable: true, filter: true },
@@ -53,8 +62,9 @@ export class ParentManagementComponent {
   private readonly parentService = inject(ParentService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
-@ViewChild(ParentModalComponent) parentModal!: ParentModalComponent;
+  @ViewChild(ParentModalComponent) parentModal!: ParentModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -65,8 +75,16 @@ export class ParentManagementComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+  parentConfig: DetailModalConfig = {
+    title: 'Parent Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadParent(1, this.rowsPerPage);
@@ -76,23 +94,23 @@ export class ParentManagementComponent {
     console.log('row click', row);
   }
 
- onAction(e: { actionKey: string; row: UserRow }) {
-  console.log('action', e.actionKey, e.row);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    console.log('action', e.actionKey, e.row);
 
-  if (e.actionKey === 'edit') {
-    this.parentModal?.updateDialog(e.row.id);
-  } 
-  else if (e.actionKey === 'view') {
+    if (e.actionKey === 'edit') {
+      this.parentModal?.updateDialog(e.row.id);
+    } else if (e.actionKey === 'view') {
+      this.getParentById(e.row.id);
+    }
   }
-}
-  
+
   openImportCsv() {
     console.log('import csv clicked', this.selectedRows);
   }
 
-openAddModal() {
-  this.parentModal?.showDialog();
-}
+  openAddModal() {
+    this.parentModal?.showDialog();
+  }
 
   openDeleteModal() {
     console.log('clicked!');
@@ -123,7 +141,7 @@ openAddModal() {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-         const mapped = res.data.map((a: ParentData) => ({
+          const mapped = res.data.map((a: ParentData) => ({
             id: a.id,
             first_name: a.first_name,
             middle_name: a.middle_name ?? '',
@@ -147,11 +165,29 @@ openAddModal() {
       });
   }
 
+  private getParentById(id: number): void {
+    this.parentService.getParentById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.parentConfig = createParentDetailConfig(data, this.parentService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
+
   deleteSelectedStudent(): void {
     // const payload = {
     //   id: this.selectedRows.map((row) => row.id),
     // };
-
     // this.adminService.deleteAdmins(payload).subscribe({
     //   next: (res) => {
     //     console.log(res.message);
