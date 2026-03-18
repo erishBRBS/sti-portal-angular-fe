@@ -5,13 +5,14 @@ import { Observable } from "rxjs";
 import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
 import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
+import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum AdminEndPoints {
-  getAdmin = '/get/admin',
-  createAdmin = '/create/admin',
-  updateAdmin = '/update/admin/{id}',
-  getAdminById = '/get/admin/{id}',
-  deleteAdmin = '/delete/admin',
+  getAdmin = 'get/admin',
+  createAdmin = 'create/admin',
+  updateAdmin = 'update/admin/{id}',
+  getAdminById = 'get/admin/{id}',
+  deleteAdmin = 'delete/admin',
 }
 
 export type CreateAdminResponse = ApiResponse<AdminData>;
@@ -23,6 +24,8 @@ export type DeleteAdminResponse = ApiResponseNoData;
 
 export class AdminService {
   private http = inject(HttpClient);
+  private storage = inject(TokenStorageService);
+
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
   token = `${environment.temp_token}`;
@@ -37,7 +40,7 @@ export class AdminService {
   //  const token = localStorage.getItem('access_token'); 
   //  const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.token ? `Bearer ${this.token}` : '',
+      Authorization: this.storage.getToken() ? `Bearer ${this.storage.getToken()}` : '',
       Accept: 'application/json',
     });
   }

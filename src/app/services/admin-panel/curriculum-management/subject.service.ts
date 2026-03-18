@@ -7,13 +7,14 @@ import { Observable } from "rxjs";
 import { CreateSubjectPayload } from "../../../payloads/admin-panel/curriculum/subject/create-subject.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
 import { SubjectData, SubjectModel } from "../../../models/admin-panel/curriculum-management/subject.model";
+import { TokenStorageService } from "../../../core/services/token-storage.service";
 
 export enum SubjectEndPoints {
-  getSubject = '/get/subject',
-  createSubject = '/create/course',
-  getSubjectById = '/get/course/{id}',
-  updateSubject = '/update/subject/{id}',
-  deleteSubject = '/delete/course',
+  getSubject = 'get/subject',
+  createSubject = 'create/course',
+  getSubjectById = 'get/course/{id}',
+  updateSubject = 'update/subject/{id}',
+  deleteSubject = 'delete/course',
 }
 
 export type SubjectResponse = ApiResponse<SubjectData>;
@@ -25,6 +26,8 @@ export type DeleteSubjectResponse = ApiResponseNoData;
 
 export class SubjectService {
   private http = inject(HttpClient);
+  private storage = inject(TokenStorageService);
+
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
   token = `${environment.temp_token}`;
@@ -38,7 +41,7 @@ export class SubjectService {
   //  const token = localStorage.getItem('access_token'); 
   //   const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.token ? `Bearer ${this.token}` : '',
+      Authorization: this.storage.getToken() ? `Bearer ${this.storage.getToken()}` : '',
       Accept: 'application/json',
     });
   }

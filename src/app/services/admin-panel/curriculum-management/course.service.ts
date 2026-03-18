@@ -6,13 +6,14 @@ import { CourseData, CourseModel } from "../../../models/admin-panel/curriculum-
 import { Observable } from "rxjs";
 import { CreateCoursePayload } from "../../../payloads/admin-panel/curriculum/course/create-course.payload";
 import { DeletePayload } from "../../../payloads/common.payload";
+import { TokenStorageService } from "../../../core/services/token-storage.service";
 
 export enum CourseEndPoints {
-  getCourse = '/get/course',
-  createCourse = '/create/course',
-  getCourseById = '/get/course/{id}',
-  updateCourse = '/update/course/{id}',
-  deleteCourse = '/delete/course',
+  getCourse = 'get/course',
+  createCourse = 'create/course',
+  getCourseById = 'get/course/{id}',
+  updateCourse = 'update/course/{id}',
+  deleteCourse = 'delete/course',
 }
 
 export type CourseResponse = ApiResponse<CourseData>;
@@ -24,6 +25,8 @@ export type DeleteCourseResponse = ApiResponseNoData;
 
 export class CourseService {
   private http = inject(HttpClient);
+  private storage = inject(TokenStorageService);
+
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
   token = `${environment.temp_token}`;
@@ -38,7 +41,7 @@ export class CourseService {
   //  const token = localStorage.getItem('access_token'); 
   //   const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
-      Authorization: this.token ? `Bearer ${this.token}` : '',
+      Authorization: this.storage.getToken() ? `Bearer ${this.storage.getToken()}` : '',
       Accept: 'application/json',
     });
   }
