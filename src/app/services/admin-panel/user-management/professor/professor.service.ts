@@ -11,9 +11,9 @@ import { TokenStorageService } from "../../../../core/services/token-storage.ser
 
 export enum ProfessorEndPoints {
   getProfessor = 'get/professor',
-  createProfessor = 'create/admin',
-  getProfessorById = 'get/admin/{id}',
-  deleteProfessor = 'delete/admin',
+  createProfessor = 'create/professor',
+  getProfessorById = 'get/professor/{id}',
+  deleteProfessor = 'delete/professor',
 }
 
 export type ProfessorResponse = ApiResponse<ProfessorData>;
