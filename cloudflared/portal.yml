@@ -1,0 +1,7 @@
+tunnel: 05635c50-3eef-4aea-8ad5-5b85a4746435
+credentials-file: /etc/cloudflared/05635c50-3eef-4aea-8ad5-5b85a4746435.json
+
+ingress:
+  - hostname: sti.edu-nexus.org
+    service: http://angular-app:80
+  - service: http_status:404
