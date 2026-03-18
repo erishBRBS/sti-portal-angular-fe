@@ -34,3 +34,9 @@
   (onSuccess)="onModalSuccess()"
   (onCancel)="onModalCancel()">
 </sti-admin-modal>
+
+<sti-view-details
+  [visible]="showViewDetails"
+  (visibleChange)="showViewDetails = $event"
+  [config]="adminConfig">
+</sti-view-details>

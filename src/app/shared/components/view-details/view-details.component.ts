@@ -25,8 +25,7 @@ export interface DetailModalConfig {
   styleUrl: './view-details.component.css',
 })
 export class ViewDetailsComponent {
-  visible = false;
-  currentID = 0;
+  @Input() visible = false;
   @Output() visibleChange = new EventEmitter<boolean>();
 
   @Input() config: DetailModalConfig = {
@@ -35,14 +34,13 @@ export class ViewDetailsComponent {
     profileImage: '',
     fields: [],
   };
-
-  onShowDialogDetails(): void {
-    this,this.visible = true;
+  onDialogVisibleChange(value: boolean): void {
+    this.visible = value;
+    this.visibleChange.emit(value);
   }
 
   close(): void {
-    this.visible = false;
-    this.visibleChange.emit(false);
+    this.onDialogVisibleChange(false);
   }
 
   getDisplayValue(value: string | number | null | undefined): string {

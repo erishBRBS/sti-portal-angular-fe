@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 
@@ -19,6 +19,7 @@ interface NewsDetails {
 
 @Component({
   selector: 'sti-view-admin-modal',
+  standalone: true,
   imports: [
     CommonModule,
     DialogModule,
@@ -28,7 +29,11 @@ interface NewsDetails {
   styleUrl: './view-admin-modal.component.css',
 })
 export class ViewAdminModalComponent {
-  @Input() visible = true;
+  @Output() onSuccess = new EventEmitter<void>();
+  @Output() onCancel = new EventEmitter<void>();
+
+  visible = false;
+  currentID = 0;
 
   news: NewsDetails = {
     thumbnail: 'assets/images/sample-news.jpg',
@@ -46,7 +51,14 @@ export class ViewAdminModalComponent {
     ]
   };
 
+  onShowDialogDetails(id: number): void {
+    console.log('Details ID logs', id);
+    this.currentID = id;
+    this,this.visible = true;
+  }
+
   close(): void {
+    this.onSuccess.emit()
     this.visible = false;
   }
 
