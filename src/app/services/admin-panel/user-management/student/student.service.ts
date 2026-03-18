@@ -5,17 +5,17 @@ import { Observable } from "rxjs";
 import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
 import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
-import { StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
+import { StudentData, StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
 import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum StudentEndPoints {
   getStudent = 'get/student',
-  createStudent = 'create/admin',
-  getStudentById = 'get/admin/{id}',
-  deleteStudent = 'delete/admin',
+  createStudent = 'create/student',
+  getStudentById = 'get/student/{id}',
+  deleteStudent = 'delete/student',
 }
 
-export type StudentResponse = ApiResponse<AdminData>;
+export type StudentResponse = ApiResponse<StudentData>;
 export type DeleteStudentResponse = ApiResponseNoData;
 
 @Injectable({
