@@ -1,0 +1,25 @@
+.admin-view-dialog.p-dialog {
+  margin: 0 !important;
+}
+
+.admin-view-dialog .p-dialog-header {
+  display: none !important;
+}
+
+.admin-view-dialog .p-dialog-content {
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.admin-view-dialog .p-dialog {
+  margin: 0 !important;
+  overflow: hidden !important;
+}
+
+.admin-view-dialog {
+  margin-top: 0 !important;
+}
+
+.admin-view-dialog .p-dialog-content > div {
+  margin-top: 0 !important;
+}

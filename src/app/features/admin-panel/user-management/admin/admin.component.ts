@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -9,6 +9,11 @@ import { finalize } from 'rxjs';
 import { AdminData } from '../../../../models/admin-panel/user-management/admin/admin.model';
 import { AdminModalComponent } from './admin-modal/admin-modal.component';
 import { ToastService } from '../../../../shared/services/toast.service';
+import {
+  DetailModalConfig,
+  ViewDetailsComponent,
+} from '../../../../shared/components/view-details/view-details.component';
+import { createAdminDetailConfig } from '../../../../helper/admin-helper';
 
 type UserRow = {
   id: number;
@@ -23,7 +28,7 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-admin',
   standalone: true,
-  imports: [DataTableComponent, AdminModalComponent],
+  imports: [DataTableComponent, AdminModalComponent, ViewDetailsComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css',
 })
@@ -53,6 +58,7 @@ export class AdminManagementComponent {
   private readonly adminService = inject(AdminService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
   @ViewChild(AdminModalComponent) showAdminModalForm!: AdminModalComponent;
 
@@ -65,8 +71,16 @@ export class AdminManagementComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+  adminConfig: DetailModalConfig = {
+    title: 'Admin Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadAdmins(1, this.rowsPerPage);
@@ -80,8 +94,8 @@ export class AdminManagementComponent {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
       this.showAdminModalForm?.updateDialog(e.row.id);
-    } else if (e.actionKey === 'view'){
-
+    } else if (e.actionKey === 'view') {
+      this.getAdminById(e.row.id);
     }
   }
 
@@ -94,7 +108,7 @@ export class AdminManagementComponent {
   }
 
   openDeleteModal() {
-    console.log("clicked!")
+    console.log('clicked!');
     this.deleteSelectedAdmins();
   }
 
@@ -114,37 +128,39 @@ export class AdminManagementComponent {
   }
 
   // MARK: - This part is for API call function
-  loadAdmins(page: number, perPage: number) {
+  loadAdmins(page: number, perPage: number): void {
     this.loading = true;
 
-    this.adminService
-      .getAdmins(page, perPage)
-      .pipe(finalize(() => (this.loading = false)))
-      .subscribe({
-        next: (res) => {
-          const mapped = res.data.map((a: AdminData) => ({
-            id: a.id,
-            name: a.full_name,
-            email: a.email,
-            status: this.mapStatus(a.status),
-            createdAt: a.created_at,
-          }));
+    this.adminService.getAdmins(page, perPage).subscribe({
+      next: (res) => {
+        const mapped = res.data.map((a: AdminData) => ({
+          id: a.id,
+          name: a.full_name,
+          email: a.email,
+          status: this.mapStatus(a.status),
+          createdAt: a.created_at,
+        }));
 
-          queueMicrotask(() => {
-            this.currentPage = res.pagination.current_page;
-            this.total = res.pagination.total;
-            this.first = (res.pagination.current_page - 1) * perPage;
-            this.rows = mapped;
-            this.cdr.markForCheck();
-          });
-        },
-        error: (err) => {
-          console.error('getAdmins failed', err);
+        queueMicrotask(() => {
+          this.currentPage = res.pagination.current_page;
+          this.total = res.pagination.total;
+          this.first = (res.pagination.current_page - 1) * perPage;
+          this.rows = mapped;
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        console.error('getAdmins failed', err);
+
+        queueMicrotask(() => {
           this.rows = [];
-        },
-      });
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      },
+    });
   }
-
   deleteSelectedAdmins(): void {
     const payload = {
       id: this.selectedRows.map((row) => row.id),
@@ -158,6 +174,25 @@ export class AdminManagementComponent {
         this.selectedRows = [];
       },
       error: (err) => {
+        console.error(err);
+      },
+    });
+  }
+
+  private getAdminById(id: number): void {
+    this.adminService.getAdminById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.adminConfig = createAdminDetailConfig(data, this.adminService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
         console.error(err);
       },
     });
