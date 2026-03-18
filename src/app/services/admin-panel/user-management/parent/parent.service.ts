@@ -2,24 +2,21 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 import { Observable } from "rxjs";
-import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
 import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
-import { StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
-import { ProfessorData, ProfessorModel } from "../../../../models/admin-panel/user-management/professor/professor.model";
 import { DeletePayload } from "../../../../payloads/common.payload";
-import { ParentModel } from "../../../../models/admin-panel/user-management/parent/parent.model";
+import { ParentData, ParentModel } from "../../../../models/admin-panel/user-management/parent/parent.model";
 import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum ParentEndPoints {
   getParent = 'get/parent',
-  createParent = 'create/admin',
-  updateParent = 'update/admin/{id}',   
-  getParentById = 'get/admin/{id}',
-  deleteParent = 'delete/admin',
+  createParent = 'create/parent',
+  updateParent = 'update/parent/{id}',   
+  getParentById = 'get/parent/{id}',
+  deleteParent = 'delete/parent',
 }
 
-export type ParentResponse = ApiResponse<ProfessorData>;
+export type ParentResponse = ApiResponse<ParentData>;
 export type DeleteParentResponse = ApiResponseNoData;
 
 @Injectable({
