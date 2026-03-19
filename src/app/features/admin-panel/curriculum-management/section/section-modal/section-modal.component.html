@@ -28,6 +28,7 @@
           class="w-full"
           name="section_name"
           [(ngModel)]="section_name"
+          [disabled]="mode === 'VIEW'"
           #sectionNameCtrl="ngModel"
           required
           placeholder="Input Section Name"
@@ -48,21 +49,25 @@
     </div>
 
     <!-- Footer -->
-    <div class="w-full flex items-center justify-end gap-3 mt-6">
-      <button
-        pButton
-        type="button"
-        label="Cancel"
-        class="p-button-outlined"
-        (click)="close()"
-      ></button>
+ <div
+  *ngIf="mode !== 'VIEW'"
+   class="flex justify-end gap-3 mt-6">
 
-      <button
-        pButton
-        type="submit"
-        [label]="dialogButtonLabel"
-        class="p-button-success"
-      ></button>
-    </div>
+   <button
+     pButton
+     type="button"
+     label="Cancel"
+     class="p-button-outlined"
+     (click)="close()">
+  </button>
+
+   <button
+     pButton
+    type="submit"
+     [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+     class="p-button-success">
+  </button>
+
+ </div>
   </form>
 </p-dialog>

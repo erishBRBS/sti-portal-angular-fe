@@ -15,7 +15,7 @@ export function createStudentDetailConfig(
       { label: 'Middle Name', value: data.middle_name },
       { label: 'Last Name', value: data.last_name },
       { label: 'Email', value: data.email },
-      { label: 'Contact Number', value: data.contact_number },
+      { label: 'Contact Number', value: data.mobile_number },
       { label: 'Course', value: data.course.course_name },
       { label: 'Section', value: data.section.section_name },
       { label: 'Year Level', value: data.year_level },

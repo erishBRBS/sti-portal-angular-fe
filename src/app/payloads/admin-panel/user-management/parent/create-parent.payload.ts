@@ -1,7 +1,8 @@
 export interface CreateParentPayload {               
-  full_name?: string;
+  first_name?: string;
+  middle_name?: string;
+  last_name?: string;
   email?: string;
-  mobile_number?: string;
   username?: string;
   password?: string;
 }

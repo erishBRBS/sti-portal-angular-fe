@@ -28,6 +28,7 @@
           <input
             pInputText class="w-full" name="full_name"
             [(ngModel)]="full_name"
+            [disabled]="mode === 'VIEW'"
             #fullNameCtrl="ngModel"
             required
             placeholder="Input full Name"
@@ -45,6 +46,7 @@
           <input
             pInputText class="w-full" name="email"
             [(ngModel)]="email"
+            [disabled]="mode === 'VIEW'"
             #emailCtrl="ngModel"
             required
             email
@@ -68,6 +70,7 @@
             pattern="^09[0-9]{9}$"
             maxlength="11"
             inputmode="numeric"
+            [disabled]="mode === 'VIEW'"
             placeholder="Input Mobile"
             (keypress)="allowNumbersOnly($event)"
             (input)="mobile_number = mobile_number.replace(/[^0-9]/g, '')"
@@ -88,6 +91,7 @@
           <input
             pInputText class="w-full" name="username"
             [(ngModel)]="username"
+            [disabled]="mode === 'VIEW'"
             #usernameCtrl="ngModel"
             required
             placeholder="Input Username"
@@ -107,6 +111,7 @@
              class="w-full pr-10"
              name="password"
              [(ngModel)]="password"
+             [disabled]="mode === 'VIEW'"
              #passCtrl="ngModel"
              [type]="showPassword ? 'text' : 'password'"
              required
@@ -173,9 +178,26 @@
 
 
     <!-- Footer -->
-    <div class="w-full flex items-center justify-end gap-3 mt-6">
-      <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="close()"></button>
-      <button pButton type="submit" label="Add Record" class="p-button-success"></button>
+    <div 
+      *ngIf="mode !== 'VIEW'"
+      class="flex justify-end gap-3 mt-6"
+      >
+
+      <button
+         pButton
+         type="button"
+         label="Cancel"
+         class="p-button-outlined"
+         (click)="close()">
+     </button>
+
+     <button
+        pButton
+        type="submit"
+        [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+        class="p-button-success">
+     </button>
+
     </div>
   </form>
 </p-dialog>

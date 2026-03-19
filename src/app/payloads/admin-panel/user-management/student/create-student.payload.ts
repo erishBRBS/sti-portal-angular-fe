@@ -1,12 +1,14 @@
-export interface CreateStudentPayload {               
-  full_name?: string;
-  email?: string;
+export interface CreateStudentPayload {
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  email: string;
   mobile_number?: string;
-  username?: string;
-  password?: string;
-  course?: string;
-  year_level?: string;
-  section?: string;
+  course_id: number;
+  section_id: number;
+  year_level?: string; 
+  username?: string;     
+  rfid_code?: string; 
 }
 export interface DeleteStudentPayload {
   id: number[];
