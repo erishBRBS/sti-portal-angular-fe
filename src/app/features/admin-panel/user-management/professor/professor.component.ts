@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -9,6 +9,8 @@ import { ProfessorService } from '../../../../services/admin-panel/user-manageme
 import { ProfessorModalComponent } from './professor-modal/professor-modal.component';
 import { finalize } from 'rxjs';
 import { ProfessorData } from '../../../../models/admin-panel/user-management/professor/professor.model';
+import { DetailModalConfig, ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import { createProfessorDetailConfig } from '../../../../helper/professor.helper';
 
 type UserRow = {
   id: number;
@@ -24,7 +26,11 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-professor',
   standalone: true,
-  imports: [DataTableComponent, ProfessorModalComponent],
+  imports: [
+    DataTableComponent, 
+    ProfessorModalComponent,
+    ViewDetailsComponent
+  ],
   templateUrl: './professor.component.html',
   styleUrl: './professor.component.css',
 })
@@ -56,6 +62,7 @@ export class ProfessorManagementComponent {
   private readonly professorService = inject(ProfessorService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
   @ViewChild(ProfessorModalComponent) professorModal!: ProfessorModalComponent;
 
@@ -68,8 +75,16 @@ export class ProfessorManagementComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+  professorConfig: DetailModalConfig = {
+    title: 'Professor Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadProfessor(1, this.rowsPerPage);

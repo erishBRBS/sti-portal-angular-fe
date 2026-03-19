@@ -5,10 +5,8 @@ import { Observable } from "rxjs";
 import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
 import { CreateParentPayload } from "../../../../payloads/admin-panel/user-management/parent/create-parent.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
-import { StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
-import { ProfessorData, ProfessorModel } from "../../../../models/admin-panel/user-management/professor/professor.model";
 import { DeletePayload } from "../../../../payloads/common.payload";
-import { ParentModel } from "../../../../models/admin-panel/user-management/parent/parent.model";
+import { ParentData, ParentModel } from "../../../../models/admin-panel/user-management/parent/parent.model";
 import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum ParentEndPoints {
@@ -20,7 +18,7 @@ export enum ParentEndPoints {
   importSection = 'import/section'
 }
 
-export type ParentResponse = ApiResponse<ProfessorData>;
+export type ParentResponse = ApiResponse<ParentData>;
 export type DeleteParentResponse = ApiResponseNoData;
 
 @Injectable({

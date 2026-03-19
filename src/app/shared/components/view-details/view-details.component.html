@@ -1,0 +1,74 @@
+<p-dialog
+  [visible]="visible"
+  (visibleChange)="onDialogVisibleChange($event)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [dismissableMask]="true"
+  [style]="{
+    width: 'min(980px, 95vw)'
+  }"
+  [contentStyle]="{
+    padding: '0',
+    overflow: 'hidden',
+    'border-radius': '20px'
+  }"
+  styleClass="admin-view-dialog"
+>
+  <div class="flex flex-col max-h-[90vh]">
+    <!-- Header -->
+    <div
+      class="flex items-center justify-between px-4 py-1.5 border-b border-slate-300 bg-white shrink-0"
+    >
+      <h2 class="text-lg font-extrabold leading-none text-[#7A0000] tracking-tight m-0">
+        {{ config.title }}
+      </h2>
+
+      <button
+        type="button"
+        (click)="close()"
+        class="w-7 h-7 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 transition"
+        aria-label="Close"
+      >
+        <i class="pi pi-times text-base"></i>
+      </button>
+    </div>
+
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto bg-white px-6 pt-2 pb-20 space-y-4 min-h-0">
+      <div class="space-y-4">
+        <!-- Optional Profile -->
+        <div
+          *ngIf="config.showProfile"
+          class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4 items-start"
+        >
+          <div class="text-lg font-bold text-slate-700">Profile:</div>
+
+          <div class="flex items-center gap-4">
+            <img
+              [src]="config.profileImage || 'assets/images/default-profile.png'"
+              alt="Profile"
+              class="w-20 h-20 rounded-full object-cover border-2 border-slate-300 shadow-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Dynamic Fields -->
+        <div
+          *ngFor="let field of config.fields"
+          class="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-2 md:gap-4"
+        >
+          <div class="text-lg font-bold text-slate-700">
+            {{ field.label }}:
+          </div>
+          <div class="text-lg text-slate-700">
+            {{ getDisplayValue(field.value) }}
+          </div>
+        </div>
+
+        <div class="h-10 shrink-0"></div>
+      </div>
+    </div>
+  </div>
+</p-dialog>

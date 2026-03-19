@@ -1,10 +1,19 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
-import { DataTableComponent, RowAction, TableColumn } from '../../../../shared/components/data-table/data-table.component';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import {
+  DataTableComponent,
+  RowAction,
+  TableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { CourseService } from '../../../../services/admin-panel/curriculum-management/course.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { CourseModalComponent } from './course-modal/course-modal.component';
 import { finalize } from 'rxjs';
 import { CourseData } from '../../../../models/admin-panel/curriculum-management/course.model';
+import {
+  DetailModalConfig,
+  ViewDetailsComponent,
+} from '../../../../shared/components/view-details/view-details.component';
+import { createACourseDetailConfig } from '../../../../helper/course.helper';
 
 type UserRow = {
   id: number;
@@ -15,7 +24,9 @@ type UserRow = {
   selector: 'sti-course',
   standalone: true,
   imports: [
-    DataTableComponent, CourseModalComponent
+    DataTableComponent, 
+    CourseModalComponent, 
+    ViewDetailsComponent
   ],
   templateUrl: './course.component.html',
   styleUrl: './course.component.css',
@@ -35,6 +46,7 @@ export class CourseComponent {
   private readonly courseService = inject(CourseService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
   @ViewChild(CourseModalComponent) courseModal!: CourseModalComponent;
 
@@ -47,8 +59,16 @@ export class CourseComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+  courseConfig: DetailModalConfig = {
+    title: 'Course Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadCourse(1, this.rowsPerPage);
@@ -141,7 +161,7 @@ openDeleteModal() {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-         const mapped = res.data.map((a: CourseData) => ({
+          const mapped = res.data.map((a: CourseData) => ({
             id: a.id,
             course_name: a.course_name,
           }));

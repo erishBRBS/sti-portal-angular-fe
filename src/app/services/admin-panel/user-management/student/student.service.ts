@@ -6,7 +6,7 @@ import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/a
 import { CreateStudentPayload } from "../../../../payloads/admin-panel/user-management/student/create-student.payload";
 import { DeleteStudentPayload } from "../../../../payloads/admin-panel/user-management/student/create-student.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
-import { StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
+import { StudentData, StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
 import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum StudentEndPoints {
@@ -18,7 +18,7 @@ export enum StudentEndPoints {
   importStudent = 'import/student'
 }
 
-export type StudentResponse = ApiResponse<AdminData>;
+export type StudentResponse = ApiResponse<StudentData>;
 export type DeleteStudentResponse = ApiResponseNoData;
 
 @Injectable({

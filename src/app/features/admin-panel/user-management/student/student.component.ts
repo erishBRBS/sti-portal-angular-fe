@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -9,6 +9,8 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { StudentModalComponent } from './student-modal/student-modal.component';
 import { finalize } from 'rxjs';
 import { StudentData } from '../../../../models/admin-panel/user-management/student/student.model';
+import { DetailModalConfig, ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import { createStudentDetailConfig } from '../../../../helper/student.helper';
 
 type UserRow = {
   id: number;
@@ -29,7 +31,11 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-student',
   standalone: true,
-  imports: [DataTableComponent, StudentModalComponent],
+  imports: [
+    DataTableComponent,
+    StudentModalComponent,
+    ViewDetailsComponent
+  ],
   templateUrl: './student.component.html',
   styleUrl: './student.component.css',
 })
@@ -66,6 +72,7 @@ export class StudentManagementComponent {
   private readonly studentService = inject(StudentService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
   @ViewChild(StudentModalComponent) studentModal!: StudentModalComponent;
 
@@ -78,8 +85,16 @@ export class StudentManagementComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+  studentConfig: DetailModalConfig = {
+    title: 'Student Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadStudent(1, this.rowsPerPage);
@@ -185,7 +200,7 @@ openDeleteModal() {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-         const mapped = res.data.map((a: StudentData) => ({
+          const mapped = res.data.map((a: StudentData) => ({
             id: a.id,
             first_name: a.first_name,
             middle_name: a.middle_name ?? '',
