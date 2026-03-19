@@ -2,9 +2,7 @@
   class="w-full z-40 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 transition-colors duration-300"
 >
   <div class="px-4 sm:px-6 py-3 flex items-center justify-between">
-    <!-- LEFT -->
     <div class="flex items-center gap-3 min-w-0">
-      <!-- Mobile hamburger -->
       <button
         type="button"
         class="sm:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
@@ -14,11 +12,11 @@
         <i class="pi pi-bars text-lg"></i>
       </button>
 
-      <div class="min-w-0">
+      <div class="min-w-0" *ngIf="isUserReady; else headerSkeleton">
         <h2
           class="text-[9px] sm:text-sm font-black text-slate-800 dark:text-gray-100 leading-tight uppercase tracking-tight truncate"
         >
-          {{ greeting }}, {{ lastName }}
+          {{ greeting }}, {{ displayName }}
         </h2>
 
         <p
@@ -27,20 +25,23 @@
           {{ currentDate | date: 'EEEE, MMM d' }}
         </p>
       </div>
+
+      <ng-template #headerSkeleton>
+        <div class="min-w-0">
+          <div class="h-3 w-28 rounded bg-slate-200 dark:bg-slate-700 mb-2"></div>
+          <div class="h-2 w-20 rounded bg-slate-200 dark:bg-slate-700"></div>
+        </div>
+      </ng-template>
     </div>
 
-    <!-- RIGHT -->
     <div class="flex items-center">
-  <button
-    pButton
-    [icon]="isDarkMode ? 'pi pi-sun' : 'pi pi-moon'"
-    class="p-button-rounded p-button-text p-button-secondary
-           !text-yellow-500 hover:!text-yellow-500
-           dark:!text-yellow-500 dark:hover:!text-yellow-300
-           transition-transform active:scale-90"
-    pTooltip="Toggle Mode"
-    (click)="toggleTheme()"
-  ></button>
+      <button
+        pButton
+        [icon]="isDarkMode ? 'pi pi-sun' : 'pi pi-moon'"
+        class="p-button-rounded p-button-text p-button-secondary !text-yellow-500 hover:!text-yellow-500 dark:!text-yellow-500 dark:hover:!text-yellow-300 transition-transform active:scale-90"
+        pTooltip="Toggle Mode"
+        (click)="toggleTheme()"
+      ></button>
 
       <div class="relative mr-2">
         <button
@@ -59,17 +60,21 @@
       </div>
 
       <div class="pl-4 border-l border-gray-200 dark:border-slate-700 flex items-center gap-4 ml-2">
-        <a routerLink="general/profile" class="relative group">
+        <a routerLink="general/profile" class="relative group" *ngIf="isUserReady; else avatarSkeleton">
           <div
             class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-500 rounded-full opacity-0 group-hover:opacity-100 transition duration-300 blur-[1px]"
           ></div>
           <p-avatar
-            image="https://api.dicebear.com/7.x/avataaars/svg?seed=Patrick"
+            [image]="avatarUrl"
             size="large"
             shape="circle"
             styleClass="relative border-2 border-white dark:border-slate-900 shadow-sm cursor-pointer scale-90 transition-transform group-active:scale-75"
           ></p-avatar>
         </a>
+
+        <ng-template #avatarSkeleton>
+          <div class="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+        </ng-template>
       </div>
     </div>
   </div>

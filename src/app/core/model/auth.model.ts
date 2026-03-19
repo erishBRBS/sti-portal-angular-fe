@@ -10,7 +10,9 @@ export interface UserROle {
 
 export interface User {
   id: number;
-  full_name: string;
+  full_name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   email: string;
   mobile_number: string | null;
   username: string | null;
@@ -35,8 +37,12 @@ export interface LoginResponse {
 
 export interface SessionUser {
   id: number;
-  full_name: string;
+  full_name?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
   email: string;
+  username: string | null;
+  image_path: string | null;
   role_name: RoleName;
   user_role_id: number;
 }
