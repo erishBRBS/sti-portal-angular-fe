@@ -64,7 +64,7 @@ export class ProfessorManagementComponent {
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
 
-  @ViewChild(ProfessorModalComponent) showProfessorModalForm!: ProfessorModalComponent;
+  @ViewChild(ProfessorModalComponent) professorModal!: ProfessorModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -94,27 +94,74 @@ export class ProfessorManagementComponent {
     console.log('row click', row);
   }
 
-  onAction(e: { actionKey: string; row: UserRow }) {
-    console.log('action', e.actionKey, e.row);
-    if (e.actionKey === 'edit') {
-      this.showProfessorModalForm?.updateDialog(e.row.id);
+onAction(e: { actionKey: string; row: UserRow }) {
+
+  if (e.actionKey === 'edit') {
+    this.professorModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
        this.getProfessorById(e.row.id);
     }
+
+  else if (e.actionKey === 'delete') {
+    this.deleteProfessor(e.row.id);
   }
 
-  openImportCsv() {
-    console.log('import csv clicked', this.selectedRows);
-  }
+}
+openImportCsv() {
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+
+  input.onchange = (event: any) => {
+
+    const file: File = event.target.files[0];
+
+    if (!file) return;
+
+    const isCSV = file.name.endsWith('.csv');
+
+    if (!isCSV) {
+      this.toast.error('Error', 'Please upload a CSV file');
+      return;
+    }
+
+    this.professorService.importProfessor(file).subscribe({
+
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.loadProfessor(this.currentPage, this.rowsPerPage);
+      },
+
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to import CSV');
+      }
+
+    });
+
+  };
+
+  input.click();
+}
 
   openAddModal() {
-    this.showProfessorModalForm?.showDialog();
+    this.professorModal?.showDialog();
   }
 
-  openDeleteModal() {
-    console.log('clicked!');
-    this.deleteSelectedStudent();
+openDeleteModal() {
+
+  if (!this.selectedRows.length) {
+    this.toast.error('Error', 'Please select parent(s) to delete.');
+    return;
   }
+
+  if (!confirm('Are you sure you want to delete selected parent(s)?')) {
+    return;
+  }
+
+  this.deleteSelectedProfessor();
+}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -164,22 +211,52 @@ export class ProfessorManagementComponent {
       });
   }
 
-  deleteSelectedStudent(): void {
-    // const payload = {
-    //   id: this.selectedRows.map((row) => row.id),
-    // };
-    // this.adminService.deleteAdmins(payload).subscribe({
-    //   next: (res) => {
-    //     console.log(res.message);
-    //     this.toast.success('Success', res.message);
-    //     this.onModalSuccess();
-    //     this.selectedRows = [];
-    //   },
-    //   error: (err) => {
-    //     console.error(err);
-    //   },
-    // });
+
+deleteSelectedProfessor() {
+
+  const payload = {
+    id: this.selectedRows.map((row: any) => row.id)
+  };
+
+  this.professorService.deleteProfessor(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      // clear selection
+      this.selectedRows = [];
+
+      // reload table
+      this.loadProfessor(this.currentPage, this.rowsPerPage);
+    },
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to delete parents.';
+      this.toast.error('Error', msg);
+    }
+  });
   }
+
+  deleteProfessor(id: number) {
+
+  const payload = {
+    id: [id]
+  };
+
+  if (!confirm('Are you sure you want to delete this parent?')) return;
+
+  this.professorService.deleteProfessor(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      // reload table
+      this.loadProfessor(this.currentPage, this.rowsPerPage);
+    },
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to delete parent.';
+      this.toast.error('Error', msg);
+    }
+  });
+
+}
 
   private getProfessorById(id: number): void {
     this.professorService.getProfessorById(id).subscribe({
@@ -199,7 +276,6 @@ export class ProfessorManagementComponent {
       },
     });
   }
-
   private mapStatus(status: string): UserStatus {
     switch (status) {
       case 'active':

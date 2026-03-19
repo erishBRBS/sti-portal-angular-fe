@@ -36,18 +36,17 @@
       </label>
 
       <p-select
+        class="w-full"
         name="course_id"
         [(ngModel)]="course_id"
         #courseCtrl="ngModel"
         [options]="courses"
-        required
+        optionLabel="label"
+        optionValue="value"
+        [disabled]="mode === 'VIEW'"
         placeholder="Select Course"
-        class="w-full"
-        [ngClass]="{
-          'ng-invalid ng-dirty':
-          courseCtrl.invalid && (courseCtrl.touched || submitted)
-        }"
-      ></p-select>
+        required>
+      </p-select>
 
       <p class="mt-1 text-xs text-rose-600"
       *ngIf="courseCtrl.invalid && (courseCtrl.touched || submitted)">
@@ -62,14 +61,17 @@
       </label>
 
       <p-select
-        name="section_id"
-        [(ngModel)]="section_id"
-        #sectionCtrl="ngModel"
-        [options]="sections"
-        required
-        placeholder="Select Section"
-        class="w-full"
-      ></p-select>
+       class="w-full"
+       name="section_id"
+      [(ngModel)]="section_id"
+      #sectionCtrl="ngModel"
+      [options]="sections"
+      optionLabel="label"
+      optionValue="value"
+      [disabled]="mode === 'VIEW'"
+      placeholder="Select Section"
+      required>
+      </p-select>
     </div>
 
     <!-- PROFESSOR -->
@@ -79,13 +81,16 @@
       </label>
 
       <p-select
+        class="w-full"
         name="professor_id"
         [(ngModel)]="professor_id"
         #professorCtrl="ngModel"
         [options]="professors"
-        required
+        optionLabel="label"
+        optionValue="value"
+        [disabled]="mode === 'VIEW'"
         placeholder="Select Professor"
-        class="w-full"
+        required>
       ></p-select>
     </div>
 
@@ -96,13 +101,17 @@
       </label>
 
       <p-select
+        class="w-full"
         name="subject_id"
         [(ngModel)]="subject_id"
         #subjectCtrl="ngModel"
         [options]="subjects"
+        optionLabel="label"
+        optionValue="value"
+        [disabled]="mode === 'VIEW'"
         required
         placeholder="Select Subject"
-        class="w-full"
+      
       ></p-select>
     </div>
 
@@ -113,13 +122,17 @@
       </label>
 
       <p-select
+        class="w-full"
         name="day"
         [(ngModel)]="day"
         #dayCtrl="ngModel"
         [options]="days"
+        optionLabel="label"
+        optionValue="value"
+        [disabled]="mode === 'VIEW'"
         required
         placeholder="Select Day"
-        class="w-full"
+    
       ></p-select>
     </div>
 
@@ -132,6 +145,7 @@
        <p-datepicker
         name="start_time"
         [(ngModel)]="start_time"
+        [disabled]="mode === 'VIEW'"
         #startTimeCtrl="ngModel"
         [required]="true"
         [showTime]="true"
@@ -150,14 +164,15 @@
       </label>
 
        <p-datepicker
-        name="start_time"
+        name="end_time"
         [(ngModel)]="start_time"
+        [disabled]="mode === 'VIEW'"
         #startTimeCtrl="ngModel"
         [required]="true"
         [showTime]="true"
         timeOnly="true"
         hourFormat="24"
-        placeholder="Select Start Time"
+        placeholder="Select End Time"
         class="w-full"
         inputStyleClass="w-full"
       ></p-datepicker>
@@ -173,6 +188,7 @@
         pInputText
         name="room"
         [(ngModel)]="room"
+        [disabled]="mode === 'VIEW'"
         #roomCtrl="ngModel"
         class="w-full"
         required
@@ -181,32 +197,29 @@
     </div>
 
   </div>
-  <!-- GRID END -->
+
 
   <!-- LOADING -->
-  <div *ngIf="loading" class="flex justify-center mt-4">
-    <i class="pi pi-spin pi-spinner text-2xl text-blue-600"></i>
-  </div>
+  <div
+  *ngIf="mode !== 'VIEW'"
+   class="flex justify-end gap-3 mt-6">
 
-  <!-- FOOTER -->
-  <div class="flex items-center justify-end gap-3 mt-6">
-    <button
-      pButton
-      type="button"
-      label="Cancel"
-      class="p-button-outlined"
-      (click)="close()"
-      [disabled]="loading"
-    ></button>
+   <button
+     pButton
+     type="button"
+     label="Cancel"
+     class="p-button-outlined"
+     (click)="close()">
+  </button>
 
-    <button
-      pButton
-      type="submit"
-      [label]="dialogButtonLabel"
-      class="p-button-success"
-      [disabled]="loading"
-    ></button>
-  </div>
+   <button
+     pButton
+    type="submit"
+     [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+     class="p-button-success">
+  </button>
+
+ </div>
 
   </form>
 </p-dialog>

@@ -15,6 +15,7 @@ export enum SectionEndPoints {
   getSectionById = 'get/section/{id}',
   updateSection = 'update/section/{id}',
   deleteSection = 'delete/section',
+  importSection = 'import/section'
 }
 
 export type SectionResponse = ApiResponse<SectionData>;
@@ -89,4 +90,14 @@ createSection(payload: CreateSectionPayload): Observable<SectionResponse> {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+  importSection(file: File) {
+  const fd = new FormData();
+  fd.append('file', file);
+
+  return this.http.post<ApiResponseNoData>(
+    `${this.baseAPIUrl}${SectionEndPoints.importSection}`,
+    fd,
+    { headers: this.authHeaders() }
+  );
+}
 }

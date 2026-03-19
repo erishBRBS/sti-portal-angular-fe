@@ -48,7 +48,7 @@ export class CourseComponent {
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
 
-  @ViewChild(CourseModalComponent) showCourseModalForm!: CourseModalComponent;
+  @ViewChild(CourseModalComponent) courseModal!: CourseModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -78,29 +78,63 @@ export class CourseComponent {
     console.log('row click', row);
   }
 
-  onAction(e: { actionKey: string; row: UserRow }) {
-    console.log('action', e.actionKey, e.row);
+onAction(e: { actionKey: string; row: UserRow }) {
 
-    if (e.actionKey === 'edit') {
-      this.showCourseModalForm?.updateDialog(e.row.id);
+  if (e.actionKey === 'edit') {
+    this.courseModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
       // optional view function
       this.getCoursenById(e.row.id);
     }
+
+  else if (e.actionKey === 'delete') {
+    this.deleteCourse(e.row.id);
   }
 
-  openImportCsv() {
-    console.log('import csv clicked', this.selectedRows);
+}
+
+openImportCsv() {
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+
+  input.onchange = (event: any) => {
+    const file: File = event.target.files[0];
+
+    if (!file) return;
+
+    this.courseService.importCourse(file).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.loadCourse(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to import CSV');
+      }
+    });
+  };
+
+  input.click();
+}
+
+openAddModal() {
+  this.courseModal?.showDialog();
+}
+
+openDeleteModal() {
+  if (!this.selectedRows.length) {
+    this.toast.error('Error', 'Please select a section to delete.');
+    return;
   }
 
-  openAddModal() {
-    this.showCourseModalForm?.showDialog();
+  if (!confirm('Are you sure you want to delete selected section(s)?')) {
+    return;
   }
 
-  openDeleteModal() {
-    console.log('clicked!');
-    // this.deleteSelectedAdmins();
-  }
+  this.deleteSelectedCourse();
+}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -145,6 +179,25 @@ export class CourseComponent {
       });
   }
 
+deleteCourse(id: number) {
+  const payload = {
+    id: [id]
+  };
+
+  if (!confirm('Are you sure you want to delete this section?')) return;
+
+  this.courseService.deleteCourse(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+      this.loadCourse(this.currentPage, this.rowsPerPage);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toast.error('Error', 'Failed to delete section');
+    }
+  });
+}
+
   private getCoursenById(id: number): void {
     this.courseService.getCourseById(id).subscribe({
       next: (response) => {
@@ -164,20 +217,28 @@ export class CourseComponent {
     });
   }
 
-  deleteSelectedStudent(): void {
-    // const payload = {
-    //   id: this.selectedRows.map((row) => row.id),
-    // };
-    // this.adminService.deleteAdmins(payload).subscribe({
-    //   next: (res) => {
-    //     console.log(res.message);
-    //     this.toast.success('Success', res.message);
-    //     this.onModalSuccess();
-    //     this.selectedRows = [];
-    //   },
-    //   error: (err) => {
-    //     console.error(err);
-    //   },
-    // });
-  }
+deleteSelectedCourse(): void {
+
+  const payload = {
+    id: this.selectedRows.map((row: UserRow) => row.id)
+  };
+
+  this.courseService.deleteCourse(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+
+      // clear selection
+      this.selectedRows = [];
+
+      // reload table
+      this.loadCourse(this.currentPage, this.rowsPerPage);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toast.error('Error', 'Failed to delete sections');
+    }
+  });
+
+}
+
 }

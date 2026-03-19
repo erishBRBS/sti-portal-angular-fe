@@ -13,6 +13,7 @@ export enum AdminEndPoints {
   updateAdmin = 'update/admin/{id}',
   getAdminById = 'get/admin/{id}',
   deleteAdmin = 'delete/admin',
+  importSection = 'import/admin'
 }
 
 export type CreateAdminResponse = ApiResponse<AdminData>;
@@ -104,4 +105,15 @@ export class AdminService {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+
+        importAdmin(file: File) {
+        const fd = new FormData();
+        fd.append('file', file);
+      
+        return this.http.post<ApiResponseNoData>(
+          `${this.baseAPIUrl}${AdminEndPoints.importSection}`,
+          fd,
+          { headers: this.authHeaders() }
+        );
+      }
 }

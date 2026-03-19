@@ -31,7 +31,7 @@ export class ProfessorModalComponent {
   @Output() onSuccess = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
   @ViewChild('professorForm') professorFormRef?: NgForm;
-  @ViewChild('fileInput') fileInputRef?: ElementRef<HTMLInputElement>;
+   @ViewChild('fileInput') fileInputRef?: ElementRef<HTMLInputElement>;
 
   private readonly professorService = inject(ProfessorService);
   private readonly toast = inject(ToastService);
@@ -71,10 +71,17 @@ export class ProfessorModalComponent {
   currentID: number | null = null;
   pendingEditId: number | null = null;
 
-  @ViewChild('imagePathInput') imagePathInputRef!: ElementRef<HTMLInputElement>;
+get dialogTitle(): string {
 
-  get dialogTitle(): string {
-    return this.mode === ModalMode.ADD ? 'Add Professor' : 'Update Professor';
+  if (this.mode === ModalMode.ADD) return 'Add Professor';
+
+  if (this.mode === ModalMode.UPDATE) return 'Update Professor';
+
+  return 'View Professor';
+
+}
+  get dialogButtonLabel(): string {
+    return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
   }
 
   showDialog(): void {
@@ -83,31 +90,47 @@ export class ProfessorModalComponent {
     this.visible = true;
     this.resetForm();
   }
+    viewDialog(id: number): void {
 
-  updateDialog(id: number): void {
-    this.mode = ModalMode.UPDATE;
-    this.currentID = id;
-    this.pendingEditId = id;
-    this.visible = true;
-    this.resetForm(true);
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+  this.visible = true;
+
+  this.resetForm(true);
+
+  setTimeout(() => {
+    this.getProfessorById(id);
+  });
+
+}
+
+ updateDialog(id: number) {
+  this.mode = ModalMode.UPDATE;
+  this.currentID = id;
+  this.visible = true;
+  this.resetForm(true);
+  this.getProfessorById(id);
+}
+
+onDialogShown() {
+  if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+
+    const id = this.pendingEditId;
+
     setTimeout(() => {
       this.getProfessorById(id);
-    });
-  }
+    }, 0);
 
-  onDialogShown(): void {
-    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
-      this.getProfessorById(this.pendingEditId);
-      this.pendingEditId = null;
-    }
+    this.pendingEditId = null;
   }
+}
+
 
   private resetForm(preserveCurrentId: boolean = false): void {
     this.submitted = false;
 
     this.full_name = '';
     this.email = '';
-    this.mobile_number = '';
     this.username = '';
     this.password = '';
 
@@ -127,10 +150,11 @@ export class ProfessorModalComponent {
     this.selectedFile = null;
     this.previewUrl = null;
 
-    // reset actual <input type="file"> values
-    // setTimeout to ensure ViewChild exists (esp. after dialog hide/show)
-    setTimeout(() => {
-      if (this.imagePathInputRef?.nativeElement) this.imagePathInputRef.nativeElement.value = '';
+    
+     setTimeout(() => {
+      if (this.fileInputRef?.nativeElement) {
+        this.fileInputRef.nativeElement.value = '';
+      }
     });
   }
 
@@ -141,7 +165,6 @@ export class ProfessorModalComponent {
 
     this.full_name = '';
     this.email = '';
-    this.mobile_number = '';
     this.username = '';
     this.password = '';
 
@@ -182,11 +205,13 @@ export class ProfessorModalComponent {
   // MARK: - API Function
   private submitAction(): void {
     const payload: CreateProfessorPayload = {
-      full_name: this.full_name,
-      email: this.email,
-      mobile_number: this.mobile_number,
-      username: this.username,
-      password: this.password,
+     professor_name: this.full_name,
+     email: this.email,
+     mobile_number: this.mobile_number,
+     username: this.username,
+     password: this.password,
+     department_id: 1,
+     user_role_id: 2 
     };
 
     this.professorService.createProfessor(payload, this.selectedFile).subscribe({
@@ -206,26 +231,67 @@ export class ProfessorModalComponent {
     });
   }
 
-  private getProfessorById(id: number): void {
-    this.professorService.getProfessorById(id).subscribe({
-      next: (response) => {
-        const data = response.data;
+    private createProfessor(payload: CreateProfessorPayload) {
+      this.professorService.createProfessor(payload, this.selectedFile).subscribe({
+        next: (res: any) => {
+          this.toast.success('Success', res.message);
+          this.onSuccess.emit();
+          this.close();
+        },
+        error: (err: any) => {
+          const msg = err?.error?.message ?? 'Something went wrong.';
+          this.toast.error('Error', msg);
+        },
+      });
+    }
 
-         this.full_name = data.professor_name;
-         this.email = data.email_address;
-         this.mobile_number = data.mobile_number;
-         this.username = data.username;
+    private updateProfessor(payload: CreateProfessorPayload) {
+      if (!this.currentID) return;
+  
+      this.professorService
+        .updateProfessor(this.currentID, payload, this.selectedFile)
+        .subscribe({
+          next: (res: any) => {
+            this.toast.success('Success', res.message);
+            this.onSuccess.emit();
+            this.close();
+          },
+          error: (err: any) => {
+            const msg = err?.error?.message ?? 'Something went wrong.';
+            this.toast.error('Error', msg);
+          },
+        });
+    }
 
-         if (data.image_path) {
-          this.previewUrl = this.professorService.fileAPIUrl + data.image_path;
-        }
 
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        const msg = err?.error?.message ?? 'Failed to load parent details.';
-        this.toast.error('Error', msg);
-      },
-    });
-  }
+ private getProfessorById(id: number) {
+  this.professorService.getProfessorById(id).subscribe({
+    next: (response: any) => {
+    const data = response.data;
+
+      this.full_name = data.professor_name;
+      this.username = data.username;
+      this.email = data.email;
+      this.mobile_number = data.mobile_number; 
+
+
+      // password usually hindi binabalik ng API
+      this.password = '';
+
+      // image
+this.previewUrl = data.image_path
+  ? this.professorService.fileAPIUrl + data.image_path.replace('/storage/', '')
+  : null;
+
+      this.cdr.detectChanges();
+
+    },
+
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to load parent details.';
+      this.toast.error('Error', msg);
+    },
+  });
+}
+
 }

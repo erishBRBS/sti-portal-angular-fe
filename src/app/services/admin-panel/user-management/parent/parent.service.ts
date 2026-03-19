@@ -2,7 +2,8 @@ import { HttpClient, HttpHeaders, HttpParams } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 import { Observable } from "rxjs";
-import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
+import { CreateParentPayload } from "../../../../payloads/admin-panel/user-management/parent/create-parent.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
 import { DeletePayload } from "../../../../payloads/common.payload";
 import { ParentData, ParentModel } from "../../../../models/admin-panel/user-management/parent/parent.model";
@@ -14,6 +15,7 @@ export enum ParentEndPoints {
   updateParent = 'update/parent/{id}',   
   getParentById = 'get/parent/{id}',
   deleteParent = 'delete/parent',
+  importSection = 'import/section'
 }
 
 export type ParentResponse = ApiResponse<ParentData>;
@@ -64,11 +66,12 @@ export class ParentService {
     });
   }
 
-  createParent(payload: CreateAdminPayload, imageFile?: File | null): Observable<ParentResponse> {
+  createParent(payload: CreateParentPayload, imageFile?: File | null): Observable<ParentResponse> {
     const fd = new FormData();
-    fd.append('full_name', payload.full_name ?? '');
+    fd.append('first_name', payload.first_name ?? '');
+    fd.append('middle_name', payload.middle_name ?? '');
+    fd.append('last_name', payload.last_name ?? '');
     fd.append('email', payload.email ?? '');
-    fd.append('mobile_number', payload.mobile_number ?? '');
     fd.append('username', payload.username ?? '');
     fd.append('password', payload.password ?? '');
 
@@ -84,14 +87,15 @@ export class ParentService {
       headers: this.authHeaders(),
     });
   }
-  updateParent(id: number, payload: CreateAdminPayload, imageFile?: File | null): Observable<ParentResponse> {
+  updateParent(id: number, payload: CreateParentPayload, imageFile?: File | null): Observable<ParentResponse> {
 
   const url = this.updateParentUrl.replace('{id}', String(id));
 
   const fd = new FormData();
-  fd.append('full_name', payload.full_name ?? '');
+  fd.append('first_name', payload.first_name ?? '');
+  fd.append('middle_name', payload.middle_name ?? '');
+  fd.append('last_name', payload.last_name ?? ''); 
   fd.append('email', payload.email ?? '');
-  fd.append('mobile_number', payload.mobile_number ?? '');
   fd.append('username', payload.username ?? '');
 
   if (payload.password) {
@@ -102,14 +106,24 @@ export class ParentService {
     fd.append('image_path', imageFile);
   }
 
-  return this.http.post<ParentResponse>(url, fd, {
-    headers: this.authHeaders(),
-  });
+return this.http.patch<ParentResponse>(url, fd, {
+  headers: this.authHeaders(),
+});
 }
-
   deleteParent(payload: DeletePayload): Observable<DeleteParentResponse> {
     return this.http.post<DeleteParentResponse>(this.deleteParentUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+
+      importParent(file: File) {
+      const fd = new FormData();
+      fd.append('file', file);
+    
+      return this.http.post<ApiResponseNoData>(
+        `${this.baseAPIUrl}${ParentEndPoints.importSection}`,
+        fd,
+        { headers: this.authHeaders() }
+      );
+    }
 }

@@ -11,10 +11,11 @@ import { TokenStorageService } from "../../../core/services/token-storage.servic
 
 export enum SubjectEndPoints {
   getSubject = 'get/subject',
-  createSubject = 'create/course',
-  getSubjectById = 'get/course/{id}',
+  createSubject = 'create/subject',
+  getSubjectById = 'get/subject/{id}',
   updateSubject = 'update/subject/{id}',
-  deleteSubject = 'delete/course',
+  deleteSubject = 'delete/subject',
+  importSection = 'import/section'
 }
 
 export type SubjectResponse = ApiResponse<SubjectData>;
@@ -89,4 +90,15 @@ updateSubject(id: number, payload: CreateSubjectPayload): Observable<SubjectResp
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+  importSubject(file: File) {
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return this.http.post<any>(
+    `${environment.apiUrl}/subjects/import`,
+    formData
+  );
+
+}
 }

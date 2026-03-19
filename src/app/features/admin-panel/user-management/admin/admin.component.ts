@@ -94,23 +94,29 @@ export class AdminManagementComponent {
     console.log('action', e.actionKey, e.row);
     if (e.actionKey === 'edit') {
       this.showAdminModalForm?.updateDialog(e.row.id);
-    } else if (e.actionKey === 'view') {
+
+    } else if (e.actionKey === 'view'){
       this.getAdminById(e.row.id);
+    }
+
+      else if (e.actionKey === 'delete'){
+      this.deleteAdmins(e.row.id);
     }
   }
 
-  openImportCsv() {
-    console.log('import csv clicked', this.selectedRows);
+openDeleteModal() {
+
+  if (!this.selectedRows.length) {
+    this.toast.error('Error', 'Please select parent(s) to delete.');
+    return;
   }
 
-  openAddModal() {
-    this.showAdminModalForm?.showDialog();
+  if (!confirm('Are you sure you want to delete selected parent(s)?')) {
+    return;
   }
 
-  openDeleteModal() {
-    console.log('clicked!');
-    this.deleteSelectedAdmins();
-  }
+  this.deleteSelectedAdmins();
+}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -118,10 +124,48 @@ export class AdminManagementComponent {
     this.loadAdmins(e.page, e.perPage);
   }
 
-  onModalSuccess(): void {
-    this.loadAdmins(1, this.rowsPerPage);
-  }
+openImportCsv() {
 
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+
+  input.onchange = (event: any) => {
+
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    const isCSV = file.name.endsWith('.csv');
+    if (!isCSV) {
+      this.toast.error('Error', 'Please upload a CSV file');
+      return;
+    }
+
+    this.adminService.importAdmin(file).subscribe({
+
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.loadAdmins(this.currentPage, this.rowsPerPage);
+      },
+
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to import CSV');
+      }
+
+    });
+
+  };
+
+  input.click();
+}
+
+openAddModal() {
+  this.showAdminModalForm?.showDialog();
+}
+onModalSuccess(): void {
+  this.loadAdmins(this.currentPage, this.rowsPerPage);
+}
   onModalCancel(): void {
     // Handle cancel if needed
     console.log('Add form cancelled');
@@ -170,7 +214,6 @@ export class AdminManagementComponent {
       next: (res) => {
         console.log(res.message);
         this.toast.success('Success', res.message);
-        this.onModalSuccess();
         this.selectedRows = [];
       },
       error: (err) => {
@@ -179,6 +222,51 @@ export class AdminManagementComponent {
     });
   }
 
+deleteSelectedAdmin() {
+
+  const payload = {
+    id: this.selectedRows.map((row: any) => row.id)
+  };
+
+  this.adminService.deleteAdmins(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      // clear selection
+      this.selectedRows = [];
+
+      // reload table
+      this.loadAdmins(this.currentPage, this.rowsPerPage);
+    },
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to delete parents.';
+      this.toast.error('Error', msg);
+    }
+  });
+
+}
+deleteAdmins(id: number) {
+
+  const payload = {
+    id: [id]
+  };
+
+  if (!confirm('Are you sure you want to delete this parent?')) return;
+
+  this.adminService.deleteAdmins(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      // reload table
+      this.loadAdmins(this.currentPage, this.rowsPerPage);
+    },
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to delete parent.';
+      this.toast.error('Error', msg);
+    }
+  });
+
+}
   private getAdminById(id: number): void {
     this.adminService.getAdminById(id).subscribe({
       next: (response) => {
@@ -197,7 +285,7 @@ export class AdminManagementComponent {
       },
     });
   }
-
+      
   private mapStatus(status: string): UserStatus {
     switch (status) {
       case 'active':

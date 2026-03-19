@@ -1,202 +1,261 @@
 <p-dialog
   [(visible)]="visible"
   (onShow)="onDialogShown()"
+  (onHide)="close()"
   [modal]="true"
   [draggable]="false"
   [resizable]="false"
   [closable]="true"
   [dismissableMask]="true"
-  [style]="{ width: 'min(1100px, 95vw)' }"
-  [contentStyle]="{ 'max-height': '78vh', overflow: 'auto' }"
-  (onHide)="close()"
+  [style]="{ width: 'min(900px, 95vw)' }"
+  [contentStyle]="{ 'max-height': '85vh', overflow: 'auto' }"
 >
+  <!-- HEADER -->
   <ng-template pTemplate="header">
-    <div class="w-full flex items-center justify-center">
-      <div class="text-lg font-bold text-red-700">{{ dialogTitle }}</div>
+    <div class="flex items-center justify-center w-full">
+      <div class="text-lg font-bold text-blue-700">
+        {{ dialogTitle }}
+      </div>
     </div>
   </ng-template>
 
-  <form #parentForm="ngForm" (ngSubmit)="onSave(parentForm)" class="p-4">
+  <!-- FORM -->
+  <form #studentForm="ngForm" (ngSubmit)="onSave(studentForm)" class="p-4">
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-      <!-- LEFT COLUMN -->
-      <div class="space-y-5">
-
-        <!-- Full Name -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Full Name
-          </label>
-          <input
-            pInputText
-            class="w-full"
-            name="full_name"
-            [(ngModel)]="full_name"
-            #fullNameCtrl="ngModel"
-            required
-            placeholder="Input full Name"
-            [ngClass]="{ 'ng-invalid ng-dirty': fullNameCtrl.invalid && (fullNameCtrl.touched || submitted) }"
-          />
-          <p class="text-xs text-rose-600"
-             *ngIf="fullNameCtrl.invalid && (fullNameCtrl.touched || submitted)">
-             Full Name is required.
-          </p>
-        </div>
-
-        <!-- Email -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Email
-          </label>
-          <input
-            pInputText
-            class="w-full"
-            name="email"
-            [(ngModel)]="email"
-            #emailCtrl="ngModel"
-            required
-            email
-            placeholder="Input Email"
-            [ngClass]="{ 'ng-invalid ng-dirty': emailCtrl.invalid && (emailCtrl.touched || submitted) }"
-          />
-          <p class="text-xs text-rose-600"
-             *ngIf="emailCtrl.invalid && (emailCtrl.touched || submitted)">
-             Email is required / must be valid.
-          </p>
-        </div>
-
-        <!-- Mobile -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Mobile Number
-          </label>
-          <input
-            pInputText
-            class="w-full"
-            name="mobile_number"
-            [(ngModel)]="mobile_number"
-            #mobileCtrl="ngModel"
-            required
-            pattern="^09[0-9]{9}$"
-            maxlength="11"
-            placeholder="Input Mobile"
-            (keypress)="allowNumbersOnly($event)"
-            (input)="mobile_number = mobile_number.replace(/[^0-9]/g, '')"
-            [ngClass]="{ 'ng-invalid ng-dirty': mobileCtrl.invalid && (mobileCtrl.touched || submitted) }"
-          />
-        </div>
-
-        <!-- Username -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Username
-          </label>
-          <input
-            pInputText
-            class="w-full"
-            name="username"
-            [(ngModel)]="username"
-            #usernameCtrl="ngModel"
-            required
-            placeholder="Input Username"
-            [ngClass]="{ 'ng-invalid ng-dirty': usernameCtrl.invalid && (usernameCtrl.touched || submitted) }"
-          />
-        </div>
-
+      <!-- FIRST NAME -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> First Name
+        </label>
+        <input
+          pInputText
+          name="first_name"
+          [(ngModel)]="first_name"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          required
+          placeholder="Enter First Name"
+        />
       </div>
 
-      <!-- RIGHT COLUMN -->
-      <div class="space-y-5">
+      <!-- LAST NAME -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Last Name
+        </label>
+        <input
+          pInputText
+          name="last_name"
+          [(ngModel)]="last_name"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          required
+          placeholder="Enter Last Name"
+        />
+      </div>
 
-        <!-- Course -->
+      <!-- MIDDLE NAME -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          Middle Name
+        </label>
+        <input
+          pInputText
+          name="middle_name"
+          [(ngModel)]="middle_name"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          placeholder="Enter Middle Name"
+        />
+      </div>
+
+      <!-- USERNAME -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Username
+        </label>
+        <input
+          pInputText
+          name="username"
+          [(ngModel)]="username"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          required
+          placeholder="Enter Username"
+        />
+      </div>
+
+      <!-- EMAIL -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Email
+        </label>
+        <input
+          pInputText
+          name="email"
+          [(ngModel)]="email"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          required
+          email
+          placeholder="Enter Email"
+        />
+      </div>
+
+      <!-- CONTACT -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Course
+            <span class="text-red-600 mr-1">*</span> Contact Number:
           </label>
-          <input
-            pInputText
-            class="w-full"
-            name="course"
-            [(ngModel)]="course"
-            #courseCtrl="ngModel"
-            required
-            placeholder="Input Course"
-          />
-        </div>
+        <input
+          pInputText
+          name="mobile_number"
+          [(ngModel)]="mobile_number"
+          required
+          pattern="^09[0-9]{9}$"
+          maxlength="11"
+          inputmode="numeric"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          placeholder="Input Mobile"
+          (keypress)="allowNumbersOnly($event)"
+        />
+      </div>
 
-        <!-- Year -->
+      <!-- COURSE -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Course
+        </label>
+
+        <p-select
+          class="w-full"
+          name="course_id"
+          [(ngModel)]="course_id"
+          [options]="courses"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Select Course"
+          required
+        ></p-select>
+      </div>
+
+      <!-- SECTION -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Section
+        </label>
+
+        <p-select
+          class="w-full"
+          name="section_id"
+          [(ngModel)]="section_id"
+          [options]="sections"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Select Section"
+          required
+        ></p-select>
+      </div>
+
+      <!-- YEAR LEVEL -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          Year Level
+        </label>
+
+      <p-select
+        class="w-full"
+        name="year_level"
+        [(ngModel)]="year_level"
+        [options]="yearLevels"
+        optionLabel="label"
+        optionValue="value"
+        [disabled]="mode === 'VIEW'"
+        placeholder="Select Year Level"
+       ></p-select> 
+      </div>
+
+      <!-- RFID -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Year Level
+            <span class="text-red-600 mr-1">*</span> RFID Code:
           </label>
-          <input
-            pInputText
-            class="w-full"
-            name="year_level"
-            [(ngModel)]="year_level"
-            #yearCtrl="ngModel"
-            required
-            placeholder="Input Year Level"
-          />
-        </div>
-
-        <!-- Section -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Section
-          </label>
-          <input
-            pInputText
-            class="w-full"
-            name="section"
-            [(ngModel)]="section"
-            #sectionCtrl="ngModel"
-            required
-            placeholder="Input Section"
-          />
-        </div>
-
+        <input
+          pInputText
+          name="rfid_code"
+          [(ngModel)]="rfid_code"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          placeholder="Enter RFID Code"
+        />
       </div>
 
     </div>
-
-    <!-- Image Upload -->
-    <div class="mt-6">
-      <label class="block text-sm font-semibold text-slate-700 mb-2">
-        Profile Image (optional)
-      </label>
-
-      <div class="flex items-center gap-4">
-        <div class="w-24 h-24 rounded-xl border bg-slate-50 flex items-center justify-center">
-          <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover"/>
-          <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
-        </div>
-
+        <!-- ✅ Image Upload (PUP style: hidden input + custom label) -->
         <div>
-          <input
-            #fileInput
-            type="file"
-            hidden
-            accept="image/*"
-            (change)="onFileSelected($event)"
-          />
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            Profile Image (optional)
+          </label>
 
-          <button
-            type="button"
-            pButton
-            class="p-button-sm"
-            label="Choose File"
-            (click)="fileInput.click()"
-          ></button>
+          <div class="flex items-start gap-4">
+            <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
+              <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
+              <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
+            </div>
+
+            <div class="flex-1 space-y-2">
+              <input
+                #fileInput
+                type="file"
+                hidden
+                accept="image/*"
+                (change)="onFileSelected($event)"
+              />
+
+              <div class="flex items-center gap-3">
+                <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
+                  {{ fileName || 'Click to choose file' }}
+                </span>
+
+                <button type="button" pButton class="p-button-sm" label="Choose File" (click)="fileInput.click()"></button>
+
+                <button
+                  *ngIf="fileName || previewUrl"
+                  type="button"
+                  pButton
+                  class="p-button-text p-button-sm"
+                  label="Remove"
+                  (click)="removeImage()"
+                ></button>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      
 
-    <!-- Footer -->
-    <div class="flex justify-end gap-3 mt-6">
-      <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="close()"></button>
-      <button pButton type="submit" label="Add Record" class="p-button-success"></button>
+    <!-- FOOTER -->
+    <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
+
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        class="p-button-outlined"
+        (click)="close()">
+      </button>
+
+      <button
+        pButton
+        type="submit"
+        [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+        class="p-button-success">
+      </button>
+
     </div>
 
   </form>

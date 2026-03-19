@@ -27,6 +27,7 @@
           class="w-full" 
           name="course_name"
           [(ngModel)]="course_name"
+          [disabled]="mode === 'VIEW'"
           #courseNameCtrl="ngModel"
           required
           placeholder="Input Course Name"
@@ -39,9 +40,25 @@
     </div>
 
     <!-- Footer -->
-    <div class="w-full flex items-center justify-end gap-3 mt-6">
-      <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="close()"></button>
-      <button pButton type="submit" [label]="dialogButtonLabel" class="p-button-success"></button>
-    </div>
+  <div
+  *ngIf="mode !== 'VIEW'"
+   class="flex justify-end gap-3 mt-6">
+
+   <button
+     pButton
+     type="button"
+     label="Cancel"
+     class="p-button-outlined"
+     (click)="close()">
+  </button>
+
+   <button
+     pButton
+    type="submit"
+     [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+     class="p-button-success">
+  </button>
+
+ </div>
   </form>
 </p-dialog>

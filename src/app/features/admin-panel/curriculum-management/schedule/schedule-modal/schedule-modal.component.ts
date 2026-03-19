@@ -13,14 +13,13 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
-
+import { ModalMode } from '../../../../../enums/modal.mode';
 import { CourseService } from '../../../../../services/admin-panel/curriculum-management/course.service';
 import { SectionService } from '../../../../../services/admin-panel/curriculum-management/section.service';
 import { SubjectService } from '../../../../../services/admin-panel/curriculum-management/subject.service';
 import { ProfessorService } from '../../../../../services/admin-panel/user-management/professor/professor.service';
 import { ScheduleService } from '../../../../../services/admin-panel/curriculum-management/schedule.service';
 
-import { ModalMode } from '../../../../../enums/modal.mode';
 import { ToastService } from '../../../../../shared/services/toast.service';
 import { CreateSchedulePayload } from '../../../../../payloads/admin-panel/curriculum/schedule/create-schedule.payload';
 
@@ -99,9 +98,15 @@ export class ScheduleModalComponent {
      DIALOG TEXT
   ============================ */
 
-  get dialogTitle(): string {
-    return this.mode === ModalMode.ADD ? 'Add Schedule' : 'Update Schedule';
-  }
+get dialogTitle(): string {
+
+  if (this.mode === ModalMode.ADD) return 'Add Section';
+
+  if (this.mode === ModalMode.UPDATE) return 'Update Section';
+
+  return 'View Section';
+
+}
 
   get dialogButtonLabel(): string {
     return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
@@ -118,12 +123,27 @@ export class ScheduleModalComponent {
     this.resetForm();
     this.loadDropdowns();
   }
+viewDialog(id: number): void {
+
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+
+  this.resetForm(true);
+
+  this.loadDropdowns();  
+  this.visible = true;
+
+  setTimeout(() => {
+    this.getScheduleById(id);
+  }, 0);
+
+}
 
 updateDialog(id: number): void {
   this.mode = ModalMode.UPDATE;
   this.currentID = id;
   this.pendingEditId = id;
-
+  this.loadDropdowns();
   this.resetForm(true);
   this.loadDropdowns();
 
