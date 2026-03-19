@@ -5,7 +5,8 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ScheduleModalComponent } from './schedule-modal/schedule-modal.component';
 import { finalize } from 'rxjs';
 import { ScheduleData } from '../../../../models/admin-panel/curriculum-management/schedule.model';
-
+import {DetailModalConfig, ViewDetailsComponent,} from '../../../../shared/components/view-details/view-details.component';
+import { createACourseDetailConfig } from '../../../../helper/course.helper';
 type UserRow = {
   id: number;
   course_code: string;
@@ -65,8 +66,16 @@ private readonly scheduleService = inject(ScheduleService);
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+    scheduleConfig: DetailModalConfig = {
+    title: 'Course Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadSchedule(1, this.rowsPerPage);

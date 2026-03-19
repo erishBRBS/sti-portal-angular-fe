@@ -106,13 +106,11 @@ export class StudentManagementComponent {
 
 onAction(e: { actionKey: string; row: UserRow }) {
 
-  if (e.actionKey === 'edit') {
-    this.studentModal.updateDialog(e.row.id);
-  }
-
-  else if (e.actionKey === 'view') {
-    this.studentModal.viewDialog(e.row.id);
-  }
+    if (e.actionKey === 'edit') {
+      this.studentModal?.updateDialog(e.row.id);
+    } else if (e.actionKey === 'view') {
+      this.getStudentById(e.row.id);
+    }
 
   else if (e.actionKey === 'delete') {
     this.deleteStudent(e.row.id);
@@ -206,7 +204,7 @@ openDeleteModal() {
             middle_name: a.middle_name ?? '',
             last_name: a.last_name,
             email: a.email,
-            contact_number: a.contact_number ?? '',
+            contact_number: a.mobile_number ?? '',
             course: a.course.course_name,
             rfid_code: a.credentials?.rfid_code ?? '',
             section: a.section.section_name,
@@ -274,6 +272,25 @@ deleteSelectedStudent() {
   });
 
 }
+
+  private getStudentById(id: number): void {
+      this.studentService.getStudentById(id).subscribe({
+        next: (response) => {
+          const data = response.data;
+  
+          this.ngZone.run(() => {
+            this.studentConfig = createStudentDetailConfig(data, this.studentService.fileAPIUrl);
+            this.showViewDetails = true;
+            this.cdr.detectChanges();
+          });
+        },
+        error: (err) => {
+          const msg = err?.error?.message ?? 'Failed to load admin details.';
+          this.toast.error('Error', msg);
+          console.error(err);
+        },
+      });
+  }
 
   private mapStatus(status: string): UserStatus {
     switch (status) {

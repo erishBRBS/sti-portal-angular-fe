@@ -98,11 +98,9 @@ onAction(e: { actionKey: string; row: UserRow }) {
 
   if (e.actionKey === 'edit') {
     this.professorModal.updateDialog(e.row.id);
-  }
-
-  else if (e.actionKey === 'view') {
-    this.professorModal.viewDialog(e.row.id);
-  }
+    } else if (e.actionKey === 'view') {
+       this.getProfessorById(e.row.id);
+    }
 
   else if (e.actionKey === 'delete') {
     this.deleteProfessor(e.row.id);
@@ -259,6 +257,25 @@ deleteSelectedProfessor() {
   });
 
 }
+
+  private getProfessorById(id: number): void {
+    this.professorService.getProfessorById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.professorConfig = createProfessorDetailConfig(data, this.professorService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
   private mapStatus(status: string): UserStatus {
     switch (status) {
       case 'active':

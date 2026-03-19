@@ -96,7 +96,7 @@ export class AdminManagementComponent {
       this.showAdminModalForm?.updateDialog(e.row.id);
 
     } else if (e.actionKey === 'view'){
-      this.showAdminModalForm.viewDialog(e.row.id);
+      this.getAdminById(e.row.id);
     }
 
       else if (e.actionKey === 'delete'){
@@ -267,7 +267,25 @@ deleteAdmins(id: number) {
   });
 
 }
+  private getAdminById(id: number): void {
+    this.adminService.getAdminById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
 
+        this.ngZone.run(() => {
+          this.adminConfig = createAdminDetailConfig(data, this.adminService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
+      
   private mapStatus(status: string): UserStatus {
     switch (status) {
       case 'active':

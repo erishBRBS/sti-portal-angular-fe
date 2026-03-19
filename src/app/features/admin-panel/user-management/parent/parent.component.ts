@@ -3,6 +3,7 @@ import {
   DataTableComponent,
   RowAction,
   TableColumn,
+  
 } from '../../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ParentService } from '../../../../services/admin-panel/user-management/parent/parent.service';
@@ -10,6 +11,9 @@ import { ParentModalComponent } from './parent-modal/parent-modal.component';
 import { finalize } from 'rxjs';
 import { ParentData } from '../../../../models/admin-panel/user-management/parent/parent.model';
 import { ModalMode } from '../../../../enums/modal.mode';
+import { DetailModalConfig, ViewDetailsComponent } from './../../../../shared/components/view-details/view-details.component';
+import { createParentDetailConfig } from '../../../../helper/parent.helper';
+
 
 type UserRow = {
   id: number;
@@ -28,7 +32,7 @@ type UserStatus = UserRow['status'];
   imports: [
     DataTableComponent,
     ParentModalComponent,
-    ViewDetailsComponent
+    ViewDetailsComponent,
   ],
   templateUrl: './parent.component.html',
   styleUrl: './parent.component.css',
@@ -97,11 +101,9 @@ onAction(e: { actionKey: string; row: UserRow }) {
 
   if (e.actionKey === 'edit') {
     this.parentModal.updateDialog(e.row.id);
-  }
-
-  else if (e.actionKey === 'view') {
-    this.parentModal.viewDialog(e.row.id);
-  }
+    } else if (e.actionKey === 'view') {
+      this.getParentById(e.row.id);
+    }
 
   else if (e.actionKey === 'delete') {
     this.deleteParent(e.row.id);
@@ -137,6 +139,7 @@ openImportCsv() {
         console.error(err);
         this.toast.error('Error', 'Failed to import CSV');
       }
+
 
     });
 
@@ -256,6 +259,26 @@ deleteParent(id: number) {
   });
 
 }
+   private getParentById(id: number): void {
+    this.parentService.getParentById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.parentConfig = createParentDetailConfig(data, this.parentService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
+
+
 
   private mapStatus(status: string): UserStatus {
     switch (status) {

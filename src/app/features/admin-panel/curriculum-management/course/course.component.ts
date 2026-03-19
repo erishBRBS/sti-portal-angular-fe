@@ -82,11 +82,10 @@ onAction(e: { actionKey: string; row: UserRow }) {
 
   if (e.actionKey === 'edit') {
     this.courseModal.updateDialog(e.row.id);
-  }
-
-  else if (e.actionKey === 'view') {
-    this.courseModal.viewDialog(e.row.id);
-  }
+    } else if (e.actionKey === 'view') {
+      // optional view function
+      this.getCoursenById(e.row.id);
+    }
 
   else if (e.actionKey === 'delete') {
     this.deleteCourse(e.row.id);
@@ -199,6 +198,25 @@ deleteCourse(id: number) {
   });
 }
 
+  private getCoursenById(id: number): void {
+    this.courseService.getCourseById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.courseConfig = createACourseDetailConfig(data, this.courseService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
+
 deleteSelectedCourse(): void {
 
   const payload = {
@@ -222,4 +240,5 @@ deleteSelectedCourse(): void {
   });
 
 }
+
 }
