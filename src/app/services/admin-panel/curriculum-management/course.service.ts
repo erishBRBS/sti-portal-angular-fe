@@ -14,6 +14,7 @@ export enum CourseEndPoints {
   getCourseById = 'get/course/{id}',
   updateCourse = 'update/course/{id}',
   deleteCourse = 'delete/course',
+  importCourse = 'import/course'
 }
 
 export type CourseResponse = ApiResponse<CourseData>;
@@ -84,5 +85,15 @@ createCourse(payload: { course_name: string }): Observable<CourseResponse> {
     return this.http.post<DeleteCourseResponse>(this.deleteCoursetUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
+  }
+    importCourse(file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+  
+    return this.http.post<ApiResponseNoData>(
+      `${this.baseAPIUrl}${CourseEndPoints.importCourse}`,
+      fd,
+      { headers: this.authHeaders() }
+    );
   }
 }

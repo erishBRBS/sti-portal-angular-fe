@@ -42,14 +42,32 @@ export class CourseModalComponent {
   currentID = 0;
   pendingEditId: number | null = null;
 
-  get dialogTitle(): string {
-    return this.mode === ModalMode.ADD ? 'Add Course' : 'Update Course';
-  }
+get dialogTitle(): string {
+
+  if (this.mode === ModalMode.ADD) return 'Add Course';
+
+  if (this.mode === ModalMode.UPDATE) return 'Update Course';
+
+  return 'View Course';
+
+}
 
   get dialogButtonLabel(): string {
     return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
   }
+  viewDialog(id: number): void {
 
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+  this.visible = true;
+
+  this.resetForm(true);
+
+  setTimeout(() => {
+    this.getCourseById(id);
+  });
+
+}
   showDialog(): void {
     this.mode = ModalMode.ADD;
     this.currentID = 0;

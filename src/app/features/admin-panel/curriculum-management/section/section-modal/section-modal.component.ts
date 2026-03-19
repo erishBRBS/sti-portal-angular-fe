@@ -41,14 +41,33 @@ export class SectionModalComponent {
   currentID = 0;
   pendingEditId: number | null = null;
 
-  get dialogTitle(): string {
-    return this.mode === ModalMode.ADD ? 'Add Section' : 'Update Section';
-  }
+get dialogTitle(): string {
+
+  if (this.mode === ModalMode.ADD) return 'Add Section';
+
+  if (this.mode === ModalMode.UPDATE) return 'Update Section';
+
+  return 'View Section';
+
+}
 
   get dialogButtonLabel(): string {
     return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
   }
+  
+viewDialog(id: number): void {
 
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+  this.visible = true;
+
+  this.resetForm(true);
+
+  setTimeout(() => {
+    this.getSectionById(id);
+  });
+
+}
   showDialog(): void {
     this.mode = ModalMode.ADD;
     this.currentID = 0;
@@ -68,12 +87,18 @@ export class SectionModalComponent {
     });
   }
 
-  onDialogShown(): void {
-    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
-      this.getSectionById(this.pendingEditId);
-      this.pendingEditId = null;
-    }
+onDialogShown() {
+  if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+
+    const id = this.pendingEditId;
+
+    setTimeout(() => {
+      this.getSectionById(id);
+    }, 0);
+
+    this.pendingEditId = null;
   }
+}
 
   private resetForm(preserveCurrentId: boolean = false): void {
     this.submitted = false;

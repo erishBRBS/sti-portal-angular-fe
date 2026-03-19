@@ -54,7 +54,7 @@ private readonly scheduleService = inject(ScheduleService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
 
-@ViewChild(ScheduleModalComponent) showScheduleModalForm!: ScheduleModalComponent;
+@ViewChild(ScheduleModalComponent)scheduleModal!: ScheduleModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -69,42 +69,81 @@ private readonly scheduleService = inject(ScheduleService);
   selectedRows: any[] = [];
 
   ngOnInit(): void {
-    this.loadSection(1, this.rowsPerPage);
+    this.loadSchedule(1, this.rowsPerPage);
   }
   // MARK: - This part is for all button function
   onRow(row: UserRow) {
     console.log('row click', row);
   }
 
-  onAction(e: { actionKey: string; row: UserRow }) {
-    console.log('action', e.actionKey, e.row);
-    if (e.actionKey === 'edit') {
-      this.showScheduleModalForm?.updateDialog(e.row.id);
-    } else if (e.actionKey === 'view') {
-    }
+onAction(e: { actionKey: string; row: UserRow }) {
+
+  if (e.actionKey === 'edit') {
+    this.scheduleModal.updateDialog(e.row.id);
   }
 
-  openImportCsv() {
-    console.log('import csv clicked', this.selectedRows);
+  else if (e.actionKey === 'view') {
+    this.scheduleModal.viewDialog(e.row.id);
   }
+
+  else if (e.actionKey === 'delete') {
+    this.deleteSchedule(e.row.id);
+  }
+
+}
+
+openImportCsv() {
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+
+  input.onchange = (event: any) => {
+    const file: File = event.target.files[0];
+
+    if (!file) return;
+
+    this.scheduleService.importSchedule(file).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.loadSchedule(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to import CSV');
+      }
+    });
+  };
+
+  input.click();
+}
+
 
   openAddModal() {
-    this.showScheduleModalForm?.showDialog();
+    this.scheduleModal?.showDialog();
   }
 
-  openDeleteModal() {
-    console.log('clicked!');
-    // this.deleteSelectedAdmins();
+openDeleteModal() {
+  if (!this.selectedRows.length) {
+    this.toast.error('Error', 'Please select a section to delete.');
+    return;
   }
+
+  if (!confirm('Are you sure you want to delete selected section(s)?')) {
+    return;
+  }
+
+  this.deleteSelectedSchedule();
+}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
     this.rowsPerPage = e.perPage;
-    this.loadSection(e.page, e.perPage);
+    this.loadSchedule(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
-    this.loadSection(1, this.rowsPerPage);
+    this.loadSchedule(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
@@ -113,7 +152,7 @@ private readonly scheduleService = inject(ScheduleService);
   }
 
   // MARK: - This part is for API call function
-  loadSection(page: number, perPage: number) {
+  loadSchedule(page: number, perPage: number) {
     this.loading = true;
 
     this.scheduleService
@@ -149,21 +188,45 @@ private readonly scheduleService = inject(ScheduleService);
       });
   }
 
-  deleteSelectedStudent(): void {
-    // const payload = {
-    //   id: this.selectedRows.map((row) => row.id),
-    // };
+deleteSchedule(id: number) {
+  const payload = {
+    id: [id]
+  };
 
-    // this.adminService.deleteAdmins(payload).subscribe({
-    //   next: (res) => {
-    //     console.log(res.message);
-    //     this.toast.success('Success', res.message);
-    //     this.onModalSuccess();
-    //     this.selectedRows = [];
-    //   },
-    //   error: (err) => {
-    //     console.error(err);
-    //   },
-    // });
-  }
+  if (!confirm('Are you sure you want to delete this section?')) return;
+
+  this.scheduleService.deleteSchedule(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+      this.loadSchedule(this.currentPage, this.rowsPerPage);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toast.error('Error', 'Failed to delete section');
+    }
+  });
+}
+deleteSelectedSchedule(): void {
+
+  const payload = {
+    id: this.selectedRows.map((row: UserRow) => row.id)
+  };
+
+  this.scheduleService.deleteSchedule(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+
+      // clear selection
+      this.selectedRows = [];
+
+      // reload table
+      this.loadSchedule(this.currentPage, this.rowsPerPage);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toast.error('Error', 'Failed to delete sections');
+    }
+  });
+
+}
 }

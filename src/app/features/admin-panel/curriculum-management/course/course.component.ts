@@ -36,7 +36,7 @@ export class CourseComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
 
-  @ViewChild(CourseModalComponent) showCourseModalForm!: CourseModalComponent;
+  @ViewChild(CourseModalComponent) courseModal!: CourseModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -59,29 +59,63 @@ export class CourseComponent {
   }
 
 onAction(e: { actionKey: string; row: UserRow }) {
-  console.log('action', e.actionKey, e.row);
 
   if (e.actionKey === 'edit') {
-    this.showCourseModalForm?.updateDialog(e.row.id);
-
-  } else if (e.actionKey === 'view') {
-    // optional view function
-    this.showCourseModalForm?.updateDialog(e.row.id);
+    this.courseModal.updateDialog(e.row.id);
   }
+
+  else if (e.actionKey === 'view') {
+    this.courseModal.viewDialog(e.row.id);
+  }
+
+  else if (e.actionKey === 'delete') {
+    this.deleteCourse(e.row.id);
+  }
+
 }
 
 openImportCsv() {
-  console.log('import csv clicked', this.selectedRows);
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+
+  input.onchange = (event: any) => {
+    const file: File = event.target.files[0];
+
+    if (!file) return;
+
+    this.courseService.importCourse(file).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.loadCourse(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to import CSV');
+      }
+    });
+  };
+
+  input.click();
 }
 
 openAddModal() {
-  this.showCourseModalForm?.showDialog();
+  this.courseModal?.showDialog();
 }
 
-  openDeleteModal() {
-    console.log('clicked!');
-    // this.deleteSelectedAdmins();
+openDeleteModal() {
+  if (!this.selectedRows.length) {
+    this.toast.error('Error', 'Please select a section to delete.');
+    return;
   }
+
+  if (!confirm('Are you sure you want to delete selected section(s)?')) {
+    return;
+  }
+
+  this.deleteSelectedCourse();
+}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -126,21 +160,46 @@ openAddModal() {
       });
   }
 
-  deleteSelectedStudent(): void {
-    // const payload = {
-    //   id: this.selectedRows.map((row) => row.id),
-    // };
+deleteCourse(id: number) {
+  const payload = {
+    id: [id]
+  };
 
-    // this.adminService.deleteAdmins(payload).subscribe({
-    //   next: (res) => {
-    //     console.log(res.message);
-    //     this.toast.success('Success', res.message);
-    //     this.onModalSuccess();
-    //     this.selectedRows = [];
-    //   },
-    //   error: (err) => {
-    //     console.error(err);
-    //   },
-    // });
-  }
+  if (!confirm('Are you sure you want to delete this section?')) return;
+
+  this.courseService.deleteCourse(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+      this.loadCourse(this.currentPage, this.rowsPerPage);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toast.error('Error', 'Failed to delete section');
+    }
+  });
+}
+
+deleteSelectedCourse(): void {
+
+  const payload = {
+    id: this.selectedRows.map((row: UserRow) => row.id)
+  };
+
+  this.courseService.deleteCourse(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+
+      // clear selection
+      this.selectedRows = [];
+
+      // reload table
+      this.loadCourse(this.currentPage, this.rowsPerPage);
+    },
+    error: (err) => {
+      console.error(err);
+      this.toast.error('Error', 'Failed to delete sections');
+    }
+  });
+
+}
 }

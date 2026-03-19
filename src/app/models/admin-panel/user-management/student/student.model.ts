@@ -22,7 +22,7 @@ export interface StudentData {
   last_name: string;
   middle_name: string | null;
   email: string;
-  contact_number: string | null;
+  mobile_number: string | null;
   course: Course;
   section: Section;
   year_level: string;

@@ -47,9 +47,10 @@ export class ParentModalComponent {
   mode: ModalMode = ModalMode.ADD;
 
   // form fields
-  full_name = '';
+  first_name = '';
+  middle_name = '';
+  last_name = '';
   email = '';
-  mobile_number = '';
   username = '';
   password = '';
 
@@ -61,10 +62,21 @@ export class ParentModalComponent {
   fileName = '';
 
   currentID: number | null = null;
-  pendingEditId: number | null = null;
+  pendingEditId: number | null = null
+  
 
-  get dialogTitle(): string {
-    return this.mode === ModalMode.ADD ? 'Add Parent' : 'Update Parent';
+get dialogTitle(): string {
+
+  if (this.mode === ModalMode.ADD) return 'Add Parent';
+
+  if (this.mode === ModalMode.UPDATE) return 'Update Parent';
+
+  return 'View Parent';
+
+}
+
+  get dialogButtonLabel(): string {
+    return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
   }
 
   togglePassword() {
@@ -76,9 +88,7 @@ export class ParentModalComponent {
     if (charCode < 48 || charCode > 57) event.preventDefault();
   }
 
-  // =========================
-  // MODAL CONTROL
-  // =========================
+
 
   showDialog() {
     this.mode = ModalMode.ADD;
@@ -86,21 +96,40 @@ export class ParentModalComponent {
     this.visible = true;
     this.resetForm();
   }
+  viewDialog(id: number): void {
 
-  updateDialog(id: number) {
-    this.mode = ModalMode.UPDATE;
-    this.currentID = id;
-    this.pendingEditId = id;
-    this.visible = true;
-    this.resetForm(true);
-  }
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+  this.visible = true;
 
-  onDialogShown() {
-    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
-      this.getParentById(this.pendingEditId);
-      this.pendingEditId = null;
-    }
+  this.resetForm(true);
+
+  setTimeout(() => {
+    this.getParentById(id);
+  });
+
+}
+
+updateDialog(id: number) {
+  this.mode = ModalMode.UPDATE;
+  this.currentID = id;
+  this.visible = true;
+  this.resetForm(true);
+  this.getParentById(id);
+}
+
+onDialogShown() {
+  if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+
+    const id = this.pendingEditId;
+
+    setTimeout(() => {
+      this.getParentById(id);
+    }, 0);
+
+    this.pendingEditId = null;
   }
+}
 
   close() {
     this.visible = false;
@@ -124,9 +153,10 @@ export class ParentModalComponent {
   private resetForm(preserveId: boolean = false) {
     this.submitted = false;
 
-    this.full_name = '';
+    this.first_name = '';
+    this.middle_name = '';
+    this.last_name = '';
     this.email = '';
-    this.mobile_number = '';
     this.username = '';
     this.password = '';
 
@@ -179,11 +209,12 @@ export class ParentModalComponent {
 
   private submitAction() {
     const payload: CreateParentPayload = {
-      full_name: this.full_name,
-      email: this.email,
-      mobile_number: this.mobile_number,
-      username: this.username,
-      password: this.password,
+     first_name: this.first_name,
+     middle_name: this.middle_name,
+     last_name: this.last_name,
+     email: this.email,
+     username: this.username,
+     password: this.password,
     };
 
     if (this.mode === ModalMode.ADD) {
@@ -225,26 +256,35 @@ export class ParentModalComponent {
       });
   }
 
-  private getParentById(id: number) {
-    this.parentService.getParentById(id).subscribe({
-      next: (response: any) => {
-        const data = response.data;
+private getParentById(id: number) {
+  this.parentService.getParentById(id).subscribe({
+    next: (response: any) => {
+       const data = response.data;
+    
 
-        this.full_name = data.full_name;
-        this.email = data.email;
-        this.mobile_number = data.mobile_number;
-        this.username = data.username;
+      this.first_name = data.first_name;
+      this.middle_name = data.middle_name ?? '';
+      this.last_name = data.last_name;
 
-        if (data.image_path) {
-          this.previewUrl = this.parentService.fileAPIUrl + data.image_path;
-        }
+      this.username = data.username;
+      this.email = data.email;
 
-        this.cdr.detectChanges();
-      },
-      error: (err: any) => {
-        const msg = err?.error?.message ?? 'Failed to load parent details.';
-        this.toast.error('Error', msg);
-      },
-    });
-  }
+
+      // password usually hindi binabalik ng API
+      this.password = '';
+
+      // image
+      this.previewUrl = data.image_path
+        ? this.parentService.fileAPIUrl + data.image_path.replace('/storage/', '')
+        : null;
+
+      this.cdr.detectChanges();
+    },
+
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to load parent details.';
+      this.toast.error('Error', msg);
+    },
+  });
+}
 }

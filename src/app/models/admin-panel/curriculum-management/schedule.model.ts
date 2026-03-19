@@ -14,6 +14,8 @@ export interface ScheduleProfessor {
 }
 
 export interface ScheduleSubject {
+  year_level: string;
+
   id: number;
   subject_code: string;
   subject_name: string;

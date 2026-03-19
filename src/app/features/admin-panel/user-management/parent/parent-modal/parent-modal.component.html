@@ -6,176 +6,235 @@
   [resizable]="false"
   [closable]="true"
   [dismissableMask]="true"
-  [style]="{ width: 'min(1100px, 95vw)' }"
+  [style]="{ width: 'min(1000px, 95vw)' }"
   [contentStyle]="{ 'max-height': '78vh', overflow: 'auto' }"
   (onHide)="close()"
 >
+
+  <!-- HEADER -->
   <ng-template pTemplate="header">
-    <div class="w-full flex items-center justify-center">
-      <div class="text-lg font-bold text-red-700">{{ dialogTitle }}</div>
+    <div class="w-full flex justify-center">
+      <span class="text-lg font-bold text-red-700">
+        {{ dialogTitle }}
+      </span>
     </div>
   </ng-template>
 
   <form #parentForm="ngForm" (ngSubmit)="onSave(parentForm)" class="p-4">
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
 
-      <!-- LEFT -->
-      <div class="space-y-5">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Full Name:
-          </label>
-          <input
-            pInputText class="w-full" name="full_name"
-            [(ngModel)]="full_name"
-            #fullNameCtrl="ngModel"
-            required
-            placeholder="Input full Name"
-            [ngClass]="{ 'ng-invalid ng-dirty': fullNameCtrl.invalid && (fullNameCtrl.touched || submitted) }"
-          />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="fullNameCtrl.invalid && (fullNameCtrl.touched || submitted)">
-            Full Name is required.
-          </p>
-        </div>
+    <!-- GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Email:
-          </label>
-          <input
-            pInputText class="w-full" name="email"
-            [(ngModel)]="email"
-            #emailCtrl="ngModel"
-            required
-            email
-            placeholder="Input Email"
-            [ngClass]="{ 'ng-invalid ng-dirty': emailCtrl.invalid && (emailCtrl.touched || submitted) }"
-          />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="emailCtrl.invalid && (emailCtrl.touched || submitted)">
-            Email is required / must be valid.
-          </p>
-        </div>
+      <!-- FIRST NAME -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> First Name
+        </label>
 
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Mobile Number:
-          </label>
-          <input
-            pInputText class="w-full" name="mobile_number"
-            [(ngModel)]="mobile_number"
-            #mobileCtrl="ngModel"
-            required
-            pattern="^09[0-9]{9}$"
-            maxlength="11"
-            inputmode="numeric"
-            placeholder="Input Mobile"
-            (keypress)="allowNumbersOnly($event)"
-            (input)="mobile_number = mobile_number.replace(/[^0-9]/g, '')"
-            [ngClass]="{ 'ng-invalid ng-dirty': mobileCtrl.invalid && (mobileCtrl.touched || submitted) }"
-          />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="mobileCtrl.invalid && (mobileCtrl.touched || submitted)">
-            Mobile number is required.
-          </p>
-        </div>
+        <input
+          pInputText
+          class="w-full"
+          name="first_name"
+          [(ngModel)]="first_name"
+          [disabled]="mode === 'VIEW'"
+          #firstNameCtrl="ngModel"
+          required
+          placeholder="Enter first name"
+        />
+
+        <p class="text-xs text-red-500 mt-1"
+          *ngIf="firstNameCtrl.invalid && (firstNameCtrl.touched || submitted)">
+          First name is required
+        </p>
       </div>
 
-      <!-- RIGHT -->
-      <div class="space-y-5">
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Username:
-          </label>
-          <input
-            pInputText class="w-full" name="username"
-            [(ngModel)]="username"
-            #usernameCtrl="ngModel"
-            required
-            placeholder="Input Username"
-            [ngClass]="{ 'ng-invalid ng-dirty': usernameCtrl.invalid && (usernameCtrl.touched || submitted) }"
-          />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="usernameCtrl.invalid && (usernameCtrl.touched || submitted)">
-            Username is required.
-          </p>
-        </div>
 
-         <div class="relative">
-             <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Password:
-          </label>
-           <input
-             pInputText
-             class="w-full pr-10"
-             name="password"
-             [(ngModel)]="password"
-             #passCtrl="ngModel"
-             [type]="showPassword ? 'text' : 'password'"
-             required
-             placeholder="Input Password"
-             [ngClass]="{ 'ng-invalid ng-dirty': passCtrl.invalid && (passCtrl.touched || submitted) }"
-           />
+      <!-- USERNAME -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Username
+        </label>
 
-           <i
-           class="pi cursor-pointer absolute right-3 top-[38px] text-slate-500"
-           [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"
-           (click)="togglePassword()"
+        <input
+          pInputText
+          class="w-full"
+          name="username"
+          [(ngModel)]="username"
+          [disabled]="mode === 'VIEW'"
+          #usernameCtrl="ngModel"
+          required
+          placeholder="Enter username"
+        />
+      </div>
+
+
+      <!-- MIDDLE NAME -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          Middle Name
+        </label>
+
+        <input
+          pInputText
+          class="w-full"
+          name="middle_name"
+          [(ngModel)]="middle_name"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Enter middle name"
+        />
+      </div>
+
+
+      <!-- PASSWORD -->
+      <div class="relative">
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Password
+        </label>
+
+        <input
+          pInputText
+          class="w-full pr-10"
+          name="password"
+          [(ngModel)]="password"
+          [disabled]="mode === 'VIEW'"
+          #passCtrl="ngModel"
+          [type]="showPassword ? 'text' : 'password'"
+          required
+          placeholder="Enter password"
+        />
+
+        <i
+          class="pi cursor-pointer absolute right-3 top-[38px]"
+          [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"
+          (click)="togglePassword()"
         ></i>
-     </div>
+      </div>
 
-     <p class="mt-1 text-xs text-rose-600"
-        *ngIf="passCtrl.invalid && (passCtrl.touched || submitted)">
-        Password is required.
-     </p>
-   </div>
 
-        <!-- ✅ Image Upload (PUP style: hidden input + custom label) -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            Profile Image (optional)
-          </label>
+      <!-- LAST NAME -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Last Name
+        </label>
 
-          <div class="flex items-start gap-4">
-            <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
-              <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
-              <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
-            </div>
+        <input
+          pInputText
+          class="w-full"
+          name="last_name"
+          [(ngModel)]="last_name"
+          [disabled]="mode === 'VIEW'"
+          #lastNameCtrl="ngModel"
+          required
+          placeholder="Enter last name"
+        />
+      </div>
 
-            <div class="flex-1 space-y-2">
-              <input
-                #fileInput
-                type="file"
-                hidden
-                accept="image/*"
-                (change)="onFileSelected($event)"
-              />
 
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
-                  {{ fileName || 'Click to choose file' }}
-                </span>
+      <!-- EMAIL -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Email
+        </label>
 
-                <button type="button" pButton class="p-button-sm" label="Choose File" (click)="fileInput.click()"></button>
+        <input
+          pInputText
+          class="w-full"
+          name="email"
+          [(ngModel)]="email"
+          [disabled]="mode === 'VIEW'"
+          required
+          email
+          placeholder="Enter email"
+        />
+      </div>
 
-                <button
-                  *ngIf="fileName || previewUrl"
-                  type="button"
-                  pButton
-                  class="p-button-text p-button-sm"
-                  label="Remove"
-                  (click)="removeImage()"
-                ></button>
-              </div>
-            </div>
+
+      <!-- MOBILE -->
+
+    </div>
+
+
+    <!-- IMAGE UPLOAD -->
+    <div class="mt-6">
+
+      <label class="block text-sm font-semibold mb-2">
+        Profile Image (optional)
+      </label>
+
+      <div class="flex items-start gap-4">
+
+        <div class="w-24 h-24 rounded-xl border overflow-hidden bg-gray-50 flex items-center justify-center">
+          <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
+          <span *ngIf="!previewUrl" class="text-xs text-gray-400">No image</span>
+        </div>
+
+        <div class="flex-1 space-y-2">
+
+          <input
+            #fileInput
+            type="file"
+            hidden
+            accept="image/*"
+            (change)="onFileSelected($event)"
+          />
+
+          <div class="flex items-center gap-3">
+
+            <span
+              class="text-sm text-gray-600 cursor-pointer"
+              (click)="fileInput.click()"
+            >
+              {{ fileName || 'Click to choose file' }}
+            </span>
+
+            <button
+              type="button"
+              pButton
+              class="p-button-sm"
+              label="Choose File"
+              (click)="fileInput.click()"
+            ></button>
+
+            <button
+              *ngIf="fileName || previewUrl"
+              type="button"
+              pButton
+              class="p-button-text p-button-sm"
+              label="Remove"
+              (click)="removeImage()"
+            ></button>
+
           </div>
+
         </div>
 
       </div>
 
-
-
-    <!-- Footer -->
-    <div class="w-full flex items-center justify-end gap-3 mt-6">
-      <button pButton type="button" label="Cancel" class="p-button-outlined" (click)="close()"></button>
-      <button pButton type="submit" label="Add Record" class="p-button-success"></button>
     </div>
-  </form>
+
+
+    <!-- FOOTER -->
+    <div 
+      *ngIf="mode !== 'VIEW'"
+      class="flex justify-end gap-3 mt-6"
+      >
+
+      <button
+         pButton
+         type="button"
+         label="Cancel"
+         class="p-button-outlined"
+         (click)="close()">
+     </button>
+
+     <button
+        pButton
+        type="submit"
+        [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+        class="p-button-success">
+     </button>
+
+    </div>
+   </form>
 </p-dialog>

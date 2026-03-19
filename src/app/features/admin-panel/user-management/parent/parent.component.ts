@@ -5,6 +5,7 @@ import { ParentService } from '../../../../services/admin-panel/user-management/
 import { ParentModalComponent } from './parent-modal/parent-modal.component';
 import { finalize } from 'rxjs';
 import { ParentData } from '../../../../models/admin-panel/user-management/parent/parent.model';
+import { ModalMode } from '../../../../enums/modal.mode';
 
 type UserRow = {
   id: number;
@@ -76,28 +77,75 @@ export class ParentManagementComponent {
     console.log('row click', row);
   }
 
- onAction(e: { actionKey: string; row: UserRow }) {
-  console.log('action', e.actionKey, e.row);
+onAction(e: { actionKey: string; row: UserRow }) {
 
   if (e.actionKey === 'edit') {
-    this.parentModal?.updateDialog(e.row.id);
-  } 
-  else if (e.actionKey === 'view') {
+    this.parentModal.updateDialog(e.row.id);
   }
+
+  else if (e.actionKey === 'view') {
+    this.parentModal.viewDialog(e.row.id);
+  }
+
+  else if (e.actionKey === 'delete') {
+    this.deleteParent(e.row.id);
+  }
+
 }
   
-  openImportCsv() {
-    console.log('import csv clicked', this.selectedRows);
-  }
+openImportCsv() {
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.csv';
+
+  input.onchange = (event: any) => {
+
+    const file: File = event.target.files[0];
+    if (!file) return;
+
+    const isCSV = file.name.endsWith('.csv');
+    if (!isCSV) {
+      this.toast.error('Error', 'Please upload a CSV file');
+      return;
+    }
+
+    this.parentService.importParent(file).subscribe({
+
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.loadParent(this.currentPage, this.rowsPerPage);
+      },
+
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to import CSV');
+      }
+
+    });
+
+  };
+
+  input.click();
+}
 
 openAddModal() {
   this.parentModal?.showDialog();
 }
 
-  openDeleteModal() {
-    console.log('clicked!');
-    // this.deleteSelectedAdmins();
+openDeleteModal() {
+
+  if (!this.selectedRows.length) {
+    this.toast.error('Error', 'Please select parent(s) to delete.');
+    return;
   }
+
+  if (!confirm('Are you sure you want to delete selected parent(s)?')) {
+    return;
+  }
+
+  this.deleteSelectedParents();
+}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -141,29 +189,57 @@ openAddModal() {
           });
         },
         error: (err) => {
-          console.error('getAdmins failed', err);
+          console.error('getParents failed', err);
           this.rows = [];
         },
       });
   }
 
-  deleteSelectedStudent(): void {
-    // const payload = {
-    //   id: this.selectedRows.map((row) => row.id),
-    // };
+deleteSelectedParents() {
 
-    // this.adminService.deleteAdmins(payload).subscribe({
-    //   next: (res) => {
-    //     console.log(res.message);
-    //     this.toast.success('Success', res.message);
-    //     this.onModalSuccess();
-    //     this.selectedRows = [];
-    //   },
-    //   error: (err) => {
-    //     console.error(err);
-    //   },
-    // });
-  }
+  const payload = {
+    id: this.selectedRows.map((row: any) => row.id)
+  };
+
+  this.parentService.deleteParent(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      // clear selection
+      this.selectedRows = [];
+
+      // reload table
+      this.loadParent(this.currentPage, this.rowsPerPage);
+    },
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to delete parents.';
+      this.toast.error('Error', msg);
+    }
+  });
+
+}
+deleteParent(id: number) {
+
+  const payload = {
+    id: [id]
+  };
+
+  if (!confirm('Are you sure you want to delete this parent?')) return;
+
+  this.parentService.deleteParent(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      // reload table
+      this.loadParent(this.currentPage, this.rowsPerPage);
+    },
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to delete parent.';
+      this.toast.error('Error', msg);
+    }
+  });
+
+}
 
   private mapStatus(status: string): UserStatus {
     switch (status) {

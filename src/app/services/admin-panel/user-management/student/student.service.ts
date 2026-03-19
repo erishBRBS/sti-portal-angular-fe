@@ -3,16 +3,19 @@ import { inject, Injectable } from "@angular/core";
 import { environment } from "../../../../environments/environment";
 import { Observable } from "rxjs";
 import { AdminData, AdminDetailResponse, AdminModel } from "../../../../models/admin-panel/user-management/admin/admin.model";
-import { CreateAdminPayload, DeleteAdminPayload } from "../../../../payloads/admin-panel/user-management/admin/create-admin.payload";
+import { CreateStudentPayload } from "../../../../payloads/admin-panel/user-management/student/create-student.payload";
+import { DeleteStudentPayload } from "../../../../payloads/admin-panel/user-management/student/create-student.payload";
 import { ApiResponse, ApiResponseNoData } from "../../../../models/pagination.model";
 import { StudentModel } from "../../../../models/admin-panel/user-management/student/student.model";
 import { TokenStorageService } from "../../../../core/services/token-storage.service";
 
 export enum StudentEndPoints {
   getStudent = 'get/student',
-  createStudent = 'create/admin',
-  getStudentById = 'get/admin/{id}',
-  deleteStudent = 'delete/admin',
+  createStudent = 'create/student',
+  updateStudent = 'update/student/{id}',
+  getStudentById = 'get/student/{id}',
+  deleteStudent = 'delete/student',
+  importStudent = 'import/student'
 }
 
 export type StudentResponse = ApiResponse<AdminData>;
@@ -33,6 +36,7 @@ export class StudentService {
   private readonly getStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.getStudent}`;
   private readonly createStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.createStudent}`;
   private readonly getStudentByIdUrl = `${this.baseAPIUrl}${StudentEndPoints.getStudentById}`;
+  private readonly updateStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.updateStudent}`;
   private readonly deleteStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.deleteStudent}`;
 
   private authHeaders(): HttpHeaders {
@@ -62,14 +66,22 @@ export class StudentService {
     });
   }
 
-  createStudent(payload: CreateAdminPayload, imageFile?: File | null): Observable<StudentResponse> {
+  createStudent(payload: CreateStudentPayload, imageFile?: File | null): Observable<StudentResponse> {
     const fd = new FormData();
-    fd.append('full_name', payload.full_name ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('mobile_number', payload.mobile_number ?? '');
-    fd.append('username', payload.username ?? '');
-    fd.append('password', payload.password ?? '');
+  fd.append('first_name', payload.first_name);
+  fd.append('middle_name', payload.middle_name ?? '');
+  fd.append('last_name', payload.last_name);
+  fd.append('email', payload.email);
+  fd.append('mobile_number', payload.mobile_number ?? '');
+  fd.append('course_id', payload.course_id.toString());
+  fd.append('section_id', payload.section_id.toString());
+  fd.append('year_level', payload.year_level ?? '');
+  fd.append('username', payload.username ?? '');
+  fd.append('rfid_code', payload.rfid_code ?? '');
 
+  
+
+    
     if (imageFile) {
       fd.append('image_path', imageFile); 
     }
@@ -79,30 +91,53 @@ export class StudentService {
     });
   }
 
-  updateStudent(id: number, payload: CreateAdminPayload, imageFile?: File | null) {
+updateStudent(
+  id: number,
+  payload: CreateStudentPayload,
+  selectedFile: File | null
+): Observable<StudentResponse> {
+
+  const url = this.updateStudentUrl.replace('{id}', String(id));
 
   const fd = new FormData();
 
-  fd.append('full_name', payload.full_name ?? '');
-  fd.append('email', payload.email ?? '');
+  fd.append('first_name', payload.first_name);
+  fd.append('middle_name', payload.middle_name ?? '');
+  fd.append('last_name', payload.last_name);
+  fd.append('email', payload.email);
   fd.append('mobile_number', payload.mobile_number ?? '');
+  fd.append('course_id', String(payload.course_id));
+  fd.append('section_id', String(payload.section_id));
+  fd.append('year_level', payload.year_level ?? '');
   fd.append('username', payload.username ?? '');
-  fd.append('password', payload.password ?? '');
+  fd.append('rfid_code', payload.rfid_code ?? '');
 
-  if (imageFile) {
-    fd.append('image_path', imageFile);
+  fd.append('_method', 'PATCH');
+
+  if (selectedFile) {
+    fd.append('image_path', selectedFile);
   }
-
-  const url = this.getStudentByIdUrl.replace('{id}', String(id));
 
   return this.http.post<StudentResponse>(url, fd, {
     headers: this.authHeaders(),
   });
 }
 
-  deleteStudent(payload: DeleteAdminPayload): Observable<DeleteStudentResponse> {
+
+  deleteStudent(payload: DeleteStudentPayload): Observable<DeleteStudentResponse> {
     return this.http.post<DeleteStudentResponse>(this.deleteStudentUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+
+        importStudent(file: File) {
+        const fd = new FormData();
+        fd.append('file', file);
+      
+        return this.http.post<ApiResponseNoData>(
+          `${this.baseAPIUrl}${StudentEndPoints.importStudent}`,
+          fd,
+          { headers: this.authHeaders() }
+        );
+      }
 }

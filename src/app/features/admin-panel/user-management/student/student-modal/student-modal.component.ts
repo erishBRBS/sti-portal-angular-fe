@@ -12,17 +12,19 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-
+import { SelectModule } from 'primeng/select';
 import { CreateStudentPayload } from '../../../../../payloads/admin-panel/user-management/student/create-student.payload';
 import { ModalMode } from '../../../../../enums/modal.mode';
 import { StudentService } from '../../../../../services/admin-panel/user-management/student/student.service';
 import { ToastService } from '../../../../../shared/services/toast.service';
 import { StudentData } from '../../../../../models/admin-panel/user-management/student/student.model';
+import { SectionService } from '../../../../../services/admin-panel/curriculum-management/section.service';
+import { CourseService } from '../../../../../services/admin-panel/curriculum-management/course.service';
 
 @Component({
   selector: 'sti-student-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule],
   templateUrl: './student-modal.component.html',
   styleUrl: './student-modal.component.css',
 })
@@ -37,19 +39,27 @@ export class StudentModalComponent {
   private readonly studentService = inject(StudentService);
   private readonly toast = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly sectionService = inject(SectionService);
+  private readonly courseService = inject(CourseService);
+
 
   submitted = false;
   visible = false;
   mode: ModalMode = ModalMode.ADD;
 
   // form fields
-  full_name = '';
-  email = '';
-  mobile_number = '';
-  username = '';
-  course = '';
-  section = '';
-  year_level = '';
+first_name = '';
+middle_name = '';
+last_name = '';
+email = '';
+mobile_number = '';
+
+course_id: number | null = null;
+section_id: number | null = null;
+
+year_level = '';
+username = '';
+rfid_code = '';
 
 
   // file state
@@ -58,11 +68,28 @@ export class StudentModalComponent {
   fileName = '';
 
   currentID = 0;
-  pendingEditId: number | null = null;
+  pendingEditId: number | null = null; 
+
+
+  courses: any[] = [];
+  sections: any[] = [];
+
+  yearLevels = [
+  { label: '1st Year', value: '1st Year' },
+  { label: '2nd Year', value: '2nd Year' },
+  { label: '3rd Year', value: '3rd Year' },
+  { label: '4th Year', value: '4th Year' }
+];
 
   get dialogTitle(): string {
-    return this.mode === ModalMode.ADD ? 'Add Student' : 'Update Student';
-  }
+
+  if (this.mode === ModalMode.ADD) return 'Add Student';
+
+  if (this.mode === ModalMode.UPDATE) return 'Update Student';
+
+  return 'View Student';
+
+}
 
   get dialogButtonLabel(): string {
     return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
@@ -81,38 +108,101 @@ export class StudentModalComponent {
     this.currentID = 0;
     this.visible = true;
     this.resetForm();
+    this.loadDropdowns();
   }
+ 
+viewDialog(id: number): void {
 
-  updateDialog(id: number): void {
-    this.mode = ModalMode.UPDATE;
-    this.currentID = id;
-    this.pendingEditId = id;
-    this.visible = true;
-    this.resetForm(true);
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+  this.visible = true;
+  this.loadDropdowns();
+  this.resetForm(true);
+
+  setTimeout(() => {
+    this.getStudentById(id);
+  });
+
+}
+  
+
+updateDialog(id: number): void {
+  this.mode = ModalMode.UPDATE;
+  this.currentID = id;
+  this.pendingEditId = id;
+  this.loadDropdowns();
+  this.resetForm(true);
+  this.visible = true;
+}
+
+onDialogShown() {
+  if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+
+    const id = this.pendingEditId;
 
     setTimeout(() => {
       this.getStudentById(id);
-    });
-  }
+    }, 0);
 
-  onDialogShown(): void {
-    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
-      this.getStudentById(this.pendingEditId);
-      this.pendingEditId = null;
-    }
+    this.pendingEditId = null;
   }
+}
+
+
+private loadDropdowns() {
+  this.courseService.getCourse().subscribe((res: any) => {
+    console.log('COURSES:', res);
+
+    this.courses = res.data.map((c: any) => ({
+      label: c.course_name || c.course_code, 
+      value: c.id
+    }));
+  });
+
+    this.sectionService.getSection().subscribe((res: any) => {
+    console.log('SECTIONS:', res);
+
+    this.sections = res.data.map((s: any) => ({
+      label: s.section_name,
+      value: s.id
+    }));
+  });
+}
+private loadYearLevels() {
+  this.studentService.getStudent().subscribe((res: any) => {
+
+    const unique = new Map();
+
+    res.data.forEach((s: any) => {
+      if (s.year_level) {
+        unique.set(s.year_level, {
+          label: s.year_level,
+          value: s.year_level
+        });
+      }
+    });
+
+    this.yearLevels = Array.from(unique.values());
+
+  });
+}
 
   private resetForm(preserveCurrentId: boolean = false): void {
 
     this.submitted = false;
 
-    this.full_name = '';
+    this.first_name = '';
+    this.middle_name = '';
+    this.last_name = '';
     this.email = '';
     this.mobile_number = '';
-    this.username = '';
-    this.course = '';
-    this.section = '';
-    this.year_level = '';
+
+    this.course_id = null;
+    this.section_id = null;
+
+   this.year_level = '';
+   this.username = '';
+   this.rfid_code = '';
   
 
     this.clearFileControls();
@@ -122,57 +212,28 @@ export class StudentModalComponent {
     }
   }
 
-  private clearFileControls(): void {
-
-    if (this.previewUrl) {
-      URL.revokeObjectURL(this.previewUrl);
-    }
-
-    this.fileName = '';
-    this.selectedFile = null;
-    this.previewUrl = null;
-
-    setTimeout(() => {
-      if (this.fileInputRef?.nativeElement) {
-        this.fileInputRef.nativeElement.value = '';
-      }
-    });
-  }
-
   // BUTTON FUNCTIONS
   close() {
-
-    this.submitted = false;
-
-    this.full_name = '';
-    this.email = '';
-    this.mobile_number = '';
-    this.username = '';
-  
-
-    this.clearFileControls();
-
     this.visible = false;
+    this.resetForm();
   }
 
-  onSave(form: NgForm) {
-
-    if (form.invalid) {
-      this.submitted = true;
-      form.control.markAllAsTouched();
-      return;
-    }
-
-    if (this.mode === ModalMode.ADD) {
-      this.submitAction();
-    } else {
-      this.submitUpdateAction();
-    }
+onSave(form: NgForm) {
+  if (form.invalid) {
+    this.submitted = true;
+    form.control.markAllAsTouched();
+    return;
   }
 
-  onFileSelected(ev: Event) {
+  if (this.mode === ModalMode.ADD) {
+    this.submitAction(); // CREATE
+  } else {
+    this.submitUpdateAction(); // UPDATE
+  }
+}
 
-    const input = ev.target as HTMLInputElement;
+  onFileSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
     const file = input.files?.[0] ?? null;
 
     if (this.previewUrl?.startsWith('blob:')) {
@@ -181,6 +242,7 @@ export class StudentModalComponent {
 
     this.selectedFile = file;
     this.fileName = file?.name ?? '';
+
     this.previewUrl = file ? URL.createObjectURL(file) : null;
   }
 
@@ -188,17 +250,36 @@ export class StudentModalComponent {
     this.clearFileControls();
   }
 
+  private clearFileControls() {
+    if (this.previewUrl?.startsWith('blob:')) {
+      URL.revokeObjectURL(this.previewUrl);
+    }
+
+    this.previewUrl = null;
+    this.selectedFile = null;
+    this.fileName = '';
+
+    setTimeout(() => {
+      if (this.fileInputRef?.nativeElement) {
+        this.fileInputRef.nativeElement.value = '';
+      }
+    });
+  }
+
   // CREATE STUDENT
   private submitAction(): void {
 
     const payload: CreateStudentPayload = {
-      full_name: this.full_name,
-      email: this.email,
-      mobile_number: this.mobile_number,
-      username: this.username,
-      course: this.course,
-      section: this.section,
-      year_level: this.year_level,
+     first_name: this.first_name,
+     middle_name: this.middle_name,
+     last_name: this.last_name,
+     email: this.email,
+     mobile_number: this.mobile_number,
+     course_id: this.course_id ?? 0,
+     section_id: this.section_id ?? 0,
+     year_level: this.year_level,
+     username: this.username,
+     rfid_code: this.rfid_code
 
     };
 
@@ -224,33 +305,53 @@ export class StudentModalComponent {
   private submitUpdateAction(): void {
 
   const payload: CreateStudentPayload = {
-    full_name: this.full_name,
-    email: this.email,
-    mobile_number: this.mobile_number,
-    username: this.username,
-    course: this.course,
-    section: this.section,
-    year_level: this.year_level,
+  first_name: this.first_name,
+  middle_name: this.middle_name,
+  last_name: this.last_name,
+  email: this.email,
+  mobile_number: this.mobile_number,
+  course_id: this.course_id ?? 0, 
+  section_id: this.section_id ?? 0,
    
   };
 
-  this.studentService.updateStudent(this.currentID, payload, this.selectedFile)
-    .subscribe({
+       if (this.mode === ModalMode.ADD) {
+      this.createStudent(payload);
+    } else {
+      this.updateStudent(payload);
+    }
+}
+  private createStudent(payload: CreateStudentPayload) {
+    this.studentService.createStudent(payload, this.selectedFile).subscribe({
       next: (res: any) => {
-
         this.toast.success('Success', res.message);
-
-        this.resetForm();
         this.onSuccess.emit();
         this.close();
       },
       error: (err: any) => {
-
         const msg = err?.error?.message ?? 'Something went wrong.';
         this.toast.error('Error', msg);
       },
     });
-}
+  }
+
+  private updateStudent(payload: CreateStudentPayload) {
+    if (!this.currentID) return;
+
+    this.studentService
+      .updateStudent(this.currentID, payload, this.selectedFile)
+      .subscribe({
+        next: (res: any) => {
+          this.toast.success('Success', res.message);
+          this.onSuccess.emit();
+          this.close();
+        },
+        error: (err: any) => {
+          const msg = err?.error?.message ?? 'Something went wrong.';
+          this.toast.error('Error', msg);
+        },
+      });
+  }
 private getStudentById(id: number): void {
 
   this.studentService.getStudentById(id).subscribe({
@@ -258,26 +359,24 @@ private getStudentById(id: number): void {
     next: (response: any) => {
 
       const data: StudentData = response.data;
-
-      this.full_name =
-        data.first_name +
-        ' ' +
-        (data.middle_name ?? '') +
-        ' ' +
-        data.last_name;
+      this.first_name = data.first_name;
+      this.middle_name = data.middle_name ?? '';
+      this.last_name = data.last_name;
 
       this.email = data.email;
-      this.mobile_number = data.contact_number ?? '';
-      this.username = data.credentials.username;
+      this.mobile_number = data.mobile_number ?? '';
 
-      this.course = data.course?.course_name ?? '';
-      this.section = data.section?.section_name ?? '';
+      this.course_id = data.course?.id ?? null;
+     this.section_id = data.section?.id ?? null;
+
       this.year_level = data.year_level ?? '';
 
-      if (data.image_path) {
-        this.previewUrl =
-          this.studentService.fileAPIUrl + data.image_path;
-      }
+      this.username = data.credentials?.username ?? '';
+      this.rfid_code = data.credentials?.rfid_code ?? '';  
+
+      this.previewUrl = data.image_path
+        ? this.studentService.fileAPIUrl + data.image_path.replace('/storage/', '')
+        : null;
 
       this.cdr.detectChanges();
     },

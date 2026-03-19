@@ -83,6 +83,17 @@ allowNumbersOnly(event: KeyboardEvent) {
     this.visible = true;
     this.resetForm();
   }
+  viewDialog(id: number): void {
+  this.mode = ModalMode.VIEW;
+  this.currentID = id;
+  this.visible = true;
+
+  this.resetForm(true);
+
+  setTimeout(() => {
+    this.getAdminById(id);
+  });
+}
 
 
   updateDialog(id: number): void {

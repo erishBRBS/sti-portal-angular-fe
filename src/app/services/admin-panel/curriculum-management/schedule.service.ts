@@ -12,10 +12,12 @@ import { TokenStorageService } from "../../../core/services/token-storage.servic
 
 export enum ScheduleEndPoints {
   getSchedule = 'get/schedule',
-  creatSchedule = 'create/course',
-  getScheduleById = 'get/course/{id}',
-  updateSchedule = 'update/course/{id}',
-  deleteSchedule = 'delete/course',
+  creatSchedule = 'create/schedule',
+  getScheduleById = 'get/schedule/{id}',
+  updateSchedule = 'update/schedule/{id}',
+  deleteSchedule = 'delete/schedule',
+  importSchedule = 'import/schedule'
+  
 }
 
 export type ScheduleResponse = ApiResponse<ScheduleData>;
@@ -93,4 +95,14 @@ updateSchedule(id: number, payload: CreateSchedulePayload): Observable<ScheduleR
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+      importSchedule(file: File) {
+      const fd = new FormData();
+      fd.append('file', file);
+    
+      return this.http.post<ApiResponseNoData>(
+        `${this.baseAPIUrl}${ScheduleEndPoints.importSchedule}`,
+        fd,
+        { headers: this.authHeaders() }
+      );
+    }
 }
