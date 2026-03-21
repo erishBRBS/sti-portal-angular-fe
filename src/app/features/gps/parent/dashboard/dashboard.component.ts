@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -6,8 +12,14 @@ import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
-import { inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+
+import { ParentStudentService } from '../../../../services/gps/parent/parent-student.service';
+import {
+  ParentChild,
+  ParentChildSchedule,
+} from '../../../../models/gps/parent/parent.model';
 
 interface Stat {
   label: string;
@@ -28,15 +40,6 @@ interface TodayClass {
   course: string;
   section: string;
   professor: string;
-}
-
-interface Announcement {
-  title: string;
-  date: string;
-  content: string;
-  isNew: boolean;
-  hasImage: boolean;
-  details: string;
 }
 
 interface Student {
@@ -60,24 +63,27 @@ interface Student {
   ],
   templateUrl: './dashboard.component.html',
 })
-export class ParentDashboardComponent implements OnInit {
-  selectedStudent: string = 'hadassa';
+export class ParentDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private parentStudentService = inject(ParentStudentService);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
-  students: Student[] = [
-    {
-      id: 'hadassa',
-      name: 'Hadassa Yap',
-      course: 'IT Student - BS Information Technology',
-      avatar: 'HY',
-    },
-    { id: 'john', name: 'John Yap', course: 'BS Computer Science', avatar: 'JY' },
-    { id: 'sarah', name: 'Sarah Yap', course: 'Senior High School', avatar: 'SY' },
-  ];
+  selectedStudent = '';
+  students: Student[] = [];
+  todayClasses: TodayClass[] = [];
+
+  loadingChildren = false;
+  loadingClasses = false;
+  errorMessage = '';
 
   stats: Stat[] = [
-    { label: 'Current GPA', value: '3.25', icon: 'pi pi-chart-line', color: 'blue' },
-    { label: 'Classes Today', value: '2', icon: 'pi pi-clock', color: 'purple' },
+    {
+      label: 'Classes Today',
+      value: '0',
+      icon: 'pi pi-clock',
+      color: 'purple',
+    },
   ];
 
   quickActions: QuickAction[] = [
@@ -101,61 +107,211 @@ export class ParentDashboardComponent implements OnInit {
     },
   ];
 
-  todayClasses: TodayClass[] = [
-    {
-      time: '10:00AM - 1:00PM',
-      course: 'Programming Languages',
-      section: 'Room 206',
-      professor: 'Junkate Lindon Bernabe',
-    },
-    {
-      time: '1:00PM - 3:00PM',
-      course: 'Web Systems & Tech',
-      section: 'Room 206',
-      professor: 'Enrico Enerlan',
-    },
-  ];
+  ngOnInit(): void {
+    this.initDashboard();
+  }
 
-  announcements: Announcement[] = [
-    {
-      title: 'Graduation Day Announcement',
-      date: 'Today',
-      content:
-        "In celebration of our Senior High School and Tertiary students' graduation, all office transactions will be suspended tomorrow, July 3, 2025.",
-      isNew: true,
-      hasImage: true,
-      details: `Office Transactions will resume on Friday, July 4, 2025:
-ADMISSIONS OFFICE - 8AM-5PM
-OTHER OFFICE TRANSACTIONS - 1PM - 5PM
-Thank you for your kind understanding and support as we honor this milestone with our graduates!
-Happy Graduation!`,
-    },
-  ];
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-  navItems = [
-    { label: 'Dashboard', icon: 'fas fa-home', link: '#', active: true },
-    { label: "Child's Grades", icon: 'fas fa-star', link: '#', active: false },
-    { label: "Child's Schedule", icon: 'fas fa-clock', link: '#', active: false },
-    { label: 'Announcements', icon: 'fas fa-bullhorn', link: '#', active: false },
-  ];
+  initDashboard(): void {
+    this.errorMessage = '';
+    this.loadingChildren = true;
+    this.loadingClasses = false;
 
-  otherNavItems = [
-    { label: 'Mission, Vision & STI Hymn', icon: 'fas fa-bookmark', link: '#' },
-    { label: 'Feedback', icon: 'fas fa-comment', link: '#' },
-    { label: 'About', icon: 'fas fa-info-circle', link: '#' },
-    { label: 'FAQs', icon: 'fas fa-question-circle', link: '#' },
-  ];
+    this.parentStudentService
+      .getMyChildren()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const children: ParentChild[] = response?.data ?? [];
 
-  ngOnInit() {}
+          this.students = children.map((child) => ({
+            id: String(child.id),
+            name: child.full_name,
+            course: this.buildStudentSubtitle(child),
+            avatar: this.getInitials(child.full_name),
+          }));
 
-  onStudentChange(studentId: string) {
-    console.log('Selected student:', studentId);
+          if (!this.students.length) {
+            this.selectedStudent = '';
+            this.todayClasses = [];
+            this.updateStats();
+            this.loadingChildren = false;
+            this.cdr.detectChanges();
+            return;
+          }
+
+          this.selectedStudent = String(this.students[0].id);
+
+          this.loadingChildren = false;
+          this.cdr.detectChanges();
+
+          setTimeout(() => {
+            this.loadTodayClasses(Number(this.selectedStudent));
+          }, 0);
+        },
+        error: (err) => {
+          console.error('Failed to load children:', err);
+          this.errorMessage =
+            err?.error?.message || 'Failed to load student list.';
+          this.students = [];
+          this.selectedStudent = '';
+          this.todayClasses = [];
+          this.updateStats();
+          this.loadingChildren = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  onStudentChange(value: string): void {
+    const normalizedValue = String(value ?? '').trim();
+
+    if (!normalizedValue) return;
+
+    this.selectedStudent = normalizedValue;
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      this.loadTodayClasses(Number(normalizedValue));
+    }, 0);
+  }
+
+  loadTodayClasses(studentId: number): void {
+    if (!studentId) {
+      this.todayClasses = [];
+      this.updateStats();
+      return;
+    }
+
+    this.loadingClasses = true;
+    this.errorMessage = '';
+
+    this.parentStudentService
+      .getChildSchedules(studentId)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const schedules: ParentChildSchedule[] = response?.data ?? [];
+          const todayName = this.getTodayName().toLowerCase();
+
+          this.todayClasses = schedules
+            .filter(
+              (schedule) =>
+                String(schedule.day ?? '').trim().toLowerCase() === todayName
+            )
+            .map((schedule) => ({
+              time: `${this.formatTime(schedule.start_time)} - ${this.formatTime(
+                schedule.end_time
+              )}`,
+              course:
+                schedule.subject?.subject_code && schedule.subject?.subject_name
+                  ? `${schedule.subject.subject_code} - ${schedule.subject.subject_name}`
+                  : schedule.subject?.subject_name ||
+                    schedule.subject?.subject_code ||
+                    'Untitled Subject',
+              section:
+                schedule.section?.section_name ||
+                schedule.room ||
+                'No section/room',
+              professor:
+                schedule.professor?.full_name || 'No professor assigned',
+            }));
+
+          this.updateStats();
+          this.loadingClasses = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Failed to load today classes:', err);
+          this.errorMessage =
+            err?.error?.message || 'Failed to load today classes.';
+          this.todayClasses = [];
+          this.updateStats();
+          this.loadingClasses = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  get selectedStudentData(): Student | undefined {
+    return this.students.find(
+      (student) => String(student.id) === String(this.selectedStudent)
+    );
+  }
+
+  get todayDateLabel(): string {
+    return new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
+  getTodayName(): string {
+    return new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  }
+
+  buildStudentSubtitle(child: ParentChild): string {
+    const courseName = child.course?.course_name ?? 'No course';
+    const yearLevel = child.year_level ?? 'No year';
+
+    return `${courseName} - ${yearLevel}`;
+  }
+
+  formatTime(value: string): string {
+    if (!value) return '';
+
+    const parts = value.split(':');
+    if (parts.length < 2) return value;
+
+    let hour = Number(parts[0]);
+    const minute = parts[1];
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    return `${hour}:${minute} ${suffix}`;
+  }
+
+  updateStats(): void {
+    this.stats = [
+      {
+        label: 'Classes Today',
+        value: String(this.todayClasses.length),
+        icon: 'pi pi-clock',
+        color: 'purple',
+      },
+    ];
+  }
+
+  getInitials(name: string): string {
+    return name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('');
   }
 
   handleQuickAction(action: QuickAction): void {
     const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
     this.router.navigateByUrl(url);
   }
+
+  trackByStudentId(index: number, student: Student): string {
+    return student.id;
+  }
+
+  trackByClass(index: number, item: TodayClass): string {
+    return `${item.time}-${item.course}-${item.section}`;
+  }
+
   getNavItemClass(active: boolean): string {
     const baseClass = 'flex items-center gap-3 px-4 py-3 rounded-xl transition-all';
     if (active) {
@@ -163,6 +319,4 @@ Happy Graduation!`,
     }
     return `${baseClass} text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800/50`;
   }
-
-  toggleSidebar() {}
 }
