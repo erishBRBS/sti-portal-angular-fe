@@ -16,66 +16,70 @@ export interface ParentChild {
   course: ParentChildCourse | null;
 }
 
+export interface ParentAcademicYear {
+  id: number | null;
+  academic_year?: string | null;
+  semester?: string | null;
+}
+
+export interface ParentScheduleProfessor {
+  id: number | null;
+  professor_name?: string | null;
+  full_name?: string | null;
+}
+
+export interface ParentScheduleSubject {
+  id: number | null;
+  subject_code?: string | null;
+  subject_name?: string | null;
+}
+
 export interface ParentChildSchedule {
   id: number;
+  course_code?: string | null;
   day: string;
   start_time: string;
   end_time: string;
+  duration?: string | null;
   room?: string | null;
-  subject?: {
-    id: number;
-    subject_code?: string | null;
-    subject_name?: string | null;
-  } | null;
-  professor?: {
-    id: number;
-    full_name?: string | null;
-  } | null;
+  subject?: ParentScheduleSubject | null;
+  professor?: ParentScheduleProfessor | null;
   section?: {
-    id: number;
+    id: number | null;
     section_name?: string | null;
   } | null;
-  academic_year?: {
-    id: number;
-    academic_year?: string | null;
-    semester?: string | null;
-  } | null;
+  academic_year?: ParentAcademicYear | null;
 }
 
 export interface ParentChildGrade {
   id: number;
   prelim_grade?: string | number | null;
   midterm_grade?: string | number | null;
+  pre_finals_grade?: string | number | null;
+  finals_grade?: string | number | null;
+  final_average?: string | number | null;
   final_grade?: string | number | null;
   remarks?: string | null;
+  status?: string | null;
   student?: {
-    id: number;
+    id: number | null;
+    student_id?: string | null;
     full_name?: string | null;
   } | null;
   schedule?: {
-    id: number;
-    subject?: {
-      id: number;
-      subject_code?: string | null;
-      subject_name?: string | null;
-    } | null;
-    professor?: {
-      id: number;
-      full_name?: string | null;
-    } | null;
+    id: number | null;
+    subject?: ParentScheduleSubject | null;
+    professor?: ParentScheduleProfessor | null;
     section?: {
-      id: number;
+      id: number | null;
       section_name?: string | null;
     } | null;
-    academic_year?: {
-      id: number;
-      academic_year?: string | null;
-      semester?: string | null;
-    } | null;
+    academic_year?: ParentAcademicYear | null;
   } | null;
 }
 
 export interface ApiResponse<T> {
+  success?: boolean;
   message: string;
   data: T;
 }

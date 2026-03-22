@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { roleGuard } from '../../core/guards/role.guard';
+// import { roleGuard } from '../../core/guards/role.guard';
 
 //ADMIN
 import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
@@ -22,13 +22,13 @@ export const ATS_ROUTES: Routes = [
   //============================================
   {
     path: 'admin/dashboard',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Admin'] },
     component: AdminDashboardComponent,
   },
   {
     path: 'admin/gate-attendance',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Admin'] },
     component: GateAttendanceComponent,
   },
@@ -38,19 +38,19 @@ export const ATS_ROUTES: Routes = [
   //============================================
   {
     path: 'professor/dashboard',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Professor'] },
     component: ProfessorDashboardComponent,
   },
   {
     path: 'professor/student-attendance',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Professor'] },
     component: ProfessorStudentAttendanceComponent,
   },
   {
     path: 'professor/schedule',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Professor'] },
     component: ProfessorScheduleComponent,
   },
@@ -59,25 +59,25 @@ export const ATS_ROUTES: Routes = [
   //============================================
   {
     path: 'student/dashboard',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Student'] },
     component: StudentDashboardComponent,
   },
   {
     path: 'student/gate-attendance',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Student'] },
     component: StudentGateAttendanceComponent,
   },
   {
     path: 'student/subject-attendance',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Student'] },
     component: StudentSubjectAttendanceComponent,
   },
   {
     path: 'student/schedule',
-    canActivate: [roleGuard],
+    // canActivate: [roleGuard],
     data: { roles: ['Student'] },
     component: StudentScheduleComponent,
   },

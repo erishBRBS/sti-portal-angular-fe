@@ -14,6 +14,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+import { SelectModule } from 'primeng/select';
 
 import { ParentStudentService } from '../../../../services/gps/parent/parent-student.service';
 import {
@@ -49,6 +50,11 @@ interface Student {
   avatar: string;
 }
 
+interface SelectOption {
+  label: string;
+  value: string;
+}
+
 @Component({
   selector: 'app-parent-dashboard',
   standalone: true,
@@ -60,6 +66,7 @@ interface Student {
     TagModule,
     TooltipModule,
     FormsModule,
+    SelectModule,
   ],
   templateUrl: './dashboard.component.html',
 })
@@ -71,6 +78,7 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
 
   selectedStudent = '';
   students: Student[] = [];
+  studentOptions: SelectOption[] = [];
   todayClasses: TodayClass[] = [];
 
   loadingChildren = false;
@@ -135,6 +143,11 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
             avatar: this.getInitials(child.full_name),
           }));
 
+          this.studentOptions = this.students.map((student) => ({
+            label: student.name,
+            value: student.id,
+          }));
+
           if (!this.students.length) {
             this.selectedStudent = '';
             this.todayClasses = [];
@@ -158,6 +171,7 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
           this.errorMessage =
             err?.error?.message || 'Failed to load student list.';
           this.students = [];
+          this.studentOptions = [];
           this.selectedStudent = '';
           this.todayClasses = [];
           this.updateStats();
@@ -218,7 +232,9 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
                 schedule.room ||
                 'No section/room',
               professor:
-                schedule.professor?.full_name || 'No professor assigned',
+                schedule.professor?.professor_name ||
+                schedule.professor?.full_name ||
+                'No professor assigned',
             }));
 
           this.updateStats();
@@ -260,7 +276,7 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
     const courseName = child.course?.course_name ?? 'No course';
     const yearLevel = child.year_level ?? 'No year';
 
-    return `${courseName} - ${yearLevel}`;
+    return `${courseName} ${yearLevel}`;
   }
 
   formatTime(value: string): string {
