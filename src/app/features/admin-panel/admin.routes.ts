@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-// import { roleGuard } from '../core/guard/role.guard';
+// import { roleGuard } from '../../core/guards/role.guard';
 
 import { AnnouncementComponent } from './announcement-management/announcement.component';
 import { CourseComponent } from './curriculum-management/course/course.component';

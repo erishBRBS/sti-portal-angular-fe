@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap, of, catchError } from 'rxjs';
 import { ApiClientService } from './api-client.service';
 import { TokenStorageService } from './token-storage.service';
-import { loginEndPoint } from '../api/auth-endpoint';
+import { loginEndPoint, logoutEndPoint } from '../api/auth-endpoint';
 import { LoginRequest, LoginResponse, SessionUser, RoleName } from '../model/auth.model';
 import { environment } from "../../environments/environment";
 
@@ -56,9 +56,19 @@ export class AuthService {
     );
   }
 
-  logout(): void {
-    this.storage.clearAll();
-    this.userSubject.next(null);
+  logout(): Observable<void> {
+    return this.api.post<any>(logoutEndPoint.logout, {}).pipe(
+      tap(() => {
+        this.storage.clearAll();
+        this.userSubject.next(null);
+      }),
+      map(() => void 0),
+      catchError(() => {
+        this.storage.clearAll();
+        this.userSubject.next(null);
+        return of(void 0);
+      })
+    );
   }
 
   hasRole(allowed: RoleName[]): boolean {

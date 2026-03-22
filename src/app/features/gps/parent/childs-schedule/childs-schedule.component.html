@@ -1,5 +1,4 @@
 <main class="mx-auto w-full space-y-8 animate-fadeIn">
-  <!-- Header (layout/spacing natin) -->
   <div class="space-y-2 text-center md:text-left">
     <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
       Child's Schedule
@@ -9,34 +8,26 @@
     </p>
   </div>
 
-  <!-- Content wrapper -->
-  <div class="flex px-4 sm:px-6 pb-6">
+  <div class="flex justify-center px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
-      <!-- Student / Term selector -->
       <section
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
-        <div class="flex items-center gap-3 min-w-0">
-          <div
-            class="w-12 h-12 bg-gradient-to-br from-green-600 to-green-400 rounded-2xl flex items-center justify-center text-white font-bold text-lg shrink-0"
-          >
-            {{ getStudentInitials(selectedStudentName) }}
-          </div>
-
-          <div class="min-w-0">
-            <h3 class="font-bold text-slate-900 dark:text-white truncate">
+        <div class="flex items-center gap-3">
+          <div>
+            <h3 class="font-bold text-slate-900 dark:text-white">
               {{ selectedStudentName }}
             </h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
+            <p class="text-xs text-slate-500 dark:text-slate-400">
               {{ selectedStudentDetails }}
             </p>
           </div>
         </div>
 
-        <div class="w-full lg:w-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
+        <div class="w-full sm:w-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="min-w-[220px]">
+              <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
                 Student
               </label>
 
@@ -48,31 +39,55 @@
                 optionValue="value"
                 placeholder="Select student"
                 appendTo="body"
-                class="w-full sm:w-64"
+                class="w-full"
+                [loading]="loadingStudents"
               ></p-select>
             </div>
 
-            <div>
-              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                Academic Year & Semester
+            <div class="min-w-[220px]">
+              <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                Academic Year
               </label>
 
               <p-select
-                [options]="termOptions"
-                [(ngModel)]="selectedTerm"
-                (ngModelChange)="onTermChange($event)"
+                [options]="academicYearOptions"
+                [(ngModel)]="selectedAcademicYear"
+                (ngModelChange)="onAcademicYearChange($event)"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Select term"
+                placeholder="Select academic year"
                 appendTo="body"
-                class="w-full sm:w-64"
+                class="w-full"
+              ></p-select>
+            </div>
+
+            <div class="min-w-[220px]">
+              <label class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+                Semester
+              </label>
+
+              <p-select
+                [options]="semesterOptions"
+                [(ngModel)]="selectedSemester"
+                (ngModelChange)="onSemesterChange($event)"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select semester"
+                appendTo="body"
+                class="w-full"
               ></p-select>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Weekly schedule -->
+      <div
+        *ngIf="errorMessage"
+        class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+      >
+        {{ errorMessage }}
+      </div>
+
       <section
         class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
       >
@@ -81,16 +96,24 @@
           <h3 class="text-lg font-bold text-slate-900 dark:text-white">Weekly Schedule</h3>
         </div>
 
-        <div class="overflow-x-auto p-4">
+        <div class="px-6 pt-2 pb-1">
+          <span class="text-xs text-slate-500 dark:text-slate-400">
+            {{ selectedAcademicYear }} • {{ selectedSemester }}
+          </span>
+        </div>
+
+        <div *ngIf="loadingSchedule" class="p-6 text-sm text-slate-500 dark:text-slate-400">
+          Loading schedule...
+        </div>
+
+        <div *ngIf="!loadingSchedule" class="overflow-x-auto p-4">
           <div
             class="grid min-w-[1100px] rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden"
             [style.gridTemplateColumns]="'120px repeat(6, minmax(0, 1fr))'"
             [style.gridTemplateRows]="'56px repeat(' + timeSlots.length + ', 44px)'"
           >
-            <!-- top-left -->
             <div class="bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-800"></div>
 
-            <!-- day headers -->
             <ng-container *ngFor="let day of days; let i = index">
               <div
                 class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800 flex items-center justify-center text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
@@ -101,7 +124,6 @@
               </div>
             </ng-container>
 
-            <!-- time labels -->
             <ng-container *ngFor="let time of timeSlots; let i = index">
               <div
                 class="border-r border-b border-slate-200 dark:border-slate-800 flex items-center justify-center text-[10px] font-bold"
@@ -117,7 +139,6 @@
               </div>
             </ng-container>
 
-            <!-- grid cells -->
             <ng-container *ngFor="let time of timeSlots; let row = index">
               <ng-container *ngFor="let day of days; let col = index">
                 <div
@@ -128,7 +149,6 @@
               </ng-container>
             </ng-container>
 
-            <!-- subject cards -->
             <ng-container *ngFor="let day of days">
               <div
                 *ngFor="let classItem of getClassesForDay(day)"
@@ -161,10 +181,16 @@
               </div>
             </ng-container>
           </div>
+
+          <div
+            *ngIf="!getFilteredClasses().length"
+            class="mt-4 rounded-xl border border-dashed border-slate-300 dark:border-slate-700 px-4 py-6 text-center text-sm text-slate-500 dark:text-slate-400"
+          >
+            No schedule available for the selected child.
+          </div>
         </div>
       </section>
 
-      <!-- Modal -->
       <div
         *ngIf="isModalOpen"
         class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md"

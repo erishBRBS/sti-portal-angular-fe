@@ -80,7 +80,8 @@ export class SidenavComponent implements OnDestroy {
   }
 
   logout(): void {
-    this.authService.logout();
-    this.router.navigateByUrl('/');
+    this.authService.logout().subscribe(() => {
+      this.router.navigateByUrl('/');
+    });
   }
 }

@@ -8,5 +8,5 @@ export const authGuard: CanActivateFn = () => {
 
   if (auth.isLoggedIn) return true;
 
-  return router.parseUrl('/'); // balik landing/login modal
+  return router.parseUrl('/');
 };

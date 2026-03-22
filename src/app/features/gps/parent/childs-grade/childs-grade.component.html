@@ -1,5 +1,4 @@
 <main class="mx-auto w-full space-y-8 animate-fadeIn">
-  <!-- Header (layout/spacing natin) -->
   <div class="space-y-2 text-center md:text-left">
     <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
       Child's Grades
@@ -9,19 +8,16 @@
     </p>
   </div>
 
-  <!-- Content wrapper -->
   <div class="flex px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
       <section
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-6 py-6 shadow-sm"
       >
+        <div
+          class="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6"
+        >
+          <!-- Left student info -->
         <div class="flex items-center gap-3 min-w-0">
-          <div
-            class="w-12 h-12 bg-gradient-to-br from-green-600 to-green-400 rounded-2xl flex items-center justify-center text-white font-bold text-lg shrink-0"
-          >
-            {{ getStudentInitials(selectedStudentName) }}
-          </div>
-
           <div class="min-w-0">
             <h3 class="font-bold text-slate-900 dark:text-white truncate">
               {{ selectedStudentName }}
@@ -32,40 +28,67 @@
           </div>
         </div>
 
-        <div class="w-full lg:w-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                Student
-              </label>
+          <!-- Right filters -->
+          <div class="w-full xl:w-auto">
+            <div
+              class="grid grid-cols-1 md:grid-cols-3 gap-5 xl:gap-6 items-end"
+            >
+              <div class="w-full min-w-0">
+                <label
+                  class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2"
+                >
+                  Child
+                </label>
 
-              <p-select
-                [options]="studentOptions"
-                [(ngModel)]="selectedStudent"
-                (ngModelChange)="onStudentChange($event)"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select student"
-                appendTo="body"
-                class="w-full sm:w-64"
-              ></p-select>
-            </div>
+                <p-select
+                  [options]="studentOptions"
+                  [(ngModel)]="selectedStudent"
+                  (ngModelChange)="onStudentChange($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select student"
+                  appendTo="body"
+                  class="w-full min-w-[260px]"
+                ></p-select>
+              </div>
 
-            <div>
-              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                Academic Year & Semester
-              </label>
+              <div class="w-full min-w-0">
+                <label
+                  class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2"
+                >
+                  Academic Year
+                </label>
 
-              <p-select
-                [options]="termOptions"
-                [(ngModel)]="selectedTerm"
-                (ngModelChange)="onTermChange($event)"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select term"
-                appendTo="body"
-                class="w-full sm:w-64"
-              ></p-select>
+                <p-select
+                  [options]="academicYearOptions"
+                  [(ngModel)]="selectedAcademicYear"
+                  (ngModelChange)="onAcademicYearChange($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select academic year"
+                  appendTo="body"
+                  class="w-full min-w-[220px]"
+                ></p-select>
+              </div>
+
+              <div class="w-full min-w-0">
+                <label
+                  class="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2"
+                >
+                  Semester
+                </label>
+
+                <p-select
+                  [options]="semesterOptions"
+                  [(ngModel)]="selectedSemester"
+                  (ngModelChange)="onSemesterChange($event)"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select semester"
+                  appendTo="body"
+                  class="w-full min-w-[220px]"
+                ></p-select>
+              </div>
             </div>
           </div>
         </div>
@@ -73,10 +96,10 @@
 
       <sti-data-table
         [title]="'Current Term Grades'"
-        [subtitle]="selectedTerm"
+        [subtitle]="selectedAcademicYear + ' • ' + selectedSemester"
         [value]="currentGrades"
         [columns]="currentGradeColumns"
-        [loading]="false"
+        [loading]="loading"
         [paginator]="false"
         [striped]="true"
         [rowHover]="true"

@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-// import { roleGuard } from '../core/guard/role.guard';
+// import { roleGuard } from '../../core/guards/role.guard';
 
 //ADMIN
 import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
