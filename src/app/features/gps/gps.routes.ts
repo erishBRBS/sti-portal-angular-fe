@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-// import { roleGuard } from '../core/guard/role.guard';
+import { roleGuard } from '../../core/guards/role.guard';
 
 //ADMIN
 import { AdminDashboardComponent } from './admin/dashboard/dashboard.component';
@@ -23,7 +23,7 @@ export const GPS_ROUTES: Routes = [
   //============================================
   {
     path: 'admin/dashboard',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Admin'] },
     component: AdminDashboardComponent,
   },
@@ -33,13 +33,13 @@ export const GPS_ROUTES: Routes = [
   //============================================
   {
     path: 'professor/dashboard',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Professor'] },
     component: ProfessorDashboardComponent,
   },
   {
     path: 'professor/grade-management',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Professor'] },
     component: GradeManagementComponent,
   },
@@ -49,13 +49,13 @@ export const GPS_ROUTES: Routes = [
   //============================================
   {
     path: 'student/dashboard',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Student'] },
     component: StudentDashboardComponent,
   },
   {
     path: 'student/grades',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Student'] },
     component: GradeComponent,
   },
@@ -64,19 +64,19 @@ export const GPS_ROUTES: Routes = [
   //============================================
   {
     path: 'parent/dashboard',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Parent'] },
     component: ParentDashboardComponent,
   },
   {
     path: 'parent/childs-schedule',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Parent'] },
     component: ChildScheduleComponent
   },
   {
     path: 'parent/childs-grade',
-    // canActivate: [roleGuard],
+    canActivate: [roleGuard],
     data: { roles: ['Parent'] },
     component: ChildGradeComponent
   },
