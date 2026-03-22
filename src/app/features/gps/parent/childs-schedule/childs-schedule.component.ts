@@ -15,6 +15,8 @@ import {
   ParentChild,
   ParentChildSchedule,
 } from '../../../../models/gps/parent/parent.model';
+import { AcademicYearService } from '../../../../services/admin-panel/curriculum-management/academic-year.service';
+import { AcademicYearData } from '../../../../models/admin-panel/curriculum-management/academic-year.model';
 
 interface SelectOption {
   label: string;
@@ -28,6 +30,12 @@ interface StudentOption {
   details: string;
 }
 
+interface AcademicPeriod {
+  id: number;
+  academic_year: string;
+  semester: string;
+}
+
 interface ChildClassBlock {
   code: string;
   name: string;
@@ -39,7 +47,6 @@ interface ChildClassBlock {
   endTime: string;
   days: string[];
   studentId: string;
-  term: string;
 }
 
 @Component({
@@ -50,11 +57,16 @@ interface ChildClassBlock {
 })
 export class ChildScheduleComponent implements OnInit, OnDestroy {
   private parentStudentService = inject(ParentStudentService);
+  private academicYearService = inject(AcademicYearService);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   selectedClass: ChildClassBlock | null = null;
   isModalOpen = false;
+
+  loadingStudents = false;
+  loadingSchedule = false;
+  errorMessage = '';
 
   readonly days: string[] = [
     'Monday',
@@ -64,15 +76,20 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
     'Friday',
     'Saturday',
   ];
+
   readonly timeSlots: string[] = this.generateTimeSlots('07:00 AM', '07:00 PM', 30);
 
   studentOptions: SelectOption[] = [];
-  termOptions: SelectOption[] = [{ label: 'All Terms', value: 'All Terms' }];
+  academicYearOptions: SelectOption[] = [];
+  semesterOptions: SelectOption[] = [];
 
   students: StudentOption[] = [];
+  academicPeriods: AcademicPeriod[] = [];
 
   selectedStudent = '';
-  selectedTerm = 'All Terms';
+  selectedAcademicYear = '';
+  selectedSemester = '';
+  selectedAcademicYearId: number | null = null;
 
   classes: ChildClassBlock[] = [];
 
@@ -97,10 +114,13 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
 
   get selectedStudentDetails(): string {
     const student = this.selectedStudentData;
-    return student ? `${student.course} • ${student.details}` : 'No details available';
+    return student ? student.details : 'No details available';
   }
 
   loadChildren(): void {
+    this.loadingStudents = true;
+    this.errorMessage = '';
+
     this.parentStudentService
       .getMyChildren()
       .pipe(takeUntil(this.destroy$))
@@ -112,27 +132,78 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
             id: String(child.id),
             name: child.full_name,
             course: child.course?.course_name ?? 'No course',
-            details: `${child.year_level ?? 'No year'} • ${child.section?.section_name ?? 'No section'}`,
+            details: `${child.course?.course_name ?? 'No course'} ${child.year_level ?? 'No year'}`,
           }));
 
           this.studentOptions = this.students.map((student) => ({
-            label: `${student.name} - ${student.course}`,
+            label: student.name,
             value: student.id,
           }));
 
           this.selectedStudent = this.students.length ? this.students[0].id : '';
+          this.loadingStudents = false;
           this.cdr.detectChanges();
 
-          if (this.selectedStudent) {
+          this.loadAcademicPeriods();
+        },
+        error: (err) => {
+          console.error('Failed to load children:', err);
+          this.errorMessage = err?.error?.message || 'Failed to load students.';
+          this.students = [];
+          this.studentOptions = [];
+          this.classes = [];
+          this.loadingStudents = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  loadAcademicPeriods(): void {
+    this.academicYearService
+      .getListAllAcademicYear()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const periods: AcademicYearData[] = response?.data ?? [];
+
+          this.academicPeriods = periods.map((item) => ({
+            id: Number(item.id),
+            academic_year: item.academic_year,
+            semester: item.semester,
+          }));
+
+          const uniqueAcademicYears = Array.from(
+            new Set(this.academicPeriods.map((item) => item.academic_year))
+          );
+
+          this.academicYearOptions = uniqueAcademicYears.map((year) => ({
+            label: year,
+            value: year,
+          }));
+
+          this.selectedAcademicYear = this.academicYearOptions.length
+            ? this.academicYearOptions[0].value
+            : '';
+
+          this.buildSemesterOptions();
+          this.cdr.detectChanges();
+
+          if (this.selectedStudent && this.selectedAcademicYearId) {
             setTimeout(() => {
               this.loadSchedule();
             }, 0);
           }
         },
         error: (err) => {
-          console.error('Failed to load children:', err);
-          this.students = [];
-          this.studentOptions = [];
+          console.error('Failed to load academic periods:', err);
+          this.errorMessage =
+            err?.error?.message || 'Failed to load academic periods.';
+          this.academicPeriods = [];
+          this.academicYearOptions = [];
+          this.semesterOptions = [];
+          this.selectedAcademicYear = '';
+          this.selectedSemester = '';
+          this.selectedAcademicYearId = null;
           this.classes = [];
           this.cdr.detectChanges();
         },
@@ -141,83 +212,105 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
 
   onStudentChange(value: string): void {
     this.selectedStudent = String(value ?? '').trim();
-    this.selectedTerm = 'All Terms';
-    this.loadSchedule();
-  }
 
-  onTermChange(value: string): void {
-    this.selectedTerm = String(value ?? 'All Terms');
-    this.cdr.detectChanges();
-  }
-
-  loadSchedule(): void {
-    if (!this.selectedStudent) {
+    if (!this.selectedStudent || !this.selectedAcademicYearId) {
       this.classes = [];
-      this.termOptions = [{ label: 'All Terms', value: 'All Terms' }];
-      this.selectedTerm = 'All Terms';
       this.cdr.detectChanges();
       return;
     }
 
+    this.loadSchedule();
+  }
+
+  onAcademicYearChange(value: string): void {
+    this.selectedAcademicYear = String(value ?? '').trim();
+    this.buildSemesterOptions();
+    this.loadSchedule();
+  }
+
+  onSemesterChange(value: string): void {
+    this.selectedSemester = String(value ?? '').trim();
+    this.resolveSelectedAcademicYearId();
+    this.loadSchedule();
+  }
+
+  private buildSemesterOptions(): void {
+    const semesters = this.academicPeriods
+      .filter((item) => item.academic_year === this.selectedAcademicYear)
+      .map((item) => item.semester);
+
+    const uniqueSemesters = Array.from(new Set(semesters));
+
+    this.semesterOptions = uniqueSemesters.map((semester) => ({
+      label: semester,
+      value: semester,
+    }));
+
+    this.selectedSemester = this.semesterOptions.length
+      ? this.semesterOptions[0].value
+      : '';
+
+    this.resolveSelectedAcademicYearId();
+    this.cdr.detectChanges();
+  }
+
+  private resolveSelectedAcademicYearId(): void {
+    const matched = this.academicPeriods.find(
+      (item) =>
+        item.academic_year === this.selectedAcademicYear &&
+        item.semester === this.selectedSemester
+    );
+
+    this.selectedAcademicYearId = matched ? matched.id : null;
+  }
+
+  loadSchedule(): void {
+    if (!this.selectedStudent || !this.selectedAcademicYearId) {
+      this.classes = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loadingSchedule = true;
+    this.errorMessage = '';
+
     this.parentStudentService
-      .getChildSchedules(Number(this.selectedStudent))
+      .getChildSchedules(
+        Number(this.selectedStudent),
+        this.selectedAcademicYearId
+      )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
           const schedules: ParentChildSchedule[] = response?.data ?? [];
 
-          this.classes = schedules.map((schedule) => {
-            const academicYear = schedule.academic_year;
-            const termLabel = academicYear
-              ? `${academicYear.academic_year ?? ''} ${academicYear.semester ?? ''}`.trim()
-              : 'Unassigned Term';
+          this.classes = schedules.map((schedule) => ({
+            code:
+              schedule.subject?.subject_code ||
+              schedule.course_code ||
+              'N/A',
+            name: schedule.subject?.subject_name ?? 'Untitled Subject',
+            section: schedule.section?.section_name ?? 'No section',
+            room: schedule.room ?? 'No room',
+            professor:
+              schedule.professor?.professor_name ||
+              schedule.professor?.full_name ||
+              'No professor assigned',
+            time: `${this.formatTime(schedule.start_time)} - ${this.formatTime(schedule.end_time)}`,
+            startTime: this.formatTime(schedule.start_time),
+            endTime: this.formatTime(schedule.end_time),
+            days: [schedule.day],
+            studentId: String(this.selectedStudent),
+          }));
 
-            return {
-              code:
-                schedule.subject?.subject_code ||
-                schedule.course_code ||
-                'N/A',
-              name: schedule.subject?.subject_name ?? 'Untitled Subject',
-              section:
-                schedule.section?.section_name ?? 'No section',
-              room: schedule.room ?? 'No room',
-              professor:
-                schedule.professor?.professor_name ||
-                schedule.professor?.full_name ||
-                'No professor assigned',
-              time: `${this.formatTime(schedule.start_time)} - ${this.formatTime(schedule.end_time)}`,
-              startTime: this.formatTime(schedule.start_time),
-              endTime: this.formatTime(schedule.end_time),
-              days: [schedule.day],
-              studentId: String(this.selectedStudent),
-              term: termLabel,
-            };
-          });
-
-          const uniqueTerms = Array.from(
-            new Set(this.classes.map((item) => item.term))
-          );
-
-          this.termOptions = [
-            { label: 'All Terms', value: 'All Terms' },
-            ...uniqueTerms.map((term) => ({
-              label: term,
-              value: term,
-            })),
-          ];
-
-          if (
-            this.selectedTerm !== 'All Terms' &&
-            !uniqueTerms.includes(this.selectedTerm)
-          ) {
-            this.selectedTerm = 'All Terms';
-          }
-
+          this.loadingSchedule = false;
           this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Failed to load schedule:', err);
+          this.errorMessage = err?.error?.message || 'Failed to load schedule.';
           this.classes = [];
+          this.loadingSchedule = false;
           this.cdr.detectChanges();
         },
       });
@@ -263,7 +356,9 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
     if (hours === 0) hours = 12;
     else if (hours > 12) hours -= 12;
 
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${modifier}`;
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')} ${modifier}`;
   }
 
   formatTime(value: string): string {
@@ -299,12 +394,7 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   getFilteredClasses(): ChildClassBlock[] {
-    return this.classes.filter((item) => {
-      const sameStudent = item.studentId === this.selectedStudent;
-      const sameTerm =
-        this.selectedTerm === 'All Terms' || item.term === this.selectedTerm;
-      return sameStudent && sameTerm;
-    });
+    return this.classes.filter((item) => item.studentId === this.selectedStudent);
   }
 
   getClassesForDay(day: string): ChildClassBlock[] {
