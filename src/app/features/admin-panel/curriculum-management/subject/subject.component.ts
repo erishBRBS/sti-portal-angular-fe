@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -9,6 +9,9 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { SubjectModalComponent } from './subject-modal/subject-modal.component';
 import { finalize } from 'rxjs';
 import { SubjectData } from '../../../../models/admin-panel/curriculum-management/subject.model';
+import { createASubjectDetailConfig } from '../../../../helper/subject-helper';
+import { DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
+import { ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
 
 type UserRow = {
   id: number;
@@ -18,7 +21,7 @@ type UserRow = {
 @Component({
   selector: 'sti-subject',
   standalone: true,
-  imports: [DataTableComponent, SubjectModalComponent ],
+  imports: [DataTableComponent, SubjectModalComponent, ViewDetailsComponent ],
   templateUrl: './subject.component.html',
   styleUrl: './subject.component.css',
 })
@@ -38,6 +41,7 @@ export class SubjectComponent {
   private readonly subjectService = inject(SubjectService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
   @ViewChild(SubjectModalComponent) subjectModal!: SubjectModalComponent;
 
@@ -50,8 +54,16 @@ export class SubjectComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
 
   selectedRows: any[] = [];
+
+subjectConfig: DetailModalConfig = {
+  title: 'Subject Details',
+  showProfile: false,
+  profileImage: '',
+  fields: [],
+};
 
   ngOnInit(): void {
     this.loadSubject(1, this.rowsPerPage);
@@ -65,11 +77,10 @@ onAction(e: { actionKey: string; row: UserRow }) {
 
   if (e.actionKey === 'edit') {
     this.subjectModal.updateDialog(e.row.id);
-  }
-
-  else if (e.actionKey === 'view') {
-    this.subjectModal.viewDialog(e.row.id);
-  }
+    } else if (e.actionKey === 'view') {
+      // optional view function
+      this.getSubjectById(e.row.id);
+    }
 
   else if (e.actionKey === 'delete') {
     this.deleteSubject(e.row.id);
@@ -179,6 +190,29 @@ openDeleteModal() {
       console.error(err);
       this.toast.error('Error', 'Failed to delete section');
     }
+  });
+}
+
+private getSubjectById(id: number): void {
+  this.subjectService.getSubjectById(id).subscribe({
+    next: (response) => {
+      const data = response.data;
+
+      this.ngZone.run(() => {
+        this.subjectConfig = createASubjectDetailConfig(
+          data,
+          this.subjectService.fileAPIUrl // or '' if wala
+        );
+
+        this.showViewDetails = true;
+        this.cdr.detectChanges();
+      });
+    },
+    error: (err) => {
+      const msg = err?.error?.message ?? 'Failed to load subject details.';
+      this.toast.error('Error', msg);
+      console.error(err);
+    },
   });
 }
 
