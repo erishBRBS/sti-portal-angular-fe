@@ -13,6 +13,7 @@ export interface User {
   full_name?: string | null;
   first_name?: string | null;
   last_name?: string | null;
+  middle_name?: string | null;
   email: string;
   mobile_number: string | null;
   username: string | null;
@@ -22,6 +23,21 @@ export interface User {
   user_role_id: number;
   created_at: string;
   updated_at: string;
+
+  course_id?: number | null;
+  section_id?: number | null;
+  year_level?: string | null;
+
+  course?: {
+    id: number;
+    course_name: string;
+  } | null;
+
+  section?: {
+    id: number;
+    section_name: string;
+  } | null;
+
   role: UserROle;
 }
 
@@ -40,9 +56,23 @@ export interface SessionUser {
   full_name?: string | null;
   first_name?: string | null;
   last_name?: string | null;
-  email: string;
-  username: string | null;
-  image_path: string | null;
-  role_name: RoleName;
+  email?: string | null;
+  username?: string | null;
+  image_path?: string | null;
+  role_name: string;
   user_role_id: number;
+
+  course_id?: number | null;
+  section_id?: number | null;
+  year_level?: string | null;
+
+  course?: {
+    id: number;
+    course_name: string;
+  } | null;
+
+  section?: {
+    id: number;
+    section_name: string;
+  } | null;
 }

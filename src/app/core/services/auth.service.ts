@@ -4,7 +4,7 @@ import { ApiClientService } from './api-client.service';
 import { TokenStorageService } from './token-storage.service';
 import { loginEndPoint, logoutEndPoint } from '../api/auth-endpoint';
 import { LoginRequest, LoginResponse, SessionUser, RoleName } from '../model/auth.model';
-import { environment } from "../../environments/environment";
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -38,11 +38,18 @@ export class AuthService {
           full_name: u.full_name ?? null,
           first_name: u.first_name ?? null,
           last_name: u.last_name ?? null,
-          email: u.email,
-          username: u.username,
+          email: u.email ?? null,
+          username: u.username ?? null,
           image_path: u.image_path ?? null,
           role_name: u.role?.role_name ?? 'Unknown',
           user_role_id: u.user_role_id,
+
+          course_id: u.course_id ?? null,
+          section_id: u.section_id ?? null,
+          year_level: u.year_level ?? null,
+
+          course: u.course ?? null,
+          section: u.section ?? null,
         };
 
         return { sessionUser, token: res.token };
@@ -54,6 +61,19 @@ export class AuthService {
       }),
       map(({ sessionUser }) => sessionUser)
     );
+  }
+
+  updateCurrentUser(patch: Partial<SessionUser>): void {
+    const current = this.userSubject.value;
+    if (!current) return;
+
+    const updatedUser: SessionUser = {
+      ...current,
+      ...patch,
+    };
+
+    this.storage.setUser(updatedUser);
+    this.userSubject.next(updatedUser);
   }
 
   logout(): Observable<void> {
