@@ -1,6 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil } from 'rxjs';
 
 import { SelectModule } from 'primeng/select';
 
@@ -9,6 +16,13 @@ import {
   TableColumn,
   StiTagSeverity,
 } from '../../../../shared/components/data-table/data-table.component';
+
+import { ParentStudentService } from '../../../../services/gps/parent/parent-student.service';
+import {
+  ParentChild,
+  ParentChildGrade,
+} from '../../../../models/gps/parent/parent.model';
+import { AcademicYearService } from '../../../../services/admin-panel/curriculum-management/academic-year.service';
 
 interface Student {
   id: string;
@@ -36,50 +50,42 @@ interface SelectOption {
   value: string;
 }
 
+interface AcademicPeriod {
+  id: number;
+  academic_year: string;
+  semester: string;
+}
+
 @Component({
   selector: 'app-child-grades',
   standalone: true,
   imports: [CommonModule, FormsModule, SelectModule, DataTableComponent],
   templateUrl: './childs-grade.component.html',
 })
-export class ChildGradeComponent implements OnInit {
-  students: Student[] = [
-    {
-      id: 'hadassa',
-      name: 'Hadassa Yap',
-      course: 'IT Student',
-      details: 'BS Information Technology',
-    },
-    {
-      id: 'john',
-      name: 'John Yap',
-      course: 'BS Computer Science',
-      details: '3rd Year',
-    },
-    {
-      id: 'sarah',
-      name: 'Sarah Yap',
-      course: 'Senior High School',
-      details: 'Grade 12 - STEM',
-    },
-  ];
+export class ChildGradeComponent implements OnInit, OnDestroy {
+  private parentStudentService = inject(ParentStudentService);
+  private academicYearService = inject(AcademicYearService);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
 
-  terms: string[] = [
-    '2024-2025 2nd Term Tertiary',
-    '2024-2025 1st Term Tertiary',
-    '2023-2024 2nd Term Tertiary',
-    '2023-2024 1st Term Tertiary',
-  ];
+  students: Student[] = [];
+  academicPeriods: AcademicPeriod[] = [];
 
-  selectedStudent = 'hadassa';
-  selectedStudentName = 'Hadassa Yap';
-  selectedStudentDetails = 'IT Student - BS Information Technology';
-  selectedTerm = '2024-2025 2nd Term Tertiary';
+  selectedStudent = '';
+  selectedStudentName = 'Student';
+  selectedStudentDetails = 'No details available';
+
+  selectedAcademicYear = '';
+  selectedSemester = '';
+  selectedAcademicYearId: number | null = null;
 
   currentGrades: Grade[] = [];
 
   studentOptions: SelectOption[] = [];
-  termOptions: SelectOption[] = [];
+  academicYearOptions: SelectOption[] = [];
+  semesterOptions: SelectOption[] = [];
+
+  loading = false;
 
   currentGradeColumns: TableColumn<Grade>[] = [
     {
@@ -124,161 +130,247 @@ export class ChildGradeComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.studentOptions = this.students.map((student) => ({
-      label: `${student.name} - ${student.course}`,
-      value: student.id,
-    }));
+    this.loadChildren();
+  }
 
-    this.termOptions = this.terms.map((term) => ({
-      label: term,
-      value: term,
-    }));
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-    this.syncSelectedStudentDisplay();
-    this.loadGrades();
+  loadChildren(): void {
+    this.loading = true;
+
+    this.parentStudentService
+      .getMyChildren()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const children: ParentChild[] = response?.data ?? [];
+
+          this.students = children.map((child) => ({
+            id: String(child.id),
+            name: child.full_name,
+            course: child.course?.course_name ?? 'No course',
+            details: `${child.year_level ?? 'No year'}`,
+          }));
+
+          this.studentOptions = this.students.map((student) => ({
+            label: `${student.name}`,
+            value: student.id,
+          }));
+
+          this.selectedStudent = this.students.length ? this.students[0].id : '';
+          this.syncSelectedStudentDisplay();
+          this.cdr.detectChanges();
+
+          this.loadAcademicPeriods();
+        },
+        error: (err) => {
+          console.error('Failed to load children:', err);
+          this.students = [];
+          this.studentOptions = [];
+          this.currentGrades = [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  loadAcademicPeriods(): void {
+    this.academicYearService
+      .getListAllAcademicYear()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const periods: AcademicPeriod[] = response?.data ?? [];
+
+          this.academicPeriods = periods;
+
+          const uniqueAcademicYears = Array.from(
+            new Set(periods.map((item) => item.academic_year))
+          );
+
+          this.academicYearOptions = uniqueAcademicYears.map((year) => ({
+            label: year,
+            value: year,
+          }));
+
+          this.selectedAcademicYear = this.academicYearOptions.length
+            ? this.academicYearOptions[0].value
+            : '';
+
+          this.buildSemesterOptions();
+
+          this.loading = false;
+          this.cdr.detectChanges();
+
+          if (this.selectedStudent && this.selectedAcademicYearId) {
+            setTimeout(() => {
+              this.loadGrades();
+            }, 0);
+          }
+        },
+        error: (err) => {
+          console.error('Failed to load academic periods:', err);
+          this.academicPeriods = [];
+          this.academicYearOptions = [];
+          this.semesterOptions = [];
+          this.selectedAcademicYear = '';
+          this.selectedSemester = '';
+          this.selectedAcademicYearId = null;
+          this.currentGrades = [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
   onStudentChange(studentId: string): void {
-    this.selectedStudent = studentId;
+    this.selectedStudent = String(studentId ?? '').trim();
     this.syncSelectedStudentDisplay();
+
+    if (!this.selectedStudent || !this.selectedAcademicYearId) {
+      this.currentGrades = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
     this.loadGrades();
   }
 
-  onTermChange(term: string): void {
-    this.selectedTerm = term;
+  onAcademicYearChange(academicYear: string): void {
+    this.selectedAcademicYear = String(academicYear ?? '').trim();
+    this.buildSemesterOptions();
     this.loadGrades();
+  }
+
+  onSemesterChange(semester: string): void {
+    this.selectedSemester = String(semester ?? '').trim();
+    this.resolveSelectedAcademicYearId();
+    this.loadGrades();
+  }
+
+  private buildSemesterOptions(): void {
+    const semesters = this.academicPeriods
+      .filter((item) => item.academic_year === this.selectedAcademicYear)
+      .map((item) => item.semester);
+
+    const uniqueSemesters = Array.from(new Set(semesters));
+
+    this.semesterOptions = uniqueSemesters.map((semester) => ({
+      label: semester,
+      value: semester,
+    }));
+
+    this.selectedSemester = this.semesterOptions.length
+      ? this.semesterOptions[0].value
+      : '';
+
+    this.resolveSelectedAcademicYearId();
+    this.cdr.detectChanges();
+  }
+
+  private resolveSelectedAcademicYearId(): void {
+    const matched = this.academicPeriods.find(
+      (item) =>
+        item.academic_year === this.selectedAcademicYear &&
+        item.semester === this.selectedSemester
+    );
+
+    this.selectedAcademicYearId = matched ? matched.id : null;
   }
 
   private syncSelectedStudentDisplay(): void {
-    const student = this.students.find((s) => s.id === this.selectedStudent);
+    const student = this.students.find(
+      (s) => String(s.id) === String(this.selectedStudent)
+    );
 
     if (student) {
       this.selectedStudentName = student.name;
-      this.selectedStudentDetails = `${student.course} - ${student.details}`;
+      this.selectedStudentDetails = `${student.course}  ${student.details}`;
+    } else {
+      this.selectedStudentName = 'Student';
+      this.selectedStudentDetails = 'No details available';
     }
   }
 
   loadGrades(): void {
-    this.currentGrades = this.generateMockGrades();
+    if (!this.selectedStudent || !this.selectedAcademicYearId) {
+      this.currentGrades = [];
+      this.cdr.detectChanges();
+      return;
+    }
+
+    this.loading = true;
+
+    this.parentStudentService
+      .getChildGrades(
+        Number(this.selectedStudent),
+        this.selectedAcademicYearId
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const grades: ParentChildGrade[] = response?.data ?? [];
+
+          this.currentGrades = grades.map((grade, index) => {
+            const subject = grade.schedule?.subject;
+            const professor = grade.schedule?.professor;
+            const academicYear = grade.schedule?.academic_year;
+
+            return {
+              id: String(grade.id ?? index),
+              subject: subject?.subject_name ?? 'Untitled Subject',
+              subjectCode: subject?.subject_code ?? 'N/A',
+              professor:
+                professor?.professor_name ||
+                professor?.full_name ||
+                'No professor assigned',
+              prelim: this.displayGrade(grade.prelim_grade),
+              midterm: this.displayGrade(grade.midterm_grade),
+              finals: this.displayGrade(
+                grade.finals_grade ?? grade.final_grade
+              ),
+              finalGrade: this.displayGrade(
+                grade.final_average ?? grade.final_grade
+              ),
+              status: this.mapGradeStatus(grade.status ?? grade.remarks),
+              schedule: academicYear
+                ? `${academicYear.academic_year ?? ''} - ${academicYear.semester ?? ''}`.trim()
+                : 'N/A',
+              room: grade.schedule?.section?.section_name ?? 'N/A',
+            };
+          });
+
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Failed to load grades:', err);
+          this.currentGrades = [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
   }
 
-  generateMockGrades(): Grade[] {
-    const subjects = [
-      {
-        subject: 'Web Development',
-        code: 'IT304',
-        professor: 'Prof. Santos',
-        prelim: '1.50',
-        midterm: '1.75',
-        finals: '1.50',
-        final: '1.50',
-        status: 'in-progress' as const,
-      },
-      {
-        subject: 'Database Management',
-        code: 'IT302',
-        professor: 'Prof. Reyes',
-        prelim: '2.00',
-        midterm: '2.25',
-        finals: '2.00',
-        final: '2.00',
-        status: 'in-progress' as const,
-      },
-      {
-        subject: 'Network Security',
-        code: 'IT401',
-        professor: 'Prof. Villanueva',
-        prelim: '2.50',
-        midterm: '2.50',
-        finals: '2.25',
-        final: '2.50',
-        status: 'in-progress' as const,
-      },
-      {
-        subject: 'Software Engineering',
-        code: 'IT405',
-        professor: 'Prof. Dela Cruz',
-        prelim: '1.75',
-        midterm: '1.50',
-        finals: '1.75',
-        final: '1.75',
-        status: 'passed' as const,
-      },
-      {
-        subject: 'Human Computer Interaction',
-        code: 'IT306',
-        professor: 'Prof. Ramos',
-        prelim: '1.50',
-        midterm: '1.75',
-        finals: '1.50',
-        final: '1.50',
-        status: 'passed' as const,
-      },
-      {
-        subject: 'Information Assurance',
-        code: 'IT402',
-        professor: 'Prof. Bautista',
-        prelim: '2.25',
-        midterm: '2.00',
-        finals: '2.25',
-        final: '2.25',
-        status: 'in-progress' as const,
-      },
-      {
-        subject: 'Mobile Application Development',
-        code: 'IT408',
-        professor: 'Prof. Lim',
-        prelim: '1.75',
-        midterm: '1.75',
-        finals: '1.50',
-        final: '1.75',
-        status: 'passed' as const,
-      },
-      {
-        subject: 'Operating Systems',
-        code: 'IT203',
-        professor: 'Prof. Navarro',
-        prelim: '2.50',
-        midterm: '2.75',
-        finals: '2.50',
-        final: '2.50',
-        status: 'in-progress' as const,
-      },
-      {
-        subject: 'Data Structures and Algorithms',
-        code: 'IT201',
-        professor: 'Prof. Flores',
-        prelim: '2.00',
-        midterm: '2.25',
-        finals: '2.00',
-        final: '2.00',
-        status: 'passed' as const,
-      },
-      {
-        subject: 'Capstone Project',
-        code: 'IT499',
-        professor: 'Prof. Mendoza',
-        prelim: '1.25',
-        midterm: '1.50',
-        finals: '1.25',
-        final: '1.25',
-        status: 'in-progress' as const,
-      },
-    ];
+  private displayGrade(value: string | number | null | undefined): string {
+    return value === null || value === undefined || value === ''
+      ? '-'
+      : String(value);
+  }
 
-    return subjects.map((subj, index) => ({
-      id: `current-${index}`,
-      subject: subj.subject,
-      subjectCode: subj.code,
-      professor: subj.professor,
-      prelim: subj.prelim,
-      midterm: subj.midterm,
-      finals: subj.finals,
-      finalGrade: subj.final,
-      status: subj.status,
-      schedule: 'MWF 10:00 AM - 11:30 AM',
-      room: 'RM 204',
-    }));
+  private mapGradeStatus(
+    status: string | null | undefined
+  ): Grade['status'] {
+    const normalized = String(status ?? '').trim().toLowerCase();
+
+    if (normalized.includes('pass')) return 'passed';
+    if (normalized.includes('fail')) return 'failed';
+    if (normalized.includes('drop')) return 'dropped';
+    if (normalized.includes('incomplete')) return 'incomplete';
+    return 'in-progress';
   }
 
   getStudentInitials(name: string): string {

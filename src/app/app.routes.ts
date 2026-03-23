@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-// import { authGuard } from './core/guard/auth.guard';
+// import { authGuard } from './core/guards/auth.guard';
 
 import { LandingPage } from './features/landing/pages/landing.page';
 
