@@ -34,8 +34,43 @@ export interface StudentScheduleItem {
   academic_year?: StudentScheduleAcademicYear | null;
 }
 
+export interface StudentAttendanceStudent {
+  id: number | null;
+  name?: string | null;
+}
+
+export interface StudentAttendanceSchedule {
+  id: number | null;
+  day?: string | null;
+  start_time?: string | null;
+  end_time?: string | null;
+  subject?: StudentScheduleSubject | null;
+  professor?: StudentScheduleProfessor | null;
+}
+
+export interface StudentAttendanceItem {
+  id: number;
+  student?: StudentAttendanceStudent | null;
+  schedule?: StudentAttendanceSchedule | null;
+  status?: string | null;
+  time_in?: string | null;
+  time_out?: string | null;
+  created_at: string;
+}
+
+export interface PaginationMeta {
+  current_page: number;
+  per_page: number;
+  total: number;
+  last_page: number;
+}
+
 export interface ApiResponse<T> {
   success?: boolean;
   message: string;
   data: T;
+}
+
+export interface PaginatedApiResponse<T> extends ApiResponse<T> {
+  pagination?: PaginationMeta;
 }
