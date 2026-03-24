@@ -5,14 +5,18 @@ import { environment } from '../../../environments/environment';
 import { TokenStorageService } from '../../../core/services/token-storage.service';
 import {
   ApiResponse,
+  PaginatedApiResponse,
+  StudentAttendanceItem,
   StudentScheduleItem,
 } from '../../../models/ats/student/student.model';
 
 export enum StudentScheduleEndPoints {
   getMySchedules = 'get/schedule/student/my-schedules',
+  getMyAttendance = 'get/attendance/my-attendance',
 }
 
 export type GetMySchedulesResponse = ApiResponse<StudentScheduleItem[]>;
+export type GetMyAttendanceResponse = PaginatedApiResponse<StudentAttendanceItem[]>;
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +27,7 @@ export class StudentService {
 
   private baseAPIUrl = `${environment.apiUrl}`;
   private readonly getMySchedulesUrl = `${this.baseAPIUrl}${StudentScheduleEndPoints.getMySchedules}`;
+  private readonly getMyAttendanceUrl = `${this.baseAPIUrl}${StudentScheduleEndPoints.getMyAttendance}`;
 
   private authHeaders(): HttpHeaders {
     const token = this.storage.getToken();
@@ -40,6 +45,12 @@ export class StudentService {
 
   getMySchedules(): Observable<GetMySchedulesResponse> {
     return this.http.get<GetMySchedulesResponse>(this.getMySchedulesUrl, {
+      headers: this.authHeaders(),
+    });
+  }
+
+  getMyAttendance(): Observable<GetMyAttendanceResponse> {
+    return this.http.get<GetMyAttendanceResponse>(this.getMyAttendanceUrl, {
       headers: this.authHeaders(),
     });
   }
