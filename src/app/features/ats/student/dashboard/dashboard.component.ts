@@ -1,12 +1,15 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
+import { Subject, takeUntil } from 'rxjs';
+
+import { StudentService } from '../../../../services/ats/student/student.service';
+import { StudentScheduleItem } from '../../../../models/ats/student/student.model';
 
 interface TodayClass {
   subject: string;
@@ -38,61 +41,160 @@ interface QuickAction {
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
-  todayDate: string = '';
-  private updateTimer: any;
+  private studentService = inject(StudentService);
+  private destroy$ = new Subject<void>();
+
+  todayDate = '';
+  loadingSchedules = false;
 
   stats: StatItem[] = [
-    { label: 'Total Classes', value: '8', icon: 'pi pi-book', color: 'blue' },
+    { label: 'Total Classes', value: '0', icon: 'pi pi-book', color: 'blue' },
     { label: 'Gate Attendance Status', value: 'Present', icon: 'pi pi-check', color: 'green' },
-    { label: 'Upcoming Classes', value: '3', icon: 'pi pi-clock', color: 'yellow' },
+    { label: 'Upcoming Classes', value: '0', icon: 'pi pi-clock', color: 'yellow' },
   ];
 
-  // ✅ Removed "Reports"
   quickActions: QuickAction[] = [
     { label: 'Gate Attendance', icon: 'pi pi-sign-in', action: 'gate', route: '/ats/student/gate-attendance' },
     { label: 'Subject Attendance', icon: 'pi pi-book', action: 'subject', route: '/ats/student/subject-attendance' },
     { label: 'Schedule', icon: 'pi pi-list', action: 'schedule', route: '/ats/student/schedule' },
   ];
 
-  classes: TodayClass[] = [
-    {
-      subject: 'Mathematics',
-      room: 'Room 204',
-      professor: 'Prof. Santos',
-      time: '8:00 AM - 9:30 AM',
-      status: 'present',
-    },
-    {
-      subject: 'Science',
-      room: 'Room 305',
-      professor: 'Dr. Rodriguez',
-      time: '10:00 AM - 11:30 AM',
-      status: 'present',
-    },
-    {
-      subject: 'Programming',
-      room: 'Lab 102',
-      professor: 'Prof. Lee',
-      time: '1:00 PM - 2:30 PM',
-      status: 'upcoming',
-    },
-  ];
+  classes: TodayClass[] = [];
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.todayDate = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
+
+    this.loadMySchedules();
   }
 
-  ngOnDestroy() {
-    if (this.updateTimer) clearInterval(this.updateTimer);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   handleQuickAction(action: QuickAction): void {
     const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
     this.router.navigateByUrl(url);
+  }
+
+  private loadMySchedules(): void {
+    this.loadingSchedules = true;
+
+    this.studentService
+      .getMySchedules()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const schedules = response?.data ?? [];
+          this.classes = this.mapTodayClasses(schedules);
+          this.updateStats(schedules);
+          this.loadingSchedules = false;
+        },
+        error: (err) => {
+          console.error('Failed to load student schedules:', err);
+          this.classes = [];
+          this.updateStats([]);
+          this.loadingSchedules = false;
+        },
+      });
+  }
+
+  private mapTodayClasses(schedules: StudentScheduleItem[]): TodayClass[] {
+    const todayName = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+    }).toLowerCase();
+
+    const nowMinutes = this.currentMinutes();
+
+    return schedules
+      .filter(
+        (item) => String(item.day ?? '').trim().toLowerCase() === todayName
+      )
+      .map((item) => {
+        const start = this.timeToMinutes(item.start_time);
+        const status: TodayClass['status'] = start <= nowMinutes ? 'present' : 'upcoming';
+
+        return {
+          subject:
+            item.subject?.subject_name ||
+            item.subject?.subject_code ||
+            item.course_code ||
+            'Untitled Subject',
+          room: item.room ?? 'No room',
+          professor:
+            item.professor?.professor_name ||
+            item.professor?.full_name ||
+            'No professor assigned',
+          time: `${this.formatTime(item.start_time)} - ${this.formatTime(item.end_time)}`,
+          status,
+        };
+      });
+  }
+
+  private updateStats(schedules: StudentScheduleItem[]): void {
+    const todayName = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+    }).toLowerCase();
+
+    const todaySchedules = schedules.filter(
+      (item) => String(item.day ?? '').trim().toLowerCase() === todayName
+    );
+
+    const nowMinutes = this.currentMinutes();
+    const upcomingCount = todaySchedules.filter(
+      (item) => this.timeToMinutes(item.start_time) > nowMinutes
+    ).length;
+
+    this.stats = [
+      {
+        label: 'Total Classes',
+        value: String(todaySchedules.length),
+        icon: 'pi pi-book',
+        color: 'blue',
+      },
+      {
+        label: 'Gate Attendance Status',
+        value: 'Present',
+        icon: 'pi pi-check',
+        color: 'green',
+      },
+      {
+        label: 'Upcoming Classes',
+        value: String(upcomingCount),
+        icon: 'pi pi-clock',
+        color: 'yellow',
+      },
+    ];
+  }
+
+  private formatTime(value: string): string {
+    if (!value) return '';
+
+    const [hourStr, minuteStr] = value.split(':');
+    let hour = Number(hourStr);
+    const minute = minuteStr ?? '00';
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    return `${hour}:${minute} ${suffix}`;
+  }
+
+  private timeToMinutes(value: string): number {
+    const [hourStr, minuteStr] = value.split(':');
+    const hour = Number(hourStr || 0);
+    const minute = Number(minuteStr || 0);
+    return hour * 60 + minute;
+  }
+
+  private currentMinutes(): number {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
   }
 }
