@@ -1,10 +1,21 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import {
   DataTableComponent,
   TableColumn,
   StiTagSeverity,
 } from '../../../../shared/components/data-table/data-table.component';
+import {
+  StudentAttendanceItem,
+} from './../../../../models/ats/student/student.model';
+import { StudentService } from './../../../../services/ats/student/student.service';
 
 interface SubjectAttendanceLog {
   subject: string;
@@ -21,6 +32,11 @@ interface SubjectAttendanceLog {
   templateUrl: './subject-attendance.component.html',
 })
 export class StudentSubjectAttendanceComponent implements OnInit {
+  private studentService = inject(StudentService);
+  private cdr = inject(ChangeDetectorRef);
+
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+
   subjectAttendanceLogs: SubjectAttendanceLog[] = [];
   columns: TableColumn<SubjectAttendanceLog>[] = [];
 
@@ -31,10 +47,13 @@ export class StudentSubjectAttendanceComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeColumns();
-    this.loadSampleData();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadMyAttendance();
+    }
   }
 
-  initializeColumns(): void {
+  private initializeColumns(): void {
     this.columns = [
       {
         field: 'subject',
@@ -50,12 +69,12 @@ export class StudentSubjectAttendanceComponent implements OnInit {
       },
       {
         field: 'timeIn',
-        header: 'In',
+        header: 'Time In',
         sortable: true,
       },
       {
         field: 'timeOut',
-        header: 'Out',
+        header: 'Time Out',
         sortable: true,
       },
       {
@@ -70,46 +89,74 @@ export class StudentSubjectAttendanceComponent implements OnInit {
     ];
   }
 
-  loadSampleData(): void {
-    this.subjectAttendanceLogs = [
-      {
-        subject: 'Programming 1',
-        date: '2025-09-11',
-        timeIn: '-',
-        timeOut: '-',
-        status: 'absent',
-      },
-      {
-        subject: 'Database Management',
-        date: '2025-09-10',
-        timeIn: '-',
-        timeOut: '-',
-        status: 'absent',
-      },
-      {
-        subject: 'Web Development',
-        date: '2025-09-09',
-        timeIn: '08:05 AM',
-        timeOut: '10:00 AM',
-        status: 'late',
-      },
-      {
-        subject: 'Network Administration',
-        date: '2025-09-08',
-        timeIn: '07:45 AM',
-        timeOut: '09:30 AM',
-        status: 'present',
-      },
-      {
-        subject: 'Capstone Project 1',
-        date: '2025-09-07',
-        timeIn: '-',
-        timeOut: '-',
-        status: 'absent',
-      },
-    ];
+  private loadMyAttendance(): void {
+    this.loading = true;
+    this.cdr.detectChanges();
 
-    this.totalRecords = this.subjectAttendanceLogs.length;
+    this.studentService.getMyAttendance().subscribe({
+      next: (response) => {
+        const rows = response?.data ?? [];
+
+        this.subjectAttendanceLogs = rows.map((item) =>
+          this.mapAttendanceRow(item)
+        );
+        this.totalRecords =
+          response?.pagination?.total ?? this.subjectAttendanceLogs.length;
+
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load subject attendance:', err);
+        this.subjectAttendanceLogs = [];
+        this.totalRecords = 0;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private mapAttendanceRow(item: StudentAttendanceItem): SubjectAttendanceLog {
+    return {
+      subject:
+        item.schedule?.subject?.subject_name ||
+        item.schedule?.subject?.subject_code ||
+        'Unknown Subject',
+      date: item.created_at,
+      timeIn: item.time_in ? this.formatShortTime(item.time_in) : '-',
+      timeOut: item.time_out ? this.formatShortTime(item.time_out) : '-',
+      status: this.normalizeStatus(item.status),
+    };
+  }
+
+  private normalizeStatus(
+    status: string | null | undefined
+  ): 'present' | 'late' | 'absent' {
+    const normalized = String(status ?? '').trim().toLowerCase();
+
+    switch (normalized) {
+      case 'present':
+        return 'present';
+      case 'late':
+        return 'late';
+      case 'absent':
+        return 'absent';
+      default:
+        return 'absent';
+    }
+  }
+
+  private formatShortTime(value: string): string {
+    const parts = value.split(':');
+    const hour = Number(parts[0] ?? 0);
+    const minute = parts[1] ?? '00';
+
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+    let displayHour = hour % 12;
+
+    if (displayHour === 0) displayHour = 12;
+
+    return `${displayHour.toString().padStart(2, '0')}:${minute} ${suffix}`;
   }
 
   getStatusText(status: SubjectAttendanceLog['status']): string {
