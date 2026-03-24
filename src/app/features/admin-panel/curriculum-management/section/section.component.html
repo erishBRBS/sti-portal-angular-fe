@@ -34,3 +34,9 @@
   (onSuccess)="onModalSuccess()"
   (onCancel)="onModalCancel()"
 ></sti-section-modal>
+
+<sti-view-details
+  [visible]="showViewDetails"
+  (visibleChange)="showViewDetails = $event"
+  [config]="sectionConfig">
+</sti-view-details>
