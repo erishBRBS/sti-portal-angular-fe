@@ -12,8 +12,8 @@ export function createProfessorDetailConfig(
     showProfile: true,
     profileImage: imageURL + data.image_path,
     fields: [
-      { label: 'Professor Name', value: data.professor_name },
-      { label: 'Email', value: data.email_address },
+      { label: 'Professor Name', value: data.full_name },
+      { label: 'Email', value: data.email },
       { label: 'Mobile Number', value: data.mobile_number },
       { label: 'Username', value: data.username },
       { label: 'status', value: data.status },
