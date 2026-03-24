@@ -1,10 +1,13 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
 import { DataTableComponent, RowAction, TableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { SectionService } from '../../../../services/admin-panel/curriculum-management/section.service';
 import { SectionModalComponent } from './section-modal/section-modal.component';
 import { finalize } from 'rxjs';
 import { SectionData } from '../../../../models/admin-panel/curriculum-management/section.model';
+import { createASectionDetailConfig } from '../../../../helper/section-helper';
+import { DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
+import { ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
 
 
 type UserRow = {
@@ -16,7 +19,7 @@ type UserRow = {
   selector: 'sti-section',
   standalone: true,
   imports: [
-    DataTableComponent, SectionModalComponent
+    DataTableComponent, SectionModalComponent, ViewDetailsComponent
   ],
   templateUrl: './section.component.html',
   styleUrl: './section.component.css',
@@ -36,6 +39,7 @@ export class SectionComponent {
   private readonly sectionService = inject(SectionService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
 @ViewChild(SectionModalComponent) sectionModal!: SectionModalComponent;
 
@@ -48,8 +52,17 @@ export class SectionComponent {
   first = 0;
 
   openModal = false;
+  showViewDetails = false;
+
 
   selectedRows: any[] = [];
+  
+    sectionConfig: DetailModalConfig = {
+    title: 'Section Details',
+    showProfile: true,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadSection(1, this.rowsPerPage);
@@ -63,11 +76,10 @@ onAction(e: { actionKey: string; row: UserRow }) {
 
   if (e.actionKey === 'edit') {
     this.sectionModal.updateDialog(e.row.id);
-  }
-
-  else if (e.actionKey === 'view') {
-    this.sectionModal.viewDialog(e.row.id);
-  }
+    } else if (e.actionKey === 'view') {
+      // optional view function
+      this.getSectionById(e.row.id);
+    }
 
   else if (e.actionKey === 'delete') {
     this.deleteSection(e.row.id);
@@ -179,6 +191,30 @@ deleteSection(id: number) {
     }
   });
 }
+
+private getSectionById(id: number): void {
+  this.sectionService.getSectionById(id).subscribe({
+    next: (response) => {
+      const data = response.data;
+
+      this.ngZone.run(() => {
+        this.sectionConfig = createASectionDetailConfig(
+          data,
+          this.sectionService.fileAPIUrl
+        );
+
+        this.showViewDetails = true;
+        this.cdr.detectChanges();
+      });
+    },
+    error: (err) => {
+      const msg = err?.error?.message ?? 'Failed to load section details.';
+      this.toast.error('Error', msg);
+      console.error(err);
+    },
+  });
+}
+
 deleteSelectedSection(): void {
 
   const payload = {
