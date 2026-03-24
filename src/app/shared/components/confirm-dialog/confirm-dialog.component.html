@@ -1,0 +1,19 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '400px' }"
+>
+  <ng-template pTemplate="header">
+    {{ title }}
+  </ng-template>
+
+  <div class="py-4 text-center">
+    {{ message }}
+  </div>
+
+  <ng-template pTemplate="footer">
+    <button pButton label="Cancel" (click)="close()"></button>
+    <button pButton label="Confirm" class="p-button-danger" (click)="confirm()"></button>
+  </ng-template>
+</p-dialog>

@@ -8,6 +8,7 @@ import { SectionData } from '../../../../models/admin-panel/curriculum-managemen
 import { createASectionDetailConfig } from '../../../../helper/section-helper';
 import { DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
 import { ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 
 type UserRow = {
@@ -19,7 +20,7 @@ type UserRow = {
   selector: 'sti-section',
   standalone: true,
   imports: [
-    DataTableComponent, SectionModalComponent, ViewDetailsComponent
+    DataTableComponent, SectionModalComponent, ViewDetailsComponent, ConfirmDialogComponent,
   ],
   templateUrl: './section.component.html',
   styleUrl: './section.component.css',
@@ -35,6 +36,8 @@ export class SectionComponent {
     { key: 'edit', label: 'Edit', icon: 'pi pi-pencil' },
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
+
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
 
   private readonly sectionService = inject(SectionService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -54,6 +57,8 @@ export class SectionComponent {
   openModal = false;
   showViewDetails = false;
 
+  showDeleteDialog = false;
+  selectedDeleteId: number | null = null;
 
   selectedRows: any[] = [];
   
@@ -123,11 +128,10 @@ openDeleteModal() {
     return;
   }
 
-  if (!confirm('Are you sure you want to delete selected section(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedSection();
+  this.confirmDialog.open({
+    title: 'Delete Section',
+    message: 'Are you sure you want to delete selected sections?'
+  });
 }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
@@ -174,22 +178,62 @@ openDeleteModal() {
   }
 
 deleteSection(id: number) {
-  const payload = {
-    id: [id]
-  };
+  this.selectedDeleteId = id;
 
-  if (!confirm('Are you sure you want to delete this section?')) return;
+  this.confirmDialog.open({
+    title: 'Delete Section',
+    message: 'Are you sure you want to delete this section?'
+  });
+}
+
+confirmDelete() {
+
+  //  if multiple selected
+  if (this.selectedRows.length) {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id)
+    };
+
+    this.sectionService.deleteSection(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.selectedRows = [];
+        this.loadSection(this.currentPage, this.rowsPerPage);
+      },
+      error: () => {
+        this.toast.error('Error', 'Failed to delete sections');
+      }
+    });
+
+    return;
+  }
+
+  // single delete
+  if (!this.selectedDeleteId) return;
+
+  const payload = {
+    id: [this.selectedDeleteId]
+  };
 
   this.sectionService.deleteSection(payload).subscribe({
     next: (res) => {
       this.toast.success('Success', res.message);
       this.loadSection(this.currentPage, this.rowsPerPage);
     },
-    error: (err) => {
-      console.error(err);
+    error: () => {
       this.toast.error('Error', 'Failed to delete section');
     }
   });
+}
+
+handleCancelDelete() {
+  this.selectedRows = [];         // clear checkboxes
+  this.selectedDeleteId = null;   
+}
+
+closeDeleteDialog() {
+  this.showDeleteDialog = false;
+  this.selectedDeleteId = null;
 }
 
 private getSectionById(id: number): void {
