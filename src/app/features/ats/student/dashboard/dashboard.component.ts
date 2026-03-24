@@ -1,12 +1,12 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
-import { Router } from '@angular/router';
+import { NavigationEnd, Router } from '@angular/router';
 import { TooltipModule } from 'primeng/tooltip';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, filter, takeUntil } from 'rxjs';
 
 import { StudentService } from '../../../../services/ats/student/student.service';
 import { StudentScheduleItem } from '../../../../models/ats/student/student.model';
@@ -16,7 +16,7 @@ interface TodayClass {
   room: string;
   professor: string;
   time: string;
-  status: 'present' | 'upcoming' | 'absent' | 'late';
+  status: 'Present' | 'Upcoming' | 'Absent' | 'Late';
 }
 
 type StatItem = {
@@ -42,6 +42,7 @@ interface QuickAction {
 export class StudentDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private studentService = inject(StudentService);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   todayDate = '';
@@ -62,14 +63,20 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   classes: TodayClass[] = [];
 
   ngOnInit(): void {
-    this.todayDate = new Date().toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-
+    this.setTodayDate();
     this.loadMySchedules();
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
+        if (event.urlAfterRedirects.includes('/ats/student/dashboard')) {
+          this.setTodayDate();
+          this.loadMySchedules();
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -82,8 +89,18 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(url);
   }
 
+  private setTodayDate(): void {
+    this.todayDate = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  }
+
   private loadMySchedules(): void {
     this.loadingSchedules = true;
+    this.cdr.detectChanges();
 
     this.studentService
       .getMySchedules()
@@ -94,12 +111,14 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
           this.classes = this.mapTodayClasses(schedules);
           this.updateStats(schedules);
           this.loadingSchedules = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error('Failed to load student schedules:', err);
           this.classes = [];
           this.updateStats([]);
           this.loadingSchedules = false;
+          this.cdr.detectChanges();
         },
       });
   }
@@ -112,12 +131,18 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     const nowMinutes = this.currentMinutes();
 
     return schedules
-      .filter(
-        (item) => String(item.day ?? '').trim().toLowerCase() === todayName
-      )
+      .filter((item) => String(item.day ?? '').trim().toLowerCase() === todayName)
       .map((item) => {
         const start = this.timeToMinutes(item.start_time);
-        const status: TodayClass['status'] = start <= nowMinutes ? 'present' : 'upcoming';
+        const end = this.timeToMinutes(item.end_time);
+
+        let status: TodayClass['status'] = 'Upcoming';
+
+        if (nowMinutes >= start && nowMinutes <= end) {
+          status = 'Present';
+        } else if (nowMinutes > end) {
+          status = 'Absent';
+        }
 
         return {
           subject:
@@ -146,6 +171,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     );
 
     const nowMinutes = this.currentMinutes();
+
     const upcomingCount = todaySchedules.filter(
       (item) => this.timeToMinutes(item.start_time) > nowMinutes
     ).length;

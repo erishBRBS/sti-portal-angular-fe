@@ -1,5 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Subject, takeUntil } from 'rxjs';
+
+import { StudentService } from '../../../../services/ats/student/student.service';
+import { StudentScheduleItem } from '../../../../models/ats/student/student.model';
 
 interface SubjectSchedule {
   code: string;
@@ -11,6 +15,8 @@ interface SubjectSchedule {
   startTime: string;
   endTime: string;
   days: string[];
+  academicYear: string;
+  semester: string;
 }
 
 @Component({
@@ -19,82 +25,78 @@ interface SubjectSchedule {
   imports: [CommonModule],
   templateUrl: './schedule.component.html',
 })
-export class StudentScheduleComponent {
+export class StudentScheduleComponent implements OnInit, OnDestroy {
+  private studentScheduleService = inject(StudentService);
+  private destroy$ = new Subject<void>();
+
   selectedSubject: SubjectSchedule | null = null;
   isModalOpen = false;
 
   readonly days: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
   readonly timeSlots: string[] = this.generateTimeSlots('07:00 AM', '07:00 PM', 30);
 
-  readonly schedules: SubjectSchedule[] = [
-    {
-      code: 'CC101',
-      subject: 'Introduction to Computing',
-      section: 'BSIT 2A',
-      room: 'Room 301',
-      instructor: 'Prof. Santos',
-      time: '08:30 AM - 10:00 AM',
-      startTime: '08:30 AM',
-      endTime: '10:00 AM',
-      days: ['Monday', 'Wednesday'],
-    },
-    {
-      code: 'CC102',
-      subject: 'Computer Programming 2',
-      section: 'BSIT 2A',
-      room: 'Lab 204',
-      instructor: 'Prof. Reyes',
-      time: '10:30 AM - 12:00 PM',
-      startTime: '10:30 AM',
-      endTime: '12:00 PM',
-      days: ['Monday', 'Thursday'],
-    },
-    {
-      code: 'GEED01',
-      subject: 'Understanding the Self',
-      section: 'BSIT 2A',
-      room: 'Room 105',
-      instructor: 'Prof. Cruz',
-      time: '01:00 PM - 02:30 PM',
-      startTime: '01:00 PM',
-      endTime: '02:30 PM',
-      days: ['Tuesday'],
-    },
-    {
-      code: 'MATH203',
-      subject: 'Discrete Mathematics',
-      section: 'BSIT 2A',
-      room: 'Room 210',
-      instructor: 'Prof. Dela Cruz',
-      time: '08:30 AM - 11:30 AM',
-      startTime: '08:30 AM',
-      endTime: '11:30 AM',
-      days: ['Friday'],
-    },
-    {
-      code: 'PE101',
-      subject: 'Physical Education',
-      section: 'BSIT 2A',
-      room: 'Gymnasium',
-      instructor: 'Prof. Mendoza',
-      time: '03:00 PM - 05:00 PM',
-      startTime: '03:00 PM',
-      endTime: '05:00 PM',
-      days: ['Wednesday'],
-    },
-    {
-      code: 'NSTP1',
-      subject: 'National Service Training Program',
-      section: 'BSIT 2A',
-      room: 'AVR 1',
-      instructor: 'Prof. Garcia',
-      time: '09:00 AM - 12:00 PM',
-      startTime: '09:00 AM',
-      endTime: '12:00 PM',
-      days: ['Saturday'],
-    },
-  ];
+  schedules: SubjectSchedule[] = [];
+  loading = false;
+
+  academicYearLabel = '';
+  semesterLabel = '';
+
+  ngOnInit(): void {
+    this.loadMySchedules();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private loadMySchedules(): void {
+    this.loading = true;
+
+    this.studentScheduleService
+      .getMySchedules()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const rows = response?.data ?? [];
+
+          this.schedules = rows.map((item) => ({
+            code:
+              item.subject?.subject_code ||
+              item.course_code ||
+              'N/A',
+            subject:
+              item.subject?.subject_name ||
+              item.subject?.subject_code ||
+              'Untitled Subject',
+            section: item.section?.section_name ?? 'No section',
+            room: item.room ?? 'No room',
+            instructor:
+              item.professor?.professor_name ||
+              item.professor?.full_name ||
+              'No instructor assigned',
+            time: `${this.formatTime(item.start_time)} - ${this.formatTime(item.end_time)}`,
+            startTime: this.formatTime(item.start_time),
+            endTime: this.formatTime(item.end_time),
+            days: [item.day],
+            academicYear: item.academic_year?.academic_year ?? '',
+            semester: item.academic_year?.semester ?? '',
+          }));
+
+          const first = rows[0];
+          this.academicYearLabel = first?.academic_year?.academic_year ?? '';
+          this.semesterLabel = first?.academic_year?.semester ?? '';
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Failed to load schedules:', err);
+          this.schedules = [];
+          this.academicYearLabel = '';
+          this.semesterLabel = '';
+          this.loading = false;
+        },
+      });
+  }
 
   private generateTimeSlots(start: string, end: string, intervalMinutes: number): string[] {
     const slots: string[] = [];
@@ -128,6 +130,20 @@ export class StudentScheduleComponent {
     else if (hours > 12) hours -= 12;
 
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${modifier}`;
+  }
+
+  private formatTime(value: string): string {
+    if (!value) return '';
+
+    const [hourStr, minuteStr] = value.split(':');
+    let hour = Number(hourStr);
+    const minute = minuteStr ?? '00';
+    const suffix = hour >= 12 ? 'PM' : 'AM';
+
+    hour = hour % 12;
+    if (hour === 0) hour = 12;
+
+    return `${hour.toString().padStart(2, '0')}:${minute} ${suffix}`;
   }
 
   isHourLabel(slot: string): boolean {
