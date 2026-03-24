@@ -4,9 +4,11 @@
   [closable]="false"
   [style]="{ width: '400px' }"
 >
-  <ng-template pTemplate="header">
+<ng-template pTemplate="header">
+  <div class="flex items-center gap-2 text-lg font-bold text-gray-800">
     {{ title }}
-  </ng-template>
+  </div>
+</ng-template>
 
   <div class="py-4 text-center">
     {{ message }}

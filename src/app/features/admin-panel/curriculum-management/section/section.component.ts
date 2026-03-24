@@ -129,7 +129,7 @@ openDeleteModal() {
   }
 
   this.confirmDialog.open({
-    title: 'Delete Section',
+    title: 'Confirm Deletion',
     message: 'Are you sure you want to delete selected sections?'
   });
 }
@@ -181,7 +181,7 @@ deleteSection(id: number) {
   this.selectedDeleteId = id;
 
   this.confirmDialog.open({
-    title: 'Delete Section',
+    title: 'Confirm Deletion',
     message: 'Are you sure you want to delete this section?'
   });
 }
