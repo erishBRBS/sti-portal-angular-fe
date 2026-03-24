@@ -25,12 +25,17 @@ export class StudentService {
   private readonly getMySchedulesUrl = `${this.baseAPIUrl}${StudentScheduleEndPoints.getMySchedules}`;
 
   private authHeaders(): HttpHeaders {
-    return new HttpHeaders({
-      Authorization: this.storage.getToken()
-        ? `Bearer ${this.storage.getToken()}`
-        : '',
+    const token = this.storage.getToken();
+
+    let headers = new HttpHeaders({
       Accept: 'application/json',
     });
+
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+
+    return headers;
   }
 
   getMySchedules(): Observable<GetMySchedulesResponse> {

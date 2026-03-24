@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subject, filter, takeUntil } from 'rxjs';
 
 import { StudentService } from '../../../../services/ats/student/student.service';
 import { StudentScheduleItem } from '../../../../models/ats/student/student.model';
@@ -26,23 +27,35 @@ interface SubjectSchedule {
   templateUrl: './schedule.component.html',
 })
 export class StudentScheduleComponent implements OnInit, OnDestroy {
-  private studentScheduleService = inject(StudentService);
+  private router = inject(Router);
+  private studentService = inject(StudentService);
+  private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   selectedSubject: SubjectSchedule | null = null;
-  isModalOpen = false;
 
   readonly days: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   readonly timeSlots: string[] = this.generateTimeSlots('07:00 AM', '07:00 PM', 30);
 
   schedules: SubjectSchedule[] = [];
-  loading = false;
+  loadingSchedules = false;
 
   academicYearLabel = '';
   semesterLabel = '';
 
   ngOnInit(): void {
     this.loadMySchedules();
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((event) => {
+        if (event.urlAfterRedirects.includes('/ats/student/schedule')) {
+          this.loadMySchedules();
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -51,24 +64,19 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
   }
 
   private loadMySchedules(): void {
-    this.loading = true;
+    this.loadingSchedules = true;
+    this.cdr.detectChanges();
 
-    this.studentScheduleService
+    this.studentService
       .getMySchedules()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          const rows = response?.data ?? [];
+          const rows: StudentScheduleItem[] = response?.data ?? [];
 
           this.schedules = rows.map((item) => ({
-            code:
-              item.subject?.subject_code ||
-              item.course_code ||
-              'N/A',
-            subject:
-              item.subject?.subject_name ||
-              item.subject?.subject_code ||
-              'Untitled Subject',
+            code: item.subject?.subject_code || item.course_code || 'N/A',
+            subject: item.subject?.subject_name || item.subject?.subject_code || 'Untitled Subject',
             section: item.section?.section_name ?? 'No section',
             room: item.room ?? 'No room',
             instructor:
@@ -78,22 +86,23 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
             time: `${this.formatTime(item.start_time)} - ${this.formatTime(item.end_time)}`,
             startTime: this.formatTime(item.start_time),
             endTime: this.formatTime(item.end_time),
-            days: [item.day],
+            days: item.day ? [item.day] : [],
             academicYear: item.academic_year?.academic_year ?? '',
             semester: item.academic_year?.semester ?? '',
           }));
 
-          const first = rows[0];
-          this.academicYearLabel = first?.academic_year?.academic_year ?? '';
-          this.semesterLabel = first?.academic_year?.semester ?? '';
-          this.loading = false;
+          this.academicYearLabel = rows[0]?.academic_year?.academic_year ?? '';
+          this.semesterLabel = rows[0]?.academic_year?.semester ?? '';
+          this.loadingSchedules = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
-          console.error('Failed to load schedules:', err);
+          console.error('Failed to load student schedules:', err);
           this.schedules = [];
           this.academicYearLabel = '';
           this.semesterLabel = '';
-          this.loading = false;
+          this.loadingSchedules = false;
+          this.cdr.detectChanges();
         },
       });
   }
@@ -155,13 +164,14 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
   }
 
   getRowStart(schedule: SubjectSchedule): number {
-    return this.timeSlots.indexOf(schedule.startTime) + 2;
+    const index = this.timeSlots.indexOf(schedule.startTime);
+    return index >= 0 ? index + 2 : 2;
   }
 
   getRowSpan(schedule: SubjectSchedule): number {
     const start = this.toMinutes(schedule.startTime);
     const end = this.toMinutes(schedule.endTime);
-    return Math.max(1, (end - start) / 30);
+    return Math.max(1, Math.round((end - start) / 30));
   }
 
   getSchedulesForDay(day: string): SubjectSchedule[] {
@@ -171,12 +181,6 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
   openDetails(subjectInfo: SubjectSchedule, event?: Event): void {
     event?.stopPropagation();
     this.selectedSubject = { ...subjectInfo };
-    this.isModalOpen = true;
-  }
-
-  closeModal(event?: Event): void {
-    event?.stopPropagation();
-    this.isModalOpen = false;
-    this.selectedSubject = null;
+    this.cdr.detectChanges();
   }
 }
