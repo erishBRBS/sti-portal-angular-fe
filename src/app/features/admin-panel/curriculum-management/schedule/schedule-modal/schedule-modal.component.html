@@ -142,7 +142,7 @@
         <span class="mr-1 text-red-600">*</span> Start Time
       </label>
 
-       <p-datepicker
+      <p-datepicker
         name="start_time"
         [(ngModel)]="start_time"
         [disabled]="mode === 'VIEW'"
@@ -150,11 +150,11 @@
         [required]="true"
         [showTime]="true"
         timeOnly="true"
-        hourFormat="24"
+        hourFormat="12"
         placeholder="Select Start Time"
         class="w-full"
         inputStyleClass="w-full"
-      ></p-datepicker>
+     ></p-datepicker>
     </div>
 
     <!-- END TIME -->
@@ -163,19 +163,19 @@
         <span class="mr-1 text-red-600">*</span> End Time
       </label>
 
-       <p-datepicker
+      <p-datepicker
         name="end_time"
-        [(ngModel)]="start_time"
+        [(ngModel)]="end_time"
         [disabled]="mode === 'VIEW'"
         #startTimeCtrl="ngModel"
         [required]="true"
         [showTime]="true"
         timeOnly="true"
-        hourFormat="24"
+        hourFormat="12"
         placeholder="Select End Time"
         class="w-full"
         inputStyleClass="w-full"
-      ></p-datepicker>
+     ></p-datepicker>
     </div>
 
     <!-- ROOM -->

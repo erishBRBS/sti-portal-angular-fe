@@ -2,8 +2,8 @@ import { PaginatedResponse } from "../../../pagination.model";
 
 export interface ProfessorData {
   id: number;
-  professor_name: string;
-  email_address: string;
+  full_name: string; 
+  email: string;
   mobile_number: string;
   username: string;
   status: string;

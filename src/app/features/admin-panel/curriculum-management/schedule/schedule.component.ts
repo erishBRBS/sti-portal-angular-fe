@@ -1,12 +1,14 @@
-import { ChangeDetectorRef, Component, inject, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
 import { DataTableComponent, RowAction, TableColumn } from '../../../../shared/components/data-table/data-table.component';
 import { ScheduleService } from '../../../../services/admin-panel/curriculum-management/schedule.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ScheduleModalComponent } from './schedule-modal/schedule-modal.component';
 import { finalize } from 'rxjs';
 import { ScheduleData } from '../../../../models/admin-panel/curriculum-management/schedule.model';
-import {DetailModalConfig, ViewDetailsComponent,} from '../../../../shared/components/view-details/view-details.component';
-import { createACourseDetailConfig } from '../../../../helper/course.helper';
+import { createAScheduleDetailConfig } from '../../../../helper/schedule-helper';
+import { ViewDetailsComponent, DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
+import { TimeHelper } from '../../../../helper/time-helper';
+
 type UserRow = {
   id: number;
   course_code: string;
@@ -25,7 +27,7 @@ type UserRow = {
   selector: 'sti-schedule',
   standalone: true,
   imports: [
-    DataTableComponent, ScheduleModalComponent
+    DataTableComponent, ScheduleModalComponent, ViewDetailsComponent
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.css',
@@ -54,6 +56,7 @@ export class ScheduleComponent {
 private readonly scheduleService = inject(ScheduleService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
 @ViewChild(ScheduleModalComponent)scheduleModal!: ScheduleModalComponent;
 
@@ -71,7 +74,7 @@ private readonly scheduleService = inject(ScheduleService);
   selectedRows: any[] = [];
 
     scheduleConfig: DetailModalConfig = {
-    title: 'Course Details',
+    title: 'Schedule Details',
     showProfile: true,
     profileImage: '',
     fields: [],
@@ -91,9 +94,9 @@ onAction(e: { actionKey: string; row: UserRow }) {
     this.scheduleModal.updateDialog(e.row.id);
   }
 
-  else if (e.actionKey === 'view') {
-    this.scheduleModal.viewDialog(e.row.id);
-  }
+else if (e.actionKey === 'view') {
+  this.getScheduleById(e.row.id);
+}
 
   else if (e.actionKey === 'delete') {
     this.deleteSchedule(e.row.id);
@@ -170,17 +173,19 @@ openDeleteModal() {
       .subscribe({
         next: (res) => {
          const mapped = res.data.map((a: ScheduleData) => ({
-            id: a.id,
-            course_code: a.course_code,
-            section_name: a.section.section_name,
-            professor_name: a.professor.professor_name,
-            subject_code: a.subject.subject_code,
-            subject_name: a.subject.subject_name,
-            day: a.day,
-            start_time: a.start_time,
-            end_time: a.end_time,
-            duration: a.duration,
-            room: a.room,
+           id: a.id,
+           course_code: a.course_code,
+           section_name: a.section.section_name,
+           professor_name: a.professor.professor_name,
+           subject_code: a.subject.subject_code,
+           subject_name: a.subject.subject_name,
+           day: a.day,
+
+          start_time: TimeHelper.formatTo12Hour(a.start_time),
+          end_time: TimeHelper.formatTo12Hour(a.end_time),
+
+          duration: a.duration,
+          room: a.room,
           }));
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
@@ -196,6 +201,29 @@ openDeleteModal() {
         },
       });
   }
+
+  private getScheduleById(id: number): void {
+  this.scheduleService.getScheduleById(id).subscribe({
+    next: (response) => {
+      const data = response.data;
+
+      this.ngZone.run(() => {
+        this.scheduleConfig = createAScheduleDetailConfig(
+          data,
+          this.scheduleService.fileAPIUrl
+        );
+
+        this.showViewDetails = true;
+        this.cdr.detectChanges();
+      });
+    },
+    error: (err) => {
+      const msg = err?.error?.message ?? 'Failed to load schedule details.';
+      this.toast.error('Error', msg);
+      console.error(err);
+    },
+  });
+}
 
 deleteSchedule(id: number) {
   const payload = {

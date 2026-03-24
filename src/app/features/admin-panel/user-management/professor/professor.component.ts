@@ -189,8 +189,8 @@ openDeleteModal() {
         next: (res) => {
           const mapped = res.data.map((a: ProfessorData) => ({
             id: a.id,
-            professor_name: a.professor_name,
-            email_address: a.email_address,
+            professor_name: a.full_name, 
+            email_address: a.email,
             mobile_number: a.mobile_number,
             username: a.username,
             status: this.mapStatus(a.status),
