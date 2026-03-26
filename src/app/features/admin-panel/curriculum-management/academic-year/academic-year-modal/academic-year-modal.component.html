@@ -1,0 +1,110 @@
+<p-dialog
+  [(visible)]="visible"
+  (onShow)="onDialogShown()"
+  (onHide)="close()"
+  [(visible)]="visible"
+  (onShow)="onDialogShown()"
+  (onHide)="close()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(900px, 95vw)' }"
+  [contentStyle]="{ 'max-height': '85vh', overflow: 'visible' }"
+>
+  <!-- HEADER -->
+  <ng-template pTemplate="header">
+    <div class="flex items-center justify-center w-full">
+      <div class="text-lg font-bold text-blue-700">
+        {{ dialogTitle }}
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- FORM -->
+  <form
+    #academicYearForm="ngForm"
+    (ngSubmit)="onSave(academicYearForm)"
+    class="p-4"
+  >
+
+  <!-- GRID -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- Academic Year -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Academic Year
+      </label>
+
+      <input
+        pInputText
+        name="academic_year"
+        [(ngModel)]="academic_year"
+        [disabled]="mode === 'VIEW'"
+        #academicYearCtrl="ngModel"
+        class="w-full"
+        required
+        placeholder="e.g. 2024-2025"
+      />
+
+      <p
+        class="mt-1 text-xs text-rose-600"
+        *ngIf="academicYearCtrl.invalid && (academicYearCtrl.touched || submitted)"
+      >
+        Academic Year is required.
+      </p>
+    </div>
+
+    <!-- Semester -->
+    <div>
+      <label class="block mb-2 text-sm font-semibold text-slate-700">
+        <span class="mr-1 text-red-600">*</span> Semester
+      </label>
+
+      <p-select
+        class="w-full"
+        name="semester"
+        [(ngModel)]="semester"
+        #semesterCtrl="ngModel"
+        [options]="semesterOptions"
+        optionLabel="label"
+        optionValue="value"
+        [disabled]="mode === 'VIEW'"
+        placeholder="Select Semester"
+        required>
+      </p-select>
+
+      <p
+        class="mt-1 text-xs text-rose-600"
+        *ngIf="semesterCtrl.invalid && (semesterCtrl.touched || submitted)"
+      >
+        Semester is required.
+      </p>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
+
+    <button
+      pButton
+      type="button"
+      label="Cancel"
+      class="p-button-outlined"
+      (click)="close()">
+    </button>
+
+    <button
+      pButton
+      type="submit"
+      [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+      class="p-button-success">
+    </button>
+
+  </div>
+
+  </form>
+</p-dialog>

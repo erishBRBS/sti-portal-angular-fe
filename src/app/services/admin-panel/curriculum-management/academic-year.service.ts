@@ -2,12 +2,9 @@ import { inject, Injectable } from '@angular/core';
 import { ApiResponse, ApiResponseNoData } from '../../../models/pagination.model';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import {
-  AcademicYearData,
-  AcademicYearModel,
-} from '../../../models/admin-panel/curriculum-management/academic-year.model';
+import { AcademicYearData,AcademicYearModel,} from '../../../models/admin-panel/curriculum-management/academic-year.model';
 import { Observable } from 'rxjs';
-import { CreateAcademicYearPayload } from '../../../payloads/admin-panel/curriculum/academic-year/academic-year.payload';
+import { CreateAcademicYearPayload } from '../../../payloads/admin-panel/curriculum/academic-year/create-academic-year.payload';
 import { DeletePayload } from '../../../payloads/common.payload';
 import { TokenStorageService } from '../../../core/services/token-storage.service';
 
@@ -65,20 +62,21 @@ export class AcademicYearService {
     });
   }
 
-  createAcademicYear(payload: CreateAcademicYearPayload): Observable<AcademicYearResponse> {
-    return this.http.post<AcademicYearResponse>(this.createAcademicYeartUrl, payload, {
-      headers: this.authHeaders().set('Content-Type', 'application/json'),
-    });
-  }
-  updateAcademicYear(
-    id: number,
-    payload: CreateAcademicYearPayload,
-  ): Observable<AcademicYearResponse> {
-    const url = this.updateAcademicYearUrl.replace('{id}', String(id));
-    return this.http.post<AcademicYearResponse>(url, payload, {
-      headers: this.authHeaders().set('Content-Type', 'application/json'),
-    });
-  }
+createAcademicYear(payload: CreateAcademicYearPayload): Observable<AcademicYearResponse> {
+  return this.http.post<AcademicYearResponse>(this.createAcademicYeartUrl, payload, {
+    headers: this.authHeaders().set('Content-Type', 'application/json'),
+  });
+}
+updateAcademicYear(
+  id: number,
+  payload: CreateAcademicYearPayload,
+): Observable<AcademicYearResponse> {
+  const url = this.updateAcademicYearUrl.replace('{id}', String(id));
+
+  return this.http.patch<AcademicYearResponse>(url, payload, {
+    headers: this.authHeaders().set('Content-Type', 'application/json'),
+  });
+}
 
   deleteAcademicYear(payload: DeletePayload): Observable<DeleteAcademicYearResponse> {
     return this.http.post<DeleteAcademicYearResponse>(this.deleteAcademicYeartUrl, payload, {
