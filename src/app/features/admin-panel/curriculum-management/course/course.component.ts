@@ -9,11 +9,9 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { CourseModalComponent } from './course-modal/course-modal.component';
 import { finalize } from 'rxjs';
 import { CourseData } from '../../../../models/admin-panel/curriculum-management/course.model';
-import {
-  DetailModalConfig,
-  ViewDetailsComponent,
-} from '../../../../shared/components/view-details/view-details.component';
+import {DetailModalConfig, ViewDetailsComponent} from '../../../../shared/components/view-details/view-details.component';
 import { createACourseDetailConfig } from '../../../../helper/course.helper';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 type UserRow = {
   id: number;
@@ -26,7 +24,8 @@ type UserRow = {
   imports: [
     DataTableComponent, 
     CourseModalComponent, 
-    ViewDetailsComponent
+    ViewDetailsComponent,
+    ConfirmDialogComponent
   ],
   templateUrl: './course.component.html',
   styleUrl: './course.component.css',
@@ -47,7 +46,8 @@ export class CourseComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
-
+  
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   @ViewChild(CourseModalComponent) courseModal!: CourseModalComponent;
 
   loading = false;
@@ -60,6 +60,9 @@ export class CourseComponent {
 
   openModal = false;
   showViewDetails = false;
+
+  showDeleteDialog = false;
+  selectedDeleteId: number | null = null;
 
   selectedRows: any[] = [];
 
@@ -125,16 +128,16 @@ openAddModal() {
 
 openDeleteModal() {
   if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a section to delete.');
+    this.toast.error('Error', 'Please select a subject to delete.');
     return;
   }
 
-  if (!confirm('Are you sure you want to delete selected section(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedCourse();
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete selected courses?'
+  });
 }
+
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -180,22 +183,62 @@ openDeleteModal() {
   }
 
 deleteCourse(id: number) {
-  const payload = {
-    id: [id]
-  };
+  this.selectedDeleteId = id;
 
-  if (!confirm('Are you sure you want to delete this section?')) return;
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this course?'
+  });
+}
+
+confirmDelete() {
+
+  //  if multiple selected
+  if (this.selectedRows.length) {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id)
+    };
+
+    this.courseService.deleteCourse(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.selectedRows = [];
+        this.loadCourse(this.currentPage, this.rowsPerPage);
+      },
+      error: () => {
+        this.toast.error('Error', 'Failed to delete courses');
+      }
+    });
+
+    return;
+  }
+
+  // single delete
+  if (!this.selectedDeleteId) return;
+
+  const payload = {
+    id: [this.selectedDeleteId]
+  };
 
   this.courseService.deleteCourse(payload).subscribe({
     next: (res) => {
       this.toast.success('Success', res.message);
       this.loadCourse(this.currentPage, this.rowsPerPage);
     },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete section');
+    error: () => {
+      this.toast.error('Error', 'Failed to delete course');
     }
   });
+}
+
+handleCancelDelete() {
+  this.selectedRows = [];         // clear checkboxes
+  this.selectedDeleteId = null;   
+}
+
+closeDeleteDialog() {
+  this.showDeleteDialog = false;
+  this.selectedDeleteId = null;
 }
 
   private getCoursenById(id: number): void {
