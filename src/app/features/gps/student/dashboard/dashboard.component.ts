@@ -1,13 +1,25 @@
-import { Component, OnInit, signal, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { TagModule } from 'primeng/tag';
+import { Subject, filter, takeUntil } from 'rxjs';
 
-interface TodayClass {
-  subject: string;
-  room: string;
-  professor: string;
-  time: string;
-  status: 'present' | 'upcoming' | 'absent' | 'late';
+import { StudentGradeItem } from './../../../../models/gps/student/student.model';
+import { StudentGradeService } from './../../../../services/gps/student/student.service';
+
+interface QuickAction {
+  label: string;
+  icon: string;
+  action: string;
+  route: string;
 }
 
 interface Announcement {
@@ -20,70 +32,166 @@ interface Announcement {
   selector: 'app-student-dashboard',
   standalone: true,
   imports: [CommonModule, TagModule],
-  templateUrl: './dashboard.component.html'
+  templateUrl: './dashboard.component.html',
 })
-export class StudentDashboardComponent implements OnInit {
-  isDarkMode = signal(false);
+export class StudentDashboardComponent implements OnInit, OnDestroy {
+  private router = inject(Router);
+  private studentGradeService = inject(StudentGradeService);
+  private cdr = inject(ChangeDetectorRef);
+  private destroy$ = new Subject<void>();
+
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+
+  loadingGrades = false;
 
   stats = [
-    { label: 'GWA', value: '2.25', icon: 'pi pi-star', color: 'blue' },
-    { label: "Today's Classes", value: '2', icon: 'pi pi-clock', color: 'yellow' },
-    { label: 'Attendance', value: '92%', icon: 'pi pi-chart-line', color: 'blue' }
+    { label: 'GWA', value: 'In Progress', icon: 'pi pi-star', color: 'yellow' },
+    // { label: 'Attendance', value: '92%', icon: 'pi pi-chart-line', color: 'yellow' }
   ];
 
-  quickActions = [
-    { label: 'Grades', icon: 'pi pi-file', action: 'grades' },
-    { label: 'Schedule', icon: 'pi pi-calendar', action: 'schedule' },
-    { label: 'Announcements', icon: 'pi pi-megaphone', action: 'announcements' }
-  ];
-
-  classes: TodayClass[] = [
+  quickActions: QuickAction[] = [
+    { label: 'Grades', icon: 'pi pi-file', action: 'grades', route: '/gps/student/grades' },
     {
-      subject: 'Programming Languages',
-      room: 'Room 206',
-      professor: 'J. Bernabe',
-      time: '10:00 AM - 1:00 PM',
-      status: 'present'
+      label: 'Schedule',
+      icon: 'pi pi-calendar',
+      action: 'schedule',
+      route: '/ats/student/schedule',
     },
     {
-      subject: 'Web Systems & Tech',
-      room: 'Room 206',
-      professor: 'E. Enerlan',
-      time: '1:00 PM - 3:00 PM',
-      status: 'upcoming'
-    }
+      label: 'Announcements',
+      icon: 'pi pi-megaphone',
+      action: 'announcements',
+      route: '/general/announcements',
+    },
   ];
 
   announcements: Announcement[] = [
     {
       title: 'Midterm Exam Schedule',
       date: 'June 21, 2025',
-      content: 'Please check the posted midterm examination schedule for your assigned room and time.'
+      content:
+        'Please check the posted midterm examination schedule for your assigned room and time.',
     },
     {
       title: 'Class Advisory',
       date: 'June 20, 2025',
-      content: 'Selected afternoon classes will shift to asynchronous mode due to campus maintenance.'
+      content:
+        'Selected afternoon classes will shift to asynchronous mode due to campus maintenance.',
     },
     {
       title: 'Submission Reminder',
       date: 'June 19, 2025',
-      content: 'All pending requirements for Web Systems and Technologies must be submitted before Friday.'
-    }
+      content:
+        'All pending requirements for Web Systems and Technologies must be submitted before Friday.',
+    },
   ];
 
-  constructor() {
-    effect(() => {
-      const theme = localStorage.getItem('theme');
-      this.isDarkMode.set(theme === 'dark');
-    });
-  }
-
   ngOnInit(): void {
-    this.isDarkMode.set(localStorage.getItem('theme') === 'dark');
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadMyGrades();
+    }
+
+    this.router.events
+      .pipe(
+        filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((event) => {
+        if (
+          isPlatformBrowser(this.platformId) &&
+          event.urlAfterRedirects.includes('/gps/student/dashboard')
+        ) {
+          this.loadMyGrades();
+        }
+      });
   }
 
-  handleQuickAction(action: string): void {
-    console.log(`Navigating to: ${action}`);
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  handleQuickAction(action: QuickAction): void {
+    const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
+    this.router.navigateByUrl(url);
+  }
+
+  private loadMyGrades(): void {
+    this.loadingGrades = true;
+    this.cdr.detectChanges();
+
+    this.studentGradeService
+      .getMyGrades()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          console.log('Grades API response:', response);
+
+          const rows: StudentGradeItem[] = response?.data ?? [];
+          console.log('Rows:', rows);
+          console.log(
+            'Final averages:',
+            rows.map((item) => item.final_average),
+          );
+
+          const gwaValue = this.computeGwa(rows);
+          console.log('Computed GWA:', gwaValue);
+
+          this.stats = [
+            {
+              label: 'GWA',
+              value: gwaValue,
+              icon: 'pi pi-star',
+              color: 'yellow',
+            },
+          ];
+
+          this.loadingGrades = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Failed to load student grades:', err);
+
+          this.stats = [
+            {
+              label: 'GWA',
+              value: 'In Progress',
+              icon: 'pi pi-star',
+              color: 'yellow',
+            },
+          ];
+
+          this.loadingGrades = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+  private computeGwa(rows: StudentGradeItem[]): string {
+    if (!rows.length) {
+      return 'In Progress';
+    }
+
+    const averages = rows.map((item) => {
+      const value = String(item.final_average ?? '').trim();
+      const parsed = Number(value);
+      return value !== '' && !Number.isNaN(parsed) ? parsed : null;
+    });
+
+    const hasIncomplete = averages.some((grade) => grade === null);
+
+    if (hasIncomplete) {
+      return 'In Progress';
+    }
+
+    const validAverages = averages.filter((grade): grade is number => grade !== null);
+
+    if (!validAverages.length) {
+      return 'In Progress';
+    }
+
+    const total = validAverages.reduce((sum, grade) => sum + grade, 0);
+    const gwa = total / validAverages.length;
+
+    return gwa.toFixed(2);
   }
 }
