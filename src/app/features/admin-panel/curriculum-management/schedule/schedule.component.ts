@@ -8,7 +8,7 @@ import { ScheduleData } from '../../../../models/admin-panel/curriculum-manageme
 import { createAScheduleDetailConfig } from '../../../../helper/schedule-helper';
 import { ViewDetailsComponent, DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
 import { TimeHelper } from '../../../../helper/time-helper';
-
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 type UserRow = {
   id: number;
   course_code: string;
@@ -27,7 +27,7 @@ type UserRow = {
   selector: 'sti-schedule',
   standalone: true,
   imports: [
-    DataTableComponent, ScheduleModalComponent, ViewDetailsComponent
+    DataTableComponent, ScheduleModalComponent, ViewDetailsComponent, ConfirmDialogComponent
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.css',
@@ -53,6 +53,8 @@ export class ScheduleComponent {
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
 
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+
 private readonly scheduleService = inject(ScheduleService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
@@ -70,6 +72,9 @@ private readonly scheduleService = inject(ScheduleService);
 
   openModal = false;
   showViewDetails = false;
+
+  showDeleteDialog = false;
+  selectedDeleteId: number | null = null;
 
   selectedRows: any[] = [];
 
@@ -137,15 +142,14 @@ openImportCsv() {
 
 openDeleteModal() {
   if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a section to delete.');
+    this.toast.error('Error', 'Please select a subject to delete.');
     return;
   }
 
-  if (!confirm('Are you sure you want to delete selected section(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedSchedule();
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete selected schedules?'
+  });
 }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
@@ -226,23 +230,64 @@ openDeleteModal() {
 }
 
 deleteSchedule(id: number) {
-  const payload = {
-    id: [id]
-  };
+  this.selectedDeleteId = id;
 
-  if (!confirm('Are you sure you want to delete this section?')) return;
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this schedule?'
+  });
+}
+
+confirmDelete() {
+
+  //  if multiple selected
+  if (this.selectedRows.length) {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id)
+    };
+
+    this.scheduleService.deleteSchedule(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.selectedRows = [];
+        this.loadSchedule(this.currentPage, this.rowsPerPage);
+      },
+      error: () => {
+        this.toast.error('Error', 'Failed to delete subjects');
+      }
+    });
+
+    return;
+  }
+
+  // single delete
+  if (!this.selectedDeleteId) return;
+
+  const payload = {
+    id: [this.selectedDeleteId]
+  };
 
   this.scheduleService.deleteSchedule(payload).subscribe({
     next: (res) => {
       this.toast.success('Success', res.message);
       this.loadSchedule(this.currentPage, this.rowsPerPage);
     },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete section');
+    error: () => {
+      this.toast.error('Error', 'Failed to delete schedule');
     }
   });
 }
+
+handleCancelDelete() {
+  this.selectedRows = [];         // clear checkboxes
+  this.selectedDeleteId = null;   
+}
+
+closeDeleteDialog() {
+  this.showDeleteDialog = false;
+  this.selectedDeleteId = null;
+}
+
 deleteSelectedSchedule(): void {
 
   const payload = {
