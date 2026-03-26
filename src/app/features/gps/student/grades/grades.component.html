@@ -26,7 +26,7 @@
               <p
                 class="text-2xl font-bold text-slate-900 dark:text-white leading-none tracking-tighter"
               >
-                {{ termGpa }}
+                {{ loadingGrades ? 'Loading...' : termGpa }}
               </p>
               <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Term GPA</p>
             </div>
@@ -61,22 +61,29 @@
             </div>
           </button>
 
-          <div class="min-h-[112px] flex flex-col justify-center">
-            <label
-              class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 mb-2 text-left"
-            >
+          <div
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm min-h-[112px] flex flex-col justify-center"
+          >
+            <p class="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 mb-2">
               Academic Year
-            </label>
-            <p-select
-              [options]="years"
-              [(ngModel)]="selectedYear"
-              placeholder="Select Year"
-              class="w-full"
-            ></p-select>
+            </p>
+            <p class="text-lg font-bold text-slate-900 dark:text-white">
+              {{ loadingGrades ? 'Loading...' : academicTermLabel }}
+            </p>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div
+          *ngIf="!loadingGrades && !gradeCards.length"
+          class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-10 text-center text-slate-500 dark:text-slate-400 font-medium"
+        >
+          No grades found.
+        </div>
+
+        <div
+          *ngIf="!loadingGrades && gradeCards.length"
+          class="grid grid-cols-1 md:grid-cols-2 gap-6"
+        >
           <div
             *ngFor="let subject of gradeCards"
             class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm hover:shadow-md transition-all"
@@ -145,7 +152,10 @@
               <p-tag
                 [value]="getStatusLabel(subject.status)"
                 [severity]="getStatusSeverity(subject.status)"
-                [styleClass]="getStatusClass(subject.status) + ' text-[11px] font-black px-4 py-2 rounded-xl uppercase tracking-wider border-0'"
+                [styleClass]="
+                  getStatusClass(subject.status) +
+                  ' text-[11px] font-black px-4 py-2 rounded-xl uppercase tracking-wider border-0'
+                "
               ></p-tag>
             </div>
           </div>
