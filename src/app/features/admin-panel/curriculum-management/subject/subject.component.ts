@@ -12,6 +12,7 @@ import { SubjectData } from '../../../../models/admin-panel/curriculum-managemen
 import { createASubjectDetailConfig } from '../../../../helper/subject-helper';
 import { DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
 import { ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 type UserRow = {
   id: number;
@@ -21,7 +22,7 @@ type UserRow = {
 @Component({
   selector: 'sti-subject',
   standalone: true,
-  imports: [DataTableComponent, SubjectModalComponent, ViewDetailsComponent ],
+  imports: [DataTableComponent, SubjectModalComponent, ViewDetailsComponent, ConfirmDialogComponent],
   templateUrl: './subject.component.html',
   styleUrl: './subject.component.css',
 })
@@ -37,6 +38,8 @@ export class SubjectComponent {
     { key: 'edit', label: 'Edit', icon: 'pi pi-pencil' },
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
+
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
 
   private readonly subjectService = inject(SubjectService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -55,6 +58,9 @@ export class SubjectComponent {
 
   openModal = false;
   showViewDetails = false;
+
+  showDeleteDialog = false;
+  selectedDeleteId: number | null = null;
 
   selectedRows: any[] = [];
 
@@ -119,15 +125,14 @@ openAddModal() {
 
 openDeleteModal() {
   if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a section to delete.');
+    this.toast.error('Error', 'Please select a subject to delete.');
     return;
   }
 
-  if (!confirm('Are you sure you want to delete selected section(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedSubject();
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete selected subjects'
+  });
 }
 
 
@@ -174,23 +179,63 @@ openDeleteModal() {
         },
       });
   }
-  deleteSubject(id: number) {
-  const payload = {
-    id: [id]
-  };
+deleteSubject(id: number) {
+  this.selectedDeleteId = id;
 
-  if (!confirm('Are you sure you want to delete this section?')) return;
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this section?'
+  });
+}
+
+confirmDelete() {
+
+  //  if multiple selected
+  if (this.selectedRows.length) {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id)
+    };
+
+    this.subjectService.deleteSubject(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.selectedRows = [];
+        this.loadSubject(this.currentPage, this.rowsPerPage);
+      },
+      error: () => {
+        this.toast.error('Error', 'Failed to delete subjects?');
+      }
+    });
+
+    return;
+  }
+
+  // single delete
+  if (!this.selectedDeleteId) return;
+
+  const payload = {
+    id: [this.selectedDeleteId]
+  };
 
   this.subjectService.deleteSubject(payload).subscribe({
     next: (res) => {
       this.toast.success('Success', res.message);
       this.loadSubject(this.currentPage, this.rowsPerPage);
     },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete section');
+    error: () => {
+      this.toast.error('Error', 'Failed to delete subject');
     }
   });
+}
+
+handleCancelDelete() {
+  this.selectedRows = [];         // clear checkboxes
+  this.selectedDeleteId = null;   
+}
+
+closeDeleteDialog() {
+  this.showDeleteDialog = false;
+  this.selectedDeleteId = null;
 }
 
 private getSubjectById(id: number): void {

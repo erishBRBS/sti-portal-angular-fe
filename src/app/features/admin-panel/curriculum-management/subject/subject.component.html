@@ -40,3 +40,8 @@
   (visibleChange)="showViewDetails = $event"
   [config]="subjectConfig">
 </sti-view-details>
+
+<sti-confirm-dialog
+  (onConfirm)="confirmDelete()"
+  (onCancel)="handleCancelDelete()"
+></sti-confirm-dialog>
