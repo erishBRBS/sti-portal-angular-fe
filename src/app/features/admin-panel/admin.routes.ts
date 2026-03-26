@@ -3,7 +3,7 @@ import { Routes } from '@angular/router';
 
 import { AnnouncementComponent } from './announcement-management/announcement.component';
 import { CourseComponent } from './curriculum-management/course/course.component';
-import { RoomComponent } from './curriculum-management/room/room.component';
+import { AcademicYearComponent } from './curriculum-management/academic-year/academic-year.component';
 import { ScheduleComponent } from './curriculum-management/schedule/schedule.component';
 import { SectionComponent } from './curriculum-management/section/section.component';
 import { SubjectComponent } from './curriculum-management/subject/subject.component';
@@ -30,10 +30,10 @@ export const AP_ROUTES: Routes = [
     component: CourseComponent,
   },
   {
-    path: 'admin/curriculum-management/room',
+    path: 'admin/curriculum-management/academic',
     data: { roles: ['Admin'] },
     // canActivate: [roleGuard],
-    component: RoomComponent,
+    component: AcademicYearComponent,
   },
   {
     path: 'admin/curriculum-management/schedule',

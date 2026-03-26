@@ -53,13 +53,13 @@ export class ScheduleComponent {
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
 
-  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
 
 private readonly scheduleService = inject(ScheduleService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
 
+@ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
 @ViewChild(ScheduleModalComponent)scheduleModal!: ScheduleModalComponent;
 
   loading = false;
