@@ -52,6 +52,13 @@ export interface ProfessorStudent {
   course_code?: string;
 }
 
+export interface ProfessorAttendanceAnalytics {
+  labels: string[];
+  present: number[];
+  late: number[];
+  absent: number[];
+}
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;

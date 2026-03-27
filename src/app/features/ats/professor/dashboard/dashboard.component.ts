@@ -1,4 +1,10 @@
-import { Component, OnInit, inject, PLATFORM_ID } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+  PLATFORM_ID,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -58,6 +64,7 @@ export class ProfessorDashboardComponent implements OnInit {
   isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private router = inject(Router);
   private professorService = inject(ProfessorService);
+  private cdr = inject(ChangeDetectorRef);
 
   loading = false;
 
@@ -69,7 +76,7 @@ export class ProfessorDashboardComponent implements OnInit {
   weeklyClassesCount = 0;
   totalStudentsCount = 0;
   todaysClassesCount = 0;
-  todayAttendanceRate = 94;
+  todayAttendanceRate = 0;
 
   quickActions: QuickAction[] = [
     {
@@ -93,19 +100,19 @@ export class ProfessorDashboardComponent implements OnInit {
         label: 'Present',
         backgroundColor: '#10B981',
         borderRadius: 6,
-        data: [45, 43, 47, 46, 44, 40],
+        data: [0, 0, 0, 0, 0, 0],
       },
       {
         label: 'Late',
         backgroundColor: '#FACC15',
         borderRadius: 6,
-        data: [3, 4, 2, 5, 3, 2],
+        data: [0, 0, 0, 0, 0, 0],
       },
       {
         label: 'Absent',
         backgroundColor: '#EF4444',
         borderRadius: 6,
-        data: [5, 7, 3, 4, 6, 4],
+        data: [0, 0, 0, 0, 0, 0],
       },
     ],
   };
@@ -127,8 +134,14 @@ export class ProfessorDashboardComponent implements OnInit {
         ticks: { color: '#94a3b8' },
       },
       y: {
+        beginAtZero: true,
+        min: 0,
         grid: { color: 'rgba(148, 163, 184, 0.1)' },
-        ticks: { color: '#94a3b8', stepSize: 10 },
+        ticks: {
+          color: '#94a3b8',
+          stepSize: 1,
+          precision: 0,
+        },
       },
     },
   };
@@ -139,13 +152,15 @@ export class ProfessorDashboardComponent implements OnInit {
 
   loadDashboardData(): void {
     this.loading = true;
+    this.cdr.detectChanges();
 
     forkJoin({
       schedules: this.professorService.getMySchedules(),
       subjects: this.professorService.getMySubjects(),
       students: this.professorService.getMyStudents(),
+      analytics: this.professorService.getAttendanceAnalytics(),
     }).subscribe({
-      next: ({ schedules, subjects, students }) => {
+      next: ({ schedules, subjects, students, analytics }) => {
         this.schedules = schedules.data ?? [];
         this.subjects = subjects.data ?? [];
         this.students = students.data ?? [];
@@ -155,16 +170,63 @@ export class ProfessorDashboardComponent implements OnInit {
 
         this.todaysClasses = this.mapTodayClasses(this.schedules);
         this.updateClassStatuses();
-
         this.todaysClassesCount = this.todaysClasses.length;
 
+        this.applyAnalyticsToChart(analytics.data);
+
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Failed to load professor dashboard data:', error);
         this.loading = false;
+        this.cdr.detectChanges();
       },
     });
+  }
+
+  private applyAnalyticsToChart(analytics: {
+    labels: string[];
+    present: number[];
+    late: number[];
+    absent: number[];
+  }): void {
+    const labels = analytics?.labels ?? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const present = analytics?.present ?? [0, 0, 0, 0, 0, 0];
+    const late = analytics?.late ?? [0, 0, 0, 0, 0, 0];
+    const absent = analytics?.absent ?? [0, 0, 0, 0, 0, 0];
+
+    this.attendanceChartData = {
+      labels: [...labels],
+      datasets: [
+        {
+          label: 'Present',
+          backgroundColor: '#10B981',
+          borderRadius: 6,
+          data: [...present],
+        },
+        {
+          label: 'Late',
+          backgroundColor: '#FACC15',
+          borderRadius: 6,
+          data: [...late],
+        },
+        {
+          label: 'Absent',
+          backgroundColor: '#EF4444',
+          borderRadius: 6,
+          data: [...absent],
+        },
+      ],
+    };
+
+    const presentTotal = present.reduce((sum, value) => sum + value, 0);
+    const lateTotal = late.reduce((sum, value) => sum + value, 0);
+    const absentTotal = absent.reduce((sum, value) => sum + value, 0);
+    const total = presentTotal + lateTotal + absentTotal;
+
+    this.todayAttendanceRate =
+      total > 0 ? Math.round(((presentTotal + lateTotal) / total) * 100) : 0;
   }
 
   mapTodayClasses(schedules: ProfessorSchedule[]): TodayClass[] {
