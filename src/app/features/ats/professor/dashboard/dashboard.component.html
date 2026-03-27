@@ -10,7 +10,6 @@
 
   <div class="flex justify-center px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
-      <!-- Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
           class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm flex items-center gap-4 hover:translate-y-[-4px] transition-all duration-300"
@@ -85,9 +84,8 @@
         </div>
       </div>
 
-      <!-- Quick Actions -->
       <section
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-2xl shadow-sm"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
       >
         <h3 class="text-lg font-bold mb-4 text-slate-900 dark:text-white tracking-tight">
           Quick Actions
@@ -112,9 +110,7 @@
         </div>
       </section>
 
-      <!-- Main content -->
       <div class="grid lg:grid-cols-2 gap-6">
-        <!-- Today's Classes -->
         <section
           class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden"
         >
@@ -175,7 +171,6 @@
           </div>
         </section>
 
-        <!-- Weekly Attendance -->
         <section
           class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden"
         >
@@ -186,6 +181,40 @@
             <p class="text-slate-500 dark:text-slate-400 font-medium text-sm mt-1">
               Present, Late, and Absent distribution
             </p>
+          </div>
+
+          <div class="px-6 pt-6 pb-0">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Subject
+                </label>
+                <select
+                  class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 outline-none"
+                  [ngModel]="selectedSubjectId"
+                  (ngModelChange)="selectedSubjectId = $event; onAnalyticsFilterChange()"
+                >
+                  <option *ngFor="let option of subjectOptions" [ngValue]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Section
+                </label>
+                <select
+                  class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 outline-none"
+                  [ngModel]="selectedSectionId"
+                  (ngModelChange)="selectedSectionId = $event; onAnalyticsFilterChange()"
+                >
+                  <option *ngFor="let option of sectionOptions" [ngValue]="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
           </div>
 
           <div class="p-6">
