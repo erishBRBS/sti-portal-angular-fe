@@ -1,15 +1,15 @@
 <main class="mx-auto w-full space-y-8 animate-fadeIn">
   <div class="space-y-2 text-center md:text-left">
-    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">Professor Dashboard</h2>
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+      Professor Dashboard
+    </h2>
     <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
       Monitor and manage student attendance effectively
     </p>
   </div>
 
-  <!-- ✅ layout/spacing natin -->
   <div class="flex justify-center px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
-
       <!-- Stats -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
@@ -21,8 +21,12 @@
             <i class="pi pi-calendar"></i>
           </div>
           <div class="w-full">
-            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">12</p>
-            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Weekly Classes</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">
+              {{ weeklyClassesCount }}
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+              Weekly Classes
+            </p>
           </div>
         </div>
 
@@ -35,8 +39,12 @@
             <i class="pi pi-users"></i>
           </div>
           <div class="w-full">
-            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">85</p>
-            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Total Students</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">
+              {{ totalStudentsCount }}
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+              Total Students
+            </p>
           </div>
         </div>
 
@@ -49,8 +57,12 @@
             <i class="pi pi-calendar-clock"></i>
           </div>
           <div class="w-full">
-            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">3</p>
-            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">Today's Classes</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">
+              {{ todaysClassesCount }}
+            </p>
+            <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
+              Today's Classes
+            </p>
           </div>
         </div>
 
@@ -63,7 +75,9 @@
             <i class="pi pi-chart-line"></i>
           </div>
           <div class="w-full">
-            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">94%</p>
+            <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">
+              {{ todayAttendanceRate }}%
+            </p>
             <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
               Today's Attendance Rate
             </p>
@@ -120,8 +134,17 @@
                   <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-l-lg">
                     Subject
                   </th>
-                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-r-lg">
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none">
                     Section
+                  </th>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none">
+                    Time
+                  </th>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none">
+                    Room
+                  </th>
+                  <th class="dark:bg-slate-800 dark:text-slate-200 border-none rounded-r-lg">
+                    Status
                   </th>
                 </tr>
               </ng-template>
@@ -130,6 +153,22 @@
                 <tr class="dark:text-slate-200">
                   <td class="font-semibold py-4">{{ class.subject }}</td>
                   <td>{{ class.section }}</td>
+                  <td>{{ class.time }}</td>
+                  <td>{{ class.room }}</td>
+                  <td>
+                    <p-tag
+                      [value]="getStatusText(class.status)"
+                      [severity]="getStatusSeverity(class.status)"
+                    ></p-tag>
+                  </td>
+                </tr>
+              </ng-template>
+
+              <ng-template pTemplate="emptymessage">
+                <tr>
+                  <td colspan="5" class="text-center py-6 text-slate-500 dark:text-slate-400">
+                    No classes for today.
+                  </td>
                 </tr>
               </ng-template>
             </p-table>
@@ -162,7 +201,6 @@
           </div>
         </section>
       </div>
-
     </div>
   </div>
 </main>

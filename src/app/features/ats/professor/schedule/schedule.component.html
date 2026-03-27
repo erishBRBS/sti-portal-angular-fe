@@ -4,7 +4,7 @@
       My Teaching Schedule
     </h2>
     <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
-      Academic Year 2025-2026 | 2nd Semester
+      {{ academicYearLabel }}<span *ngIf="semesterLabel"> | {{ semesterLabel }}</span>
     </p>
   </div>
 
@@ -25,7 +25,9 @@
             [style.gridTemplateRows]="'56px repeat(' + timeSlots.length + ', 44px)'"
           >
             <!-- top-left -->
-            <div class="bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-800"></div>
+            <div
+              class="bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-800"
+            ></div>
 
             <!-- day headers -->
             <ng-container *ngFor="let day of days; let i = index">
@@ -66,110 +68,9 @@
             </ng-container>
 
             <!-- class cards -->
-            <ng-container *ngFor="let day of days">
-              <div
-                *ngFor="let classItem of getClassesForDay(day)"
-                (click)="openDetails(classItem, $event)"
-                class="z-10 m-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm border-l-4 border-l-blue-600 dark:border-l-blue-500 rounded-xl p-3 hover:shadow-lg hover:-translate-y-0.5 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all cursor-pointer overflow-hidden"
-                [style.gridColumn]="getDayColumn(day)"
-                [style.gridRow]="getRowStart(classItem) + ' / span ' + getRowSpan(classItem)"
-              >
-                <div class="text-[10px] font-black text-blue-600 dark:text-blue-400 mb-1 truncate">
-                  {{ classItem.code }}
-                </div>
-                <div class="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight mb-2">
-                  {{ classItem.name }}
-                </div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-semibold">
-                  <i class="pi pi-clock text-[9px]"></i>
-                  {{ classItem.time }}
-                </div>
-                <div class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-semibold mt-1">
-                  <i class="pi pi-map-marker text-[9px]"></i>
-                  {{ classItem.room }}
-                </div>
-                <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">
-                  {{ classItem.section }}
-                </div>
-              </div>
-            </ng-container>
           </div>
         </div>
       </section>
-
-      <div
-        *ngIf="isModalOpen"
-        class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-md"
-      >
-        <div
-          class="bg-white dark:bg-slate-900 rounded-[40px] w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300"
-          (click)="$event.stopPropagation()"
-        >
-          <div class="p-8 text-center">
-            <div
-              class="w-20 h-20 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-3xl flex items-center justify-center text-3xl mx-auto mb-6 shadow-inner"
-            >
-              <i class="pi pi-book"></i>
-            </div>
-
-            <h3 class="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">
-              {{ selectedClass?.code }}
-            </h3>
-            <p class="text-slate-500 dark:text-slate-400 font-medium mb-8 text-sm">
-              {{ selectedClass?.name }}
-            </p>
-
-            <div class="grid grid-cols-2 gap-4 mb-8 text-left">
-              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
-                <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">
-                  Room
-                </p>
-                <p class="font-bold text-slate-800 dark:text-slate-100">
-                  {{ selectedClass?.room }}
-                </p>
-              </div>
-
-              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
-                <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">
-                  Section
-                </p>
-                <p class="font-bold text-slate-800 dark:text-slate-100">
-                  {{ selectedClass?.section }}
-                </p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-4 mb-8 text-left">
-              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
-                <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">
-                  Time
-                </p>
-                <p class="font-bold text-slate-800 dark:text-slate-100">
-                  {{ selectedClass?.time }}
-                </p>
-              </div>
-
-              <div class="bg-slate-50 dark:bg-slate-800 p-4 rounded-2xl">
-                <p class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase mb-1">
-                  Students
-                </p>
-                <p class="font-bold text-slate-800 dark:text-slate-100">
-                  {{ selectedClass?.students }}
-                </p>
-              </div>
-            </div>
-
-            <div class="flex flex-col gap-3">
-              <button
-                (click)="closeModal($event)"
-                class="w-full bg-white dark:bg-slate-900 text-slate-400 dark:text-slate-500 py-3 rounded-2xl font-bold text-xs hover:text-slate-600 dark:hover:text-slate-300 transition-all"
-              >
-                CLOSE
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </main>
