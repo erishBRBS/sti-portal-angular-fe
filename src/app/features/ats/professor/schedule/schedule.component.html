@@ -4,7 +4,7 @@
       My Teaching Schedule
     </h2>
     <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
-      {{ academicYearLabel }}<span *ngIf="semesterLabel"> | {{ semesterLabel }}</span>
+      Academic Year {{ academicYearLabel }}<span *ngIf="semesterLabel"> | {{ semesterLabel }}</span>
     </p>
   </div>
 
@@ -24,12 +24,10 @@
             [style.gridTemplateColumns]="'120px repeat(6, minmax(0, 1fr))'"
             [style.gridTemplateRows]="'56px repeat(' + timeSlots.length + ', 44px)'"
           >
-            <!-- top-left -->
             <div
               class="bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-800"
             ></div>
 
-            <!-- day headers -->
             <ng-container *ngFor="let day of days; let i = index">
               <div
                 class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-800 flex items-center justify-center text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider"
@@ -40,7 +38,6 @@
               </div>
             </ng-container>
 
-            <!-- time labels -->
             <ng-container *ngFor="let time of timeSlots; let i = index">
               <div
                 class="border-r border-b border-slate-200 dark:border-slate-800 flex items-center justify-center text-[10px] font-bold"
@@ -56,7 +53,6 @@
               </div>
             </ng-container>
 
-            <!-- grid cells -->
             <ng-container *ngFor="let time of timeSlots; let row = index">
               <ng-container *ngFor="let day of days; let col = index">
                 <div
@@ -67,7 +63,43 @@
               </ng-container>
             </ng-container>
 
-            <!-- class cards -->
+            <ng-container *ngFor="let day of days">
+              <div
+                *ngFor="let classItem of getClassesForDay(day)"
+                (click)="openDetails(classItem, $event)"
+                class="z-10 m-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm border-l-4 border-l-blue-600 dark:border-l-blue-500 rounded-xl p-3 hover:shadow-lg hover:-translate-y-0.5 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all cursor-pointer overflow-hidden"
+                [style.gridColumn]="getDayColumn(day)"
+                [style.gridRow]="getRowStart(classItem) + ' / span ' + getRowSpan(classItem)"
+              >
+                <div class="text-[10px] font-black text-blue-600 dark:text-blue-400 mb-1 truncate">
+                  {{ classItem.code }}
+                </div>
+
+                <div
+                  class="text-xs font-bold text-slate-900 dark:text-slate-100 leading-tight mb-2"
+                >
+                  {{ classItem.name }}
+                </div>
+
+                <div
+                  class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-semibold"
+                >
+                  <i class="pi pi-clock text-[9px]"></i>
+                  {{ classItem.time }}
+                </div>
+
+                <div
+                  class="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-semibold mt-1"
+                >
+                  <i class="pi pi-map-marker text-[9px]"></i>
+                  {{ classItem.room }}
+                </div>
+
+                <div class="text-[10px] text-slate-400 dark:text-slate-500 mt-2 truncate">
+                  {{ classItem.section }}
+                </div>
+              </div>
+            </ng-container>
           </div>
         </div>
       </section>

@@ -29,7 +29,7 @@ export class ProfessorScheduleComponent implements OnInit {
   selectedClass: ClassBlock | null = null;
   isLoading = false;
 
-  academicYearLabel = 'Academic Year';
+  academicYearLabel = '';
   semesterLabel = '';
 
   readonly days: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -43,20 +43,16 @@ export class ProfessorScheduleComponent implements OnInit {
 
   loadSchedules(): void {
     this.isLoading = true;
+    this.cdr.detectChanges();
 
     this.professorService.getMySchedules().subscribe({
       next: (response) => {
-        const schedules = response.data ?? [];
+        const schedules: ProfessorSchedule[] = response?.data ?? [];
 
         this.classes = this.mapSchedulesToClassBlocks(schedules);
 
-        if (schedules.length > 0) {
-          this.academicYearLabel = `Academic Year ${schedules[0].academic_year?.academic_year ?? ''}`;
-          this.semesterLabel = schedules[0].academic_year?.semester ?? '';
-        } else {
-          this.academicYearLabel = 'Academic Year';
-          this.semesterLabel = '';
-        }
+        this.academicYearLabel = schedules[0]?.academic_year?.academic_year ?? '';
+        this.semesterLabel = schedules[0]?.academic_year?.semester ?? '';
 
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -64,7 +60,7 @@ export class ProfessorScheduleComponent implements OnInit {
       error: (error) => {
         console.error('Failed to load professor schedules:', error);
         this.classes = [];
-        this.academicYearLabel = 'Academic Year';
+        this.academicYearLabel = '';
         this.semesterLabel = '';
         this.isLoading = false;
         this.cdr.detectChanges();
@@ -79,21 +75,21 @@ export class ProfessorScheduleComponent implements OnInit {
 
       return {
         id: item.id,
-        code: item.subject?.subject_code ?? 'N/A',
-        name: item.subject?.subject_name ?? 'N/A',
-        section: `${item.course_code} - ${item.section?.section_name ?? ''}`,
-        room: item.room ?? 'N/A',
+        code: item.subject?.subject_code ?? item.course_code ?? 'N/A',
+        name: item.subject?.subject_name ?? item.subject?.subject_code ?? 'Untitled Subject',
+        section: `${item.course_code ?? ''}${item.section?.section_name ? ' - ' + item.section.section_name : ''}`,
+        room: item.room ?? 'No room',
         students: 0,
         time: `${startTime} - ${endTime}`,
         startTime,
         endTime,
-        days: [this.normalizeDay(item.day)],
+        days: item.day ? [this.normalizeDay(item.day)] : [],
       };
     });
   }
 
   private mysqlTimeTo12Hour(time: string): string {
-    if (!time) return '12:00 AM';
+    if (!time) return '';
 
     const [hourStr, minuteStr] = time.split(':');
     let hours = Number(hourStr);
@@ -175,16 +171,23 @@ export class ProfessorScheduleComponent implements OnInit {
   }
 
   getRowStart(classItem: ClassBlock): number {
-    return this.timeSlots.indexOf(classItem.startTime) + 2;
+    const index = this.timeSlots.indexOf(classItem.startTime);
+    return index >= 0 ? index + 2 : 2;
   }
 
   getRowSpan(classItem: ClassBlock): number {
     const start = this.toMinutes(classItem.startTime);
     const end = this.toMinutes(classItem.endTime);
-    return Math.max(1, (end - start) / 30);
+    return Math.max(1, Math.round((end - start) / 30));
   }
 
   getClassesForDay(day: string): ClassBlock[] {
     return this.classes.filter((item) => item.days.includes(day));
+  }
+
+  openDetails(classInfo: ClassBlock, event?: Event): void {
+    event?.stopPropagation();
+    this.selectedClass = { ...classInfo };
+    this.cdr.detectChanges();
   }
 }
