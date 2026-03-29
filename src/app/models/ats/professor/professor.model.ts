@@ -59,6 +59,49 @@ export interface ProfessorAttendanceAnalytics {
   absent: number[];
 }
 
+export interface AttendanceStudent {
+  id: number;
+  name: string;
+  section?: AttendanceSection | null;
+}
+
+export interface AttendanceSubject {
+  id: number;
+  subject_code: string;
+  subject_name: string;
+}
+
+export interface AttendanceProfessor {
+  id: number;
+  professor_name: string;
+}
+
+export interface AttendanceSection {
+  id: number;
+  section_name: string;
+}
+
+export interface AttendanceSchedule {
+  id: number;
+  day: string;
+  start_time: string;
+  end_time: string;
+  subject: AttendanceSubject;
+  professor: AttendanceProfessor;
+}
+
+export interface ProfessorAttendanceRecord {
+  id: number;
+  student: AttendanceStudent;
+  schedule: AttendanceSchedule;
+  status: 'Present' | 'Late' | 'Absent' | string;
+  time_in: string | null;
+  time_out: string | null;
+  created_at: string;
+}
+
+
+
 export interface ApiResponse<T> {
   success: boolean;
   message: string;
