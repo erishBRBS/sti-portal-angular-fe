@@ -1,6 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { GradeModalComponent } from '../grade-management/grade-mangement-modal/grade-mangement-modal.component';
+import { ViewChild } from '@angular/core';
 import {
   ActionEvent,
   DataTableComponent,
@@ -44,12 +46,14 @@ interface StudentGradeRow {
 @Component({
   selector: 'app-grade-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataTableComponent],
+  imports: [CommonModule, FormsModule, DataTableComponent, GradeModalComponent],
   templateUrl: './grade-management.component.html',
 })
 export class GradeManagementComponent implements OnInit {
   private gradePortalService = inject(GradePortalService);
   private cdr = inject(ChangeDetectorRef);
+
+  @ViewChild(GradeModalComponent) gradeModal?: GradeModalComponent;
 
   selectedSubject: number | null = null;
   selectedSection: number | null = null;
@@ -116,13 +120,6 @@ export class GradeManagementComponent implements OnInit {
       tooltip: 'Edit grade',
       buttonClass: 'text-blue-600',
     },
-    {
-      key: 'delete',
-      label: 'Delete',
-      icon: 'pi pi-trash',
-      tooltip: 'Delete record',
-      buttonClass: 'text-red-600',
-    },
   ];
 
   ngOnInit(): void {
@@ -162,13 +159,24 @@ export class GradeManagementComponent implements OnInit {
 
   onTableAction(event: ActionEvent<StudentGradeRow>): void {
     if (event.actionKey === 'edit') {
-      console.log('Edit row:', event.row);
-      return;
+      this.gradeModal?.updateDialog({
+        id: event.row.id,
+        student_id: event.row.student_id,
+        schedule_id: event.row.schedule_id,
+        student_name: event.row.student_name,
+        subject_name: event.row.subject_name,
+        section_name: event.row.section_name,
+        prelim: event.row.prelim,
+        midterm: event.row.midterm,
+        pre_finals: event.row.pre_finals,
+        finals: event.row.finals,
+        status: event.row.status,
+      });
     }
+  }
 
-    if (event.actionKey === 'delete') {
-      console.log('Delete row:', event.row);
-    }
+  reloadData(): void {
+    this.loadStudentGrades();
   }
 
   private loadStudentGrades(): void {
@@ -226,6 +234,7 @@ export class GradeManagementComponent implements OnInit {
 
   private toNumber(value: string | number | null): number | null {
     if (value === null || value === undefined || value === '') return null;
+
     const num = Number(value);
     return Number.isNaN(num) ? null : num;
   }

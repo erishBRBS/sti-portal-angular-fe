@@ -174,6 +174,24 @@
             </ng-container>
           </div>
         </td>
+
+        <!-- <td *ngIf="showActions" class="text-center align-middle">
+          <div class="flex items-center justify-center gap-1 min-h-[40px]">
+            <ng-container *ngFor="let a of actions">
+              <button
+                *ngIf="isActionVisible(a, row)"
+                pButton
+                type="button"
+                class="p-button-text p-button-sm"
+                [ngClass]="a.buttonClass || ''"
+                [icon]="a.icon || 'pi pi-ellipsis-v'"
+                [pTooltip]="a.tooltip || a.label"
+                tooltipPosition="top"
+                (click)="fireAction(a.key, row, $event)"
+              ></button>
+            </ng-container>
+          </div>
+        </td> -->
       </tr>
     </ng-template>
 

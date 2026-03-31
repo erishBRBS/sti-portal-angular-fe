@@ -76,6 +76,10 @@
         (actionClicked)="onTableAction($event)"
       >
       </sti-data-table>
+
+      <sti-grade-modal
+        (onSuccess)="reloadData()"
+      ></sti-grade-modal>
     </div>
   </div>
 </main>

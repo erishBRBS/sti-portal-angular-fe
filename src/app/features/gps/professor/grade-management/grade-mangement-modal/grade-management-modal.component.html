@@ -1,0 +1,99 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(560px, 95vw)' }"
+  [contentStyle]="{ 'max-height': '78vh', overflow: 'auto' }"
+  (onHide)="close()"
+>
+  <ng-template pTemplate="header">
+    <div class="w-full flex items-center justify-center">
+      <div class="text-lg font-bold text-blue-700">{{ dialogTitle }}</div>
+    </div>
+  </ng-template>
+
+  <form #gradeForm="ngForm" (ngSubmit)="onSave(gradeForm)" class="p-4">
+    <div class="space-y-5">
+      <div class="rounded-xl bg-slate-50 border border-slate-200 p-4">
+        <div class="text-sm text-slate-500">Student</div>
+        <div class="font-semibold text-slate-900">{{ currentStudentName }}</div>
+        <div class="text-sm text-slate-500 mt-2">Subject</div>
+        <div class="font-semibold text-slate-900">{{ currentSubjectName }}</div>
+        <div class="text-sm text-slate-500 mt-2">Section</div>
+        <div class="font-semibold text-slate-900">{{ currentSectionName }}</div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Prelim</label>
+        <input
+          pInputText
+          type="number"
+          step="0.01"
+          class="w-full"
+          name="prelim_grade"
+          [(ngModel)]="prelim_grade"
+          placeholder="Input prelim grade"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Midterm</label>
+        <input
+          pInputText
+          type="number"
+          step="0.01"
+          class="w-full"
+          name="midterm_grade"
+          [(ngModel)]="midterm_grade"
+          placeholder="Input midterm grade"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Pre-Finals</label>
+        <input
+          pInputText
+          type="number"
+          step="0.01"
+          class="w-full"
+          name="pre_finals_grade"
+          [(ngModel)]="pre_finals_grade"
+          placeholder="Input pre-finals grade"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Finals</label>
+        <input
+          pInputText
+          type="number"
+          step="0.01"
+          class="w-full"
+          name="finals_grade"
+          [(ngModel)]="finals_grade"
+          placeholder="Input finals grade"
+        />
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-6">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        class="p-button-outlined"
+        (click)="close()">
+      </button>
+
+      <button
+        pButton
+        type="submit"
+        [label]="dialogButtonLabel"
+        class="p-button-success">
+      </button>
+    </div>
+  </form>
+</p-dialog>
