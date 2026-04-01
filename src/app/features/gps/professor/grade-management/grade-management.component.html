@@ -4,85 +4,82 @@
       Grade Management
     </h2>
     <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
-      Manage and monitor your students' academic performance
+      Manage student grades by subject and section
     </p>
   </div>
 
   <div class="flex px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
       <section
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4"
+        class="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6"
       >
-        <div class="min-w-0">
-          <h3 class="font-bold text-slate-900 dark:text-white truncate">
-            {{ selectedSubjectTitle }}
-          </h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 truncate">
-            Select academic year and subject to view student grades
-          </p>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              Subject
+            </label>
+            <select
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+              [value]="selectedSubject ?? ''"
+              (change)="onSubjectChange($any($event.target).value)"
+            >
+              <option value="">All Subjects</option>
+              <option *ngFor="let subject of subjectOptions" [value]="subject.id">
+                {{ subject.label }}
+              </option>
+            </select>
+          </div>
 
-        <div class="w-full lg:w-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 lg:gap-4">
-            <div>
-              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                Academic Year
-              </label>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+              Section
+            </label>
+            <select
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-sm bg-white dark:bg-slate-900 text-slate-900 dark:text-white"
+              [value]="selectedSection ?? ''"
+              (change)="onSectionChange($any($event.target).value)"
+            >
+              <option value="">All Sections</option>
+              <option *ngFor="let section of sectionOptions" [value]="section.id">
+                {{ section.label }}
+              </option>
+            </select>
+          </div>
 
-              <p-select
-                [options]="academicYearOptions"
-                [(ngModel)]="selectedAcademicYear"
-                (ngModelChange)="onAcademicYearChange($event)"
-                optionLabel="label"
-                optionValue="value"
-                placeholder="Select academic year"
-                appendTo="body"
-                class="w-full sm:w-64"
-              ></p-select>
-            </div>
-
-            <div>
-              <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-2">
-                Subject
-              </label>
-
-              <p-select
-                [options]="subjectOptions"
-                [(ngModel)]="selectedSubject"
-                (ngModelChange)="onSubjectChange($event)"
-                optionLabel="label"
-                optionValue="id"
-                placeholder="Select subject"
-                appendTo="body"
-                class="w-full sm:w-72"
-              ></p-select>
-            </div>
+          <div class="flex items-end">
+            <button
+              type="button"
+              (click)="clearFilters()"
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            >
+              Clear Filters
+            </button>
           </div>
         </div>
       </section>
 
       <sti-data-table
-        [title]="'Class Grade Records'"
-        [subtitle]="selectedSubjectTitle"
+        [title]="'Student Grades'"
+        [subtitle]="'List of students and their grades'"
         [value]="filteredGrades"
         [columns]="gradeColumns"
-        [loading]="false"
-        [paginator]="true"
+        [actions]="gradeActions"
+        [loading]="loading"
         [rows]="tableRows"
         [first]="tableFirst"
         [rowsPerPageOptions]="rowsPerPageOptions"
-        (rowsChange)="tableRows = $event"
-        (firstChange)="tableFirst = $event"
-        [striped]="true"
-        [rowHover]="true"
         [showActions]="true"
-        [actions]="gradeActions"
         [showAdd]="false"
-        [addLabel]="'Add Grade'"
+        [showDelete]="false"
+        [showImportCsv]="false"
+        [showSelection]="false"
         (actionClicked)="onTableAction($event)"
-        (addClicked)="onAddGrade()"
       >
       </sti-data-table>
+
+      <sti-grade-modal
+        (onSuccess)="reloadData()"
+      ></sti-grade-modal>
     </div>
   </div>
 </main>

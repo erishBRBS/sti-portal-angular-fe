@@ -10,6 +10,52 @@
 
   <div class="flex px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
+      <section
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
+      >
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Subject
+            </label>
+            <select
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 outline-none"
+              [(ngModel)]="selectedSubjectId"
+              (ngModelChange)="onFilterChange()"
+            >
+              <option *ngFor="let option of subjectOptions" [ngValue]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Section
+            </label>
+            <select
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 outline-none"
+              [(ngModel)]="selectedSectionId"
+              (ngModelChange)="onFilterChange()"
+            >
+              <option *ngFor="let option of sectionOptions" [ngValue]="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="flex items-end">
+            <button
+              type="button"
+              (click)="clearFilters()"
+              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
+      </section>
+
       <sti-data-table
         [title]="'Student Attendance Records'"
         [subtitle]="'List of students attendance per subject'"
@@ -30,7 +76,7 @@
         [first]="first"
         [totalRecords]="totalRecords"
         [lazy]="false"
-        [rowsPerPageOptions]="[12, 25, 50]"
+        [rowsPerPageOptions]="[10, 25, 50]"
         (rowClicked)="onRowClicked($event)"
         (pageChanged)="onPageChanged($event)"
         (actionClicked)="onActionClicked($event)"

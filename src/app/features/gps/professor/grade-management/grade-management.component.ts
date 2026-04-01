@@ -1,21 +1,25 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { SelectModule } from 'primeng/select';
+import { GradeModalComponent } from '../grade-management/grade-mangement-modal/grade-mangement-modal.component';
+import { ViewChild } from '@angular/core';
 import {
   ActionEvent,
   DataTableComponent,
-  TableColumn,
   RowAction,
+  TableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
+import { GradePortalService } from '../../../../services/gps/professor/professor.service';
+import { StudentGradeListItem } from '../../../../models/gps/professor/professor.model';
 
-interface SelectOption {
+interface SectionOption {
+  id: number;
+  name: string;
   label: string;
-  value: string;
 }
 
 interface SubjectOption {
-  id: string;
+  id: number;
   code: string;
   name: string;
   label: string;
@@ -23,169 +27,45 @@ interface SubjectOption {
 
 interface StudentGradeRow {
   id: number;
+  student_id: number;
+  schedule_id: number;
   student_name: string;
-  prelim: number;
-  midterm: number;
-  pre_finals: number;
-  finals: number;
+  prelim: number | null;
+  midterm: number | null;
+  pre_finals: number | null;
+  finals: number | null;
   final_grade: string;
-  academic_year: string;
-  subject_id: string;
+  subject_id: number;
+  subject_code: string;
+  subject_name: string;
+  section_id: number;
+  section_name: string;
+  status: string | null;
 }
 
 @Component({
   selector: 'app-grade-management',
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectModule, DataTableComponent],
+  imports: [CommonModule, FormsModule, DataTableComponent, GradeModalComponent],
   templateUrl: './grade-management.component.html',
 })
-export class GradeManagementComponent {
-  selectedAcademicYear = '2025-2026-2';
-  selectedSubject = 'web101';
+export class GradeManagementComponent implements OnInit {
+  private gradePortalService = inject(GradePortalService);
+  private cdr = inject(ChangeDetectorRef);
+
+  @ViewChild(GradeModalComponent) gradeModal?: GradeModalComponent;
+
+  selectedSubject: number | null = null;
+  selectedSection: number | null = null;
 
   tableRows = 5;
   rowsPerPageOptions = [5, 10, 25, 50];
   tableFirst = 0;
+  loading = false;
 
-  academicYearOptions: SelectOption[] = [
-    { label: 'A.Y. 2025-2026 | 1st Semester', value: '2025-2026-1' },
-    { label: 'A.Y. 2025-2026 | 2nd Semester', value: '2025-2026-2' },
-    { label: 'A.Y. 2024-2025 | 2nd Semester', value: '2024-2025-2' },
-  ];
-
-  subjectOptions: SubjectOption[] = [
-    {
-      id: 'web101',
-      code: 'WEB101',
-      name: 'Web Development',
-      label: 'WEB101 - Web Development',
-    },
-    {
-      id: 'ias201',
-      code: 'IAS201',
-      name: 'Information Assurance & Security',
-      label: 'IAS201 - Information Assurance & Security',
-    },
-    {
-      id: 'cap301',
-      code: 'CAP301',
-      name: 'IT Capstone Project 1',
-      label: 'CAP301 - IT Capstone Project 1',
-    },
-  ];
-
-  allGrades: StudentGradeRow[] = [
-    {
-      id: 1,
-      student_name: 'Hadassa Yap',
-      prelim: 89,
-      midterm: 90,
-      pre_finals: 91,
-      finals: 93,
-      final_grade: '1.75',
-      academic_year: '2025-2026-2',
-      subject_id: 'web101',
-    },
-    {
-      id: 2,
-      student_name: 'John Cruz',
-      prelim: 85,
-      midterm: 87,
-      pre_finals: 88,
-      finals: 90,
-      final_grade: '2.00',
-      academic_year: '2025-2026-2',
-      subject_id: 'web101',
-    },
-    {
-      id: 3,
-      student_name: 'Maria Santos',
-      prelim: 91,
-      midterm: 92,
-      pre_finals: 90,
-      finals: 94,
-      final_grade: '1.50',
-      academic_year: '2025-2026-2',
-      subject_id: 'web101',
-    },
-    {
-      id: 4,
-      student_name: 'Mark Tan',
-      prelim: 87,
-      midterm: 88,
-      pre_finals: 89,
-      finals: 90,
-      final_grade: '2.00',
-      academic_year: '2025-2026-2',
-      subject_id: 'web101',
-    },
-    {
-      id: 5,
-      student_name: 'Paula Ramos',
-      prelim: 90,
-      midterm: 91,
-      pre_finals: 92,
-      finals: 93,
-      final_grade: '1.75',
-      academic_year: '2025-2026-2',
-      subject_id: 'web101',
-    },
-    {
-      id: 6,
-      student_name: 'Anne Dela Cruz',
-      prelim: 93,
-      midterm: 95,
-      pre_finals: 94,
-      finals: 96,
-      final_grade: '1.25',
-      academic_year: '2025-2026-2',
-      subject_id: 'web101',
-    },
-    {
-      id: 7,
-      student_name: 'Kevin Reyes',
-      prelim: 88,
-      midterm: 84,
-      pre_finals: 86,
-      finals: 85,
-      final_grade: '2.25',
-      academic_year: '2025-2026-2',
-      subject_id: 'ias201',
-    },
-    {
-      id: 8,
-      student_name: 'Lara Mendoza',
-      prelim: 92,
-      midterm: 91,
-      pre_finals: 93,
-      finals: 94,
-      final_grade: '1.50',
-      academic_year: '2025-2026-2',
-      subject_id: 'ias201',
-    },
-    {
-      id: 9,
-      student_name: 'Noel Garcia',
-      prelim: 86,
-      midterm: 87,
-      pre_finals: 85,
-      finals: 88,
-      final_grade: '2.25',
-      academic_year: '2025-2026-2',
-      subject_id: 'cap301',
-    },
-    {
-      id: 10,
-      student_name: 'Bianca Flores',
-      prelim: 95,
-      midterm: 96,
-      pre_finals: 94,
-      finals: 97,
-      final_grade: '1.25',
-      academic_year: '2025-2026-2',
-      subject_id: 'cap301',
-    },
-  ];
+  subjectOptions: SubjectOption[] = [];
+  sectionOptions: SectionOption[] = [];
+  allGrades: StudentGradeRow[] = [];
 
   gradeColumns: TableColumn<StudentGradeRow>[] = [
     {
@@ -240,53 +120,155 @@ export class GradeManagementComponent {
       tooltip: 'Edit grade',
       buttonClass: 'text-blue-600',
     },
-    {
-      key: 'delete',
-      label: 'Delete',
-      icon: 'pi pi-trash',
-      tooltip: 'Delete record',
-      buttonClass: 'text-red-600',
-    },
   ];
 
-  get selectedSubjectData(): SubjectOption | undefined {
-    return this.subjectOptions.find((subject) => subject.id === this.selectedSubject);
-  }
-
-  get selectedSubjectTitle(): string {
-    return this.selectedSubjectData?.label ?? 'Select subject';
+  ngOnInit(): void {
+    this.loadStudentGrades();
   }
 
   get filteredGrades(): StudentGradeRow[] {
-    return this.allGrades.filter(
-      (item) =>
-        item.academic_year === this.selectedAcademicYear &&
-        item.subject_id === this.selectedSubject
-    );
-  }
+    return this.allGrades.filter((item) => {
+      const subjectMatch =
+        !this.selectedSubject || item.subject_id === this.selectedSubject;
 
-  onAcademicYearChange(value: string): void {
-    this.selectedAcademicYear = value;
-    this.tableFirst = 0;
+      const sectionMatch =
+        !this.selectedSection || item.section_id === this.selectedSection;
+
+      return subjectMatch && sectionMatch;
+    });
   }
 
   onSubjectChange(value: string): void {
-    this.selectedSubject = value;
+    this.selectedSubject = value ? Number(value) : null;
     this.tableFirst = 0;
+    this.cdr.detectChanges();
+  }
+
+  onSectionChange(value: string): void {
+    this.selectedSection = value ? Number(value) : null;
+    this.tableFirst = 0;
+    this.cdr.detectChanges();
+  }
+
+  clearFilters(): void {
+    this.selectedSubject = null;
+    this.selectedSection = null;
+    this.tableFirst = 0;
+    this.cdr.detectChanges();
   }
 
   onTableAction(event: ActionEvent<StudentGradeRow>): void {
     if (event.actionKey === 'edit') {
-      console.log('Edit row:', event.row);
-      return;
-    }
-
-    if (event.actionKey === 'delete') {
-      console.log('Delete row:', event.row);
+      this.gradeModal?.updateDialog({
+        id: event.row.id,
+        student_id: event.row.student_id,
+        schedule_id: event.row.schedule_id,
+        student_name: event.row.student_name,
+        subject_name: event.row.subject_name,
+        section_name: event.row.section_name,
+        prelim: event.row.prelim,
+        midterm: event.row.midterm,
+        pre_finals: event.row.pre_finals,
+        finals: event.row.finals,
+        status: event.row.status,
+      });
     }
   }
 
-  onAddGrade(): void {
-    console.log('Add grade clicked');
+  reloadData(): void {
+    this.loadStudentGrades();
+  }
+
+  private loadStudentGrades(): void {
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    this.gradePortalService.getStudentGrades().subscribe({
+      next: (response) => {
+        const rows = (response.data ?? []).map((item) =>
+          this.mapGradeRow(item)
+        );
+
+        this.allGrades = rows;
+        this.subjectOptions = this.buildSubjectOptions(rows);
+        this.sectionOptions = this.buildSectionOptions(rows);
+
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load student grades.', error);
+        this.allGrades = [];
+        this.subjectOptions = [];
+        this.sectionOptions = [];
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private mapGradeRow(item: StudentGradeListItem): StudentGradeRow {
+    return {
+      id: item.id,
+      student_id: item.student?.id ?? 0,
+      schedule_id: item.schedule?.id ?? 0,
+      student_name: item.student?.full_name ?? 'Unknown Student',
+      prelim: this.toNumber(item.prelim_grade),
+      midterm: this.toNumber(item.midterm_grade),
+      pre_finals: this.toNumber(item.pre_finals_grade),
+      finals: this.toNumber(item.finals_grade),
+      final_grade:
+        item.final_grade !== null &&
+        item.final_grade !== undefined &&
+        item.final_grade !== ''
+          ? String(item.final_grade)
+          : '-',
+      subject_id: item.schedule?.subject?.id ?? 0,
+      subject_code: item.schedule?.subject?.subject_code ?? 'N/A',
+      subject_name: item.schedule?.subject?.subject_name ?? 'Unknown Subject',
+      section_id: item.schedule?.section?.id ?? 0,
+      section_name: item.schedule?.section?.section_name ?? 'N/A',
+      status: item.status ?? null,
+    };
+  }
+
+  private toNumber(value: string | number | null): number | null {
+    if (value === null || value === undefined || value === '') return null;
+
+    const num = Number(value);
+    return Number.isNaN(num) ? null : num;
+  }
+
+  private buildSubjectOptions(rows: StudentGradeRow[]): SubjectOption[] {
+    const map = new Map<number, SubjectOption>();
+
+    rows.forEach((row) => {
+      if (row.subject_id > 0 && !map.has(row.subject_id)) {
+        map.set(row.subject_id, {
+          id: row.subject_id,
+          code: row.subject_code,
+          name: row.subject_name,
+          label: `${row.subject_code} - ${row.subject_name}`,
+        });
+      }
+    });
+
+    return Array.from(map.values());
+  }
+
+  private buildSectionOptions(rows: StudentGradeRow[]): SectionOption[] {
+    const map = new Map<number, SectionOption>();
+
+    rows.forEach((row) => {
+      if (row.section_id > 0 && !map.has(row.section_id)) {
+        map.set(row.section_id, {
+          id: row.section_id,
+          name: row.section_name,
+          label: row.section_name,
+        });
+      }
+    });
+
+    return Array.from(map.values());
   }
 }
