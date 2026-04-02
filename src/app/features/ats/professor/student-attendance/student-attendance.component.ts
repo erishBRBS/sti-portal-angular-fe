@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import {
   ActionEvent,
   DataTableComponent,
@@ -7,60 +9,76 @@ import {
   RowAction,
   TableColumn,
 } from '../../../../shared/components/data-table/data-table.component';
+import { ProfessorService } from '../../../../services/ats/professor/professor.service';
+import {
+  ProfessorAttendanceRecord,
+  ProfessorSchedule,
+  ProfessorSubject,
+} from '../../../../models/ats/professor/professor.model';
 
-type AttendanceStatus = 'Present' | 'Late' | 'Absent';
-
-interface AttendanceRecord {
-  id: string;
-  studentId: string;
+interface AttendanceTableRow {
+  id: number;
+  studentId: number;
   name: string;
-  course: string;
   section: string;
   subject: string;
   date: string;
   timeIn: string;
   timeOut: string;
-  status: AttendanceStatus;
-  courseSection?: string;
+  status: string;
+  raw: ProfessorAttendanceRecord;
+}
+
+interface FilterOption {
+  label: string;
+  value: string | number;
 }
 
 @Component({
   selector: 'app-gate-attendance',
   standalone: true,
-  imports: [CommonModule, DataTableComponent],
+  imports: [CommonModule, FormsModule, DataTableComponent],
   templateUrl: './student-attendance.component.html',
 })
 export class ProfessorStudentAttendanceComponent implements OnInit {
-  attendanceRecords: AttendanceRecord[] = [];
-  columns: TableColumn<AttendanceRecord>[] = [];
-  actions: RowAction<AttendanceRecord>[] = [];
+  private professorService = inject(ProfessorService);
+  private cdr = inject(ChangeDetectorRef);
 
-  rows = 12;
+  attendanceRecords: AttendanceTableRow[] = [];
+
+  columns: TableColumn<AttendanceTableRow>[] = [];
+  actions: RowAction<AttendanceTableRow>[] = [];
+
+  rows = 10;
   first = 0;
   totalRecords = 0;
   loading = false;
 
+  selectedSubjectId: number | '' = '';
+  selectedSectionId: number | '' = '';
+
+  subjectOptions: FilterOption[] = [];
+  sectionOptions: FilterOption[] = [];
+
+  subjects: ProfessorSubject[] = [];
+  schedules: ProfessorSchedule[] = [];
+
   ngOnInit(): void {
     this.initializeColumns();
     this.initializeActions();
-    this.loadSampleData();
+    this.loadInitialData();
   }
 
   initializeColumns(): void {
     this.columns = [
-      {
-        field: 'studentId',
-        header: 'Student ID',
-        sortable: true,
-      },
       {
         field: 'name',
         header: 'Name',
         sortable: true,
       },
       {
-        field: 'courseSection',
-        header: 'Course & Section',
+        field: 'section',
+        header: 'Section',
         sortable: true,
       },
       {
@@ -71,9 +89,17 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
       {
         field: 'date',
         header: 'Date',
-        type: 'date',
         sortable: true,
-        dateFormat: 'MMM d, y',
+      },
+      {
+        field: 'timeIn',
+        header: 'Time In',
+        sortable: true,
+      },
+      {
+        field: 'timeOut',
+        header: 'Time Out',
+        sortable: true,
       },
       {
         field: 'status',
@@ -113,136 +139,138 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
     ];
   }
 
-  loadSampleData(): void {
-    const records: AttendanceRecord[] = [
-      {
-        id: 'ATT001',
-        studentId: '2025-001',
-        name: 'John Michael Doe',
-        course: 'BSIT',
-        section: 'A',
-        subject: 'Programming 1',
-        date: '2023-09-11',
-        timeIn: '08:00',
-        timeOut: '17:00',
-        status: 'Present',
+  loadInitialData(): void {
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    forkJoin({
+      subjects: this.professorService.getMySubjects(),
+      schedules: this.professorService.getMySchedules(),
+      attendance: this.professorService.getAttendanceRecords(1, this.rows, null, null),
+    }).subscribe({
+      next: ({ subjects, schedules, attendance }) => {
+        this.subjects = subjects.data ?? [];
+        this.schedules = schedules.data ?? [];
+
+        this.buildFilterOptions();
+        this.setAttendanceData(attendance);
+
+        this.loading = false;
+        this.cdr.detectChanges();
       },
-      {
-        id: 'ATT002',
-        studentId: '2025-002',
-        name: 'Jane Marie Smith',
-        course: 'BSED',
-        section: 'B',
-        subject: 'Science 1',
-        date: '2023-09-11',
-        timeIn: '08:15',
-        timeOut: '17:00',
-        status: 'Late',
+      error: (error) => {
+        console.error('Failed to load initial attendance data:', error);
+        this.attendanceRecords = [];
+        this.totalRecords = 0;
+        this.loading = false;
+        this.cdr.detectChanges();
       },
-      {
-        id: 'ATT003',
-        studentId: '2025-003',
-        name: 'Robert James Johnson',
-        course: 'BSCS',
-        section: 'C',
-        subject: 'Data Structures',
-        date: '2023-09-11',
-        timeIn: '-',
-        timeOut: '-',
-        status: 'Absent',
-      },
-      {
-        id: 'ATT004',
-        studentId: '2025-004',
-        name: 'Maria Santos Garcia',
-        course: 'BSBA',
-        section: 'A',
-        subject: 'Accounting',
-        date: '2023-09-10',
-        timeIn: '08:05',
-        timeOut: '17:00',
-        status: 'Present',
-      },
-      {
-        id: 'ATT005',
-        studentId: '2025-005',
-        name: 'Carlos David Reyes',
-        course: 'BSIT',
-        section: 'B',
-        subject: 'Database',
-        date: '2023-09-10',
-        timeIn: '08:20',
-        timeOut: '17:00',
-        status: 'Late',
-      },
-      {
-        id: 'ATT006',
-        studentId: '2025-006',
-        name: 'Sarah Lynn Tan',
-        course: 'BSED',
-        section: 'C',
-        subject: 'English',
-        date: '2023-09-09',
-        timeIn: '08:00',
-        timeOut: '17:00',
-        status: 'Present',
-      },
-      {
-        id: 'ATT007',
-        studentId: '2025-007',
-        name: 'Michael Anthony Cruz',
-        course: 'BSCS',
-        section: 'A',
-        subject: 'Algorithms',
-        date: '2023-09-09',
-        timeIn: '08:00',
-        timeOut: '17:00',
-        status: 'Present',
-      },
-      {
-        id: 'ATT008',
-        studentId: '2025-008',
-        name: 'Andrea Nicole Lim',
-        course: 'BSBA',
-        section: 'B',
-        subject: 'Marketing',
-        date: '2023-09-08',
-        timeIn: '-',
-        timeOut: '-',
-        status: 'Absent',
-      },
-      {
-        id: 'ATT009',
-        studentId: '2025-009',
-        name: 'Daniel Patrick Ong',
-        course: 'BSIT',
-        section: 'C',
-        subject: 'Networking',
-        date: '2023-09-08',
-        timeIn: '08:10',
-        timeOut: '17:00',
-        status: 'Present',
-      },
-      {
-        id: 'ATT010',
-        studentId: '2025-010',
-        name: 'Christine Ann Torres',
-        course: 'BSED',
-        section: 'A',
-        subject: 'Mathematics',
-        date: '2023-09-07',
-        timeIn: '08:25',
-        timeOut: '17:00',
-        status: 'Late',
-      },
-    ];
+    });
+  }
+
+  loadAttendanceRecords(page: number = 1): void {
+    this.loading = true;
+    this.cdr.detectChanges();
+
+    this.professorService
+      .getAttendanceRecords(
+        page,
+        this.rows,
+        this.selectedSubjectId || null,
+        this.selectedSectionId || null
+      )
+      .subscribe({
+        next: (response) => {
+          this.setAttendanceData(response);
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Failed to load professor attendance records:', error);
+          this.attendanceRecords = [];
+          this.totalRecords = 0;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  private setAttendanceData(response: any): void {
+    const records: ProfessorAttendanceRecord[] = response.data ?? [];
 
     this.attendanceRecords = records.map((record) => ({
-      ...record,
-      courseSection: `${record.course} - Section ${record.section}`,
+      id: record.id,
+      studentId: record.student?.id ?? 0,
+      name: record.student?.name ?? 'N/A',
+      section: record.student?.section?.section_name ?? 'N/A',
+      subject: record.schedule?.subject?.subject_name ?? 'N/A',
+      date: this.extractDate(record.created_at),
+      timeIn: record.time_in ?? '-',
+      timeOut: record.time_out ?? '-',
+      status: this.formatStatus(record.status),
+      raw: record,
     }));
 
-    this.totalRecords = this.attendanceRecords.length;
+    this.totalRecords = response.pagination?.total ?? 0;
+    this.first =
+      ((response.pagination?.current_page ?? 1) - 1) *
+      (response.pagination?.per_page ?? this.rows);
+  }
+
+  private buildFilterOptions(): void {
+    this.subjectOptions = [
+      { label: 'All Subjects', value: '' },
+      ...this.subjects.map((subject) => ({
+        label: subject.subject_name ?? subject.subject_code ?? 'Unknown Subject',
+        value: subject.id,
+      })),
+    ];
+
+    const uniqueSections = Array.from(
+      new Map(
+        this.schedules
+          .filter((item) => item.section?.id)
+          .map((item) => [
+            item.section!.id,
+            {
+              label: item.section!.section_name,
+              value: item.section!.id,
+            },
+          ])
+      ).values()
+    );
+
+    this.sectionOptions = [
+      { label: 'All Sections', value: '' },
+      ...uniqueSections,
+    ];
+  }
+
+  onFilterChange(): void {
+    this.first = 0;
+    this.loadAttendanceRecords(1);
+  }
+
+  clearFilters(): void {
+    this.selectedSubjectId = '';
+    this.selectedSectionId = '';
+    this.first = 0;
+    this.loadAttendanceRecords(1);
+  }
+
+  extractDate(value: string | null | undefined): string {
+    if (!value) return 'N/A';
+    return value.includes(' ') ? value.split(' ')[0] : value;
+  }
+
+  formatStatus(status: string): string {
+    const value = (status || '').toLowerCase();
+
+    if (value === 'present') return 'Present';
+    if (value === 'late') return 'Late';
+    if (value === 'absent') return 'Absent';
+
+    return status || 'N/A';
   }
 
   getStatusSeverity(
@@ -273,30 +301,46 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
     }
   }
 
-  onActionClicked(event: ActionEvent<AttendanceRecord>): void {
+  onActionClicked(event: ActionEvent<AttendanceTableRow>): void {
     const { actionKey, row } = event;
 
-    switch (actionKey) {
-      case 'present':
-        row.status = 'Present';
-        break;
-      case 'late':
-        row.status = 'Late';
-        break;
-      case 'absent':
-        row.status = 'Absent';
-        break;
+    let newStatus: 'Present' | 'Late' | 'Absent';
+
+    if (actionKey === 'present') {
+      newStatus = 'Present';
+    } else if (actionKey === 'late') {
+      newStatus = 'Late';
+    } else {
+      newStatus = 'Absent';
     }
 
+    const oldStatus = row.status;
+    row.status = newStatus;
     this.attendanceRecords = [...this.attendanceRecords];
+    this.cdr.detectChanges();
+
+    this.professorService.updateAttendanceStatus(row.id, newStatus).subscribe({
+      next: () => {
+        console.log('Attendance updated successfully:', row.id, newStatus);
+      },
+      error: (error) => {
+        console.error('Failed to update attendance status:', error);
+        row.status = oldStatus;
+        this.attendanceRecords = [...this.attendanceRecords];
+        this.cdr.detectChanges();
+      },
+    });
   }
 
-  onRowClicked(row: AttendanceRecord): void {
+  onRowClicked(row: AttendanceTableRow): void {
     console.log('Row clicked:', row);
   }
 
   onPageChanged(event: PageChangedEvent): void {
     this.rows = event.perPage;
     this.first = event.first;
+
+    const page = Math.floor(event.first / event.perPage) + 1;
+    this.loadAttendanceRecords(page);
   }
 }

@@ -1,7 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ProfessorService } from '../../../../services/ats/professor/professor.service';
+import { ProfessorSchedule } from '../../../../models/ats/professor/professor.model';
 
 interface ClassBlock {
+  id: number;
   code: string;
   name: string;
   section: string;
@@ -19,71 +22,111 @@ interface ClassBlock {
   imports: [CommonModule],
   templateUrl: './schedule.component.html',
 })
-export class ProfessorScheduleComponent {
+export class ProfessorScheduleComponent implements OnInit {
+  private professorService = inject(ProfessorService);
+  private cdr = inject(ChangeDetectorRef);
+
   selectedClass: ClassBlock | null = null;
-  isModalOpen = false;
+  isLoading = false;
+
+  academicYearLabel = '';
+  semesterLabel = '';
 
   readonly days: string[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-
   readonly timeSlots: string[] = this.generateTimeSlots('07:00 AM', '07:00 PM', 30);
 
-  readonly classes: ClassBlock[] = [
-    {
-      code: 'WEB101',
-      name: 'Web Development',
-      section: 'Section A',
-      room: 'Room 301',
-      students: 32,
-      time: '08:30 AM - 11:30 AM',
-      startTime: '08:30 AM',
-      endTime: '11:30 AM',
-      days: ['Monday', 'Wednesday', 'Friday'],
-    },
-    {
-      code: 'DB201',
-      name: 'Database Management',
-      section: 'Section B',
-      room: 'Room 205',
-      students: 28,
-      time: '08:30 AM - 10:00 AM',
-      startTime: '08:30 AM',
-      endTime: '10:00 AM',
-      days: ['Tuesday', 'Thursday'],
-    },
-    {
-      code: 'PROG101',
-      name: 'Programming Fundamentals',
-      section: 'Section C',
-      room: 'Room 402',
-      students: 30,
-      time: '08:30 AM - 10:30 AM',
-      startTime: '08:30 AM',
-      endTime: '10:30 AM',
-      days: ['Saturday'],
-    },
-    {
-      code: 'NET301',
-      name: 'Network Administration',
-      section: 'Section D',
-      room: 'Lab 102',
-      students: 25,
-      time: '01:00 PM - 03:00 PM',
-      startTime: '01:00 PM',
-      endTime: '03:00 PM',
-      days: ['Tuesday', 'Thursday'],
-    },
-    {
-      code: 'GDEV202',
-      name: 'Game Development',
-      section: 'Section E',
-      room: 'Lab 103',
-      students: 22,
-      time: '05:00 PM - 07:00 PM',
-      startTime: '05:00 PM',
-      endTime: '07:00 PM',
-      days: ['Friday'],
-    },
-  ];
+  classes: ClassBlock[] = [];
+
+  ngOnInit(): void {
+    this.loadSchedules();
+  }
+
+  loadSchedules(): void {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
+    this.professorService.getMySchedules().subscribe({
+      next: (response) => {
+        const schedules: ProfessorSchedule[] = response?.data ?? [];
+
+        this.classes = this.mapSchedulesToClassBlocks(schedules);
+
+        this.academicYearLabel = schedules[0]?.academic_year?.academic_year ?? '';
+        this.semesterLabel = schedules[0]?.academic_year?.semester ?? '';
+
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load professor schedules:', error);
+        this.classes = [];
+        this.academicYearLabel = '';
+        this.semesterLabel = '';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private mapSchedulesToClassBlocks(items: ProfessorSchedule[]): ClassBlock[] {
+    return items.map((item) => {
+      const startTime = this.mysqlTimeTo12Hour(item.start_time);
+      const endTime = this.mysqlTimeTo12Hour(item.end_time);
+
+      return {
+        id: item.id,
+        code: item.subject?.subject_code ?? item.course_code ?? 'N/A',
+        name: item.subject?.subject_name ?? item.subject?.subject_code ?? 'Untitled Subject',
+        section: `${item.course_code ?? ''}${item.section?.section_name ? ' - ' + item.section.section_name : ''}`,
+        room: item.room ?? 'No room',
+        students: 0,
+        time: `${startTime} - ${endTime}`,
+        startTime,
+        endTime,
+        days: item.day ? [this.normalizeDay(item.day)] : [],
+      };
+    });
+  }
+
+  private mysqlTimeTo12Hour(time: string): string {
+    if (!time) return '';
+
+    const [hourStr, minuteStr] = time.split(':');
+    let hours = Number(hourStr);
+    const minutes = Number(minuteStr);
+    const suffix = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+    if (hours === 0) hours = 12;
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${suffix}`;
+  }
+
+  private normalizeDay(day: string): string {
+    const value = (day || '').trim().toLowerCase();
+
+    const dayMap: Record<string, string> = {
+      mon: 'Monday',
+      monday: 'Monday',
+      tue: 'Tuesday',
+      tues: 'Tuesday',
+      tuesday: 'Tuesday',
+      wed: 'Wednesday',
+      wednesday: 'Wednesday',
+      thu: 'Thursday',
+      thur: 'Thursday',
+      thurs: 'Thursday',
+      thursday: 'Thursday',
+      fri: 'Friday',
+      friday: 'Friday',
+      sat: 'Saturday',
+      saturday: 'Saturday',
+      sun: 'Sunday',
+      sunday: 'Sunday',
+    };
+
+    return dayMap[value] || day;
+  }
 
   private generateTimeSlots(start: string, end: string, intervalMinutes: number): string[] {
     const slots: string[] = [];
@@ -128,13 +171,14 @@ export class ProfessorScheduleComponent {
   }
 
   getRowStart(classItem: ClassBlock): number {
-    return this.timeSlots.indexOf(classItem.startTime) + 2;
+    const index = this.timeSlots.indexOf(classItem.startTime);
+    return index >= 0 ? index + 2 : 2;
   }
 
   getRowSpan(classItem: ClassBlock): number {
     const start = this.toMinutes(classItem.startTime);
     const end = this.toMinutes(classItem.endTime);
-    return Math.max(1, (end - start) / 30);
+    return Math.max(1, Math.round((end - start) / 30));
   }
 
   getClassesForDay(day: string): ClassBlock[] {
@@ -144,12 +188,6 @@ export class ProfessorScheduleComponent {
   openDetails(classInfo: ClassBlock, event?: Event): void {
     event?.stopPropagation();
     this.selectedClass = { ...classInfo };
-    this.isModalOpen = true;
-  }
-
-  closeModal(event?: Event): void {
-    event?.stopPropagation();
-    this.isModalOpen = false;
-    this.selectedClass = null;
+    this.cdr.detectChanges();
   }
 }
