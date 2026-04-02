@@ -1,6 +1,6 @@
 import { PaginatedResponse } from '../../pagination.model';
 
-export type AnnouncementPriority = 'High' | 'Normal' | 'Low';
+export type AnnouncementPriority = 'Urgent' | 'High' | 'Normal' | 'Low';
 export type AnnouncementStatus = 'Active' | 'Inactive';
 
 export interface AnnouncementData {
