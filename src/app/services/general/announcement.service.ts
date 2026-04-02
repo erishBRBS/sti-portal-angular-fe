@@ -31,7 +31,6 @@ export class AnnouncementService {
 
   private baseAPIUrl = `${environment.apiUrl}`;
   fileAPIUrl = `${environment.fileUrl}`;
-  token = `${environment.temp_token}`;
 
   private readonly getAnnouncementUrl = `${this.baseAPIUrl}${AnnouncementEndPoints.getAnnouncement}`;
   private readonly createAnnouncementUrl = `${this.baseAPIUrl}${AnnouncementEndPoints.createAnnouncement}`;
@@ -46,23 +45,10 @@ export class AnnouncementService {
     });
   }
 
-  private buildAnnouncementFormData(payload: CreateAnnouncementPayload): FormData {
-    const formData = new FormData();
-
-    formData.append('title', payload.title);
-    formData.append('description', payload.description);
-    formData.append('priority', payload.priority);
-    formData.append('status', payload.status);
-
-    if (payload.attachment) {
-      formData.append('attachment', payload.attachment);
-    }
-
-    return formData;
-  }
-
   getAnnouncement(page = 1, perPage = 10): Observable<AnnouncementModel> {
-    const params = new HttpParams().set('page', page).set('per_page', perPage);
+    const params = new HttpParams()
+      .set('page', String(page))
+      .set('per_page', String(perPage));
 
     return this.http.get<AnnouncementModel>(this.getAnnouncementUrl, {
       headers: this.authHeaders(),
@@ -78,10 +64,21 @@ export class AnnouncementService {
     });
   }
 
-  createAnnouncement(payload: CreateAnnouncementPayload): Observable<AnnouncementResponse> {
-    const formData = this.buildAnnouncementFormData(payload);
+  createAnnouncement(
+    payload: CreateAnnouncementPayload,
+    attachment?: File | null,
+  ): Observable<AnnouncementResponse> {
+    const fd = new FormData();
+    fd.append('title', payload.title ?? '');
+    fd.append('description', payload.description ?? '');
+    fd.append('priority', payload.priority ?? 'Normal');
+    fd.append('status', payload.status ?? 'Active');
 
-    return this.http.post<AnnouncementResponse>(this.createAnnouncementUrl, formData, {
+    if (attachment) {
+      fd.append('attachment', attachment);
+    }
+
+    return this.http.post<AnnouncementResponse>(this.createAnnouncementUrl, fd, {
       headers: this.authHeaders(),
     });
   }
@@ -89,11 +86,22 @@ export class AnnouncementService {
   updateAnnouncement(
     id: number,
     payload: CreateAnnouncementPayload,
+    attachment?: File | null,
   ): Observable<AnnouncementResponse> {
     const url = this.updateAnnouncementUrl.replace('{id}', String(id));
-    const formData = this.buildAnnouncementFormData(payload);
+    const fd = new FormData();
 
-    return this.http.patch<AnnouncementResponse>(url, formData, {
+    fd.append('_method', 'PATCH');
+    fd.append('title', payload.title ?? '');
+    fd.append('description', payload.description ?? '');
+    fd.append('priority', payload.priority ?? 'Normal');
+    fd.append('status', payload.status ?? 'Active');
+
+    if (attachment) {
+      fd.append('attachment', attachment);
+    }
+
+    return this.http.post<AnnouncementResponse>(url, fd, {
       headers: this.authHeaders(),
     });
   }

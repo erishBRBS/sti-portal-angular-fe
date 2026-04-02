@@ -89,10 +89,14 @@ export class AnnouncementComponent implements OnInit {
     this.cdr.detectChanges();
 
     this.announcementService.getAnnouncement(1, 10).subscribe({
-      next: (response) => {
-        this.announcements = (response.data ?? []).map((item: AnnouncementApiItem) =>
-          this.mapApiAnnouncement(item)
-        );
+      next: (response: any) => {
+        const rawItems: AnnouncementApiItem[] = Array.isArray(response?.data)
+          ? response.data
+          : [];
+
+        this.announcements = rawItems
+          .map((item: AnnouncementApiItem) => this.mapApiAnnouncement(item))
+          .filter((item: Announcement) => item.status === 'active');
 
         this.filterAnnouncements();
 
@@ -114,9 +118,9 @@ export class AnnouncementComponent implements OnInit {
 
   private mapApiAnnouncement(item: AnnouncementApiItem): Announcement {
     return {
-      id: item.id,
-      title: item.title,
-      content: item.description,
+      id: Number(item.id) || 0,
+      title: item.title ?? '',
+      content: item.description ?? '',
       priority: this.mapPriority(item.priority),
       author: this.resolveAuthor(item),
       date: item.created_at ?? item.updated_at ?? new Date().toISOString(),
@@ -142,7 +146,7 @@ export class AnnouncementComponent implements OnInit {
     return null;
   }
 
-  private mapPriority(priority: string): 'high' | 'normal' | 'low' {
+  private mapPriority(priority?: string | null): 'high' | 'normal' | 'low' {
     const value = (priority || '').toLowerCase();
 
     if (value === 'high') return 'high';
@@ -150,7 +154,7 @@ export class AnnouncementComponent implements OnInit {
     return 'low';
   }
 
-  private mapStatus(status: string): 'active' | 'inactive' {
+  private mapStatus(status?: string | null): 'active' | 'inactive' {
     const value = (status || '').toLowerCase();
     return value === 'active' ? 'active' : 'inactive';
   }
@@ -185,6 +189,10 @@ export class AnnouncementComponent implements OnInit {
     if (lower.endsWith('.mp4')) return 'video/mp4';
     if (lower.endsWith('.mov')) return 'video/quicktime';
     if (lower.endsWith('.avi')) return 'video/x-msvideo';
+    if (lower.endsWith('.pdf')) return 'application/pdf';
+    if (lower.endsWith('.doc')) return 'application/msword';
+    if (lower.endsWith('.docx'))
+      return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
     return 'application/octet-stream';
   }

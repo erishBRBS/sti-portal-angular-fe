@@ -9,7 +9,16 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 import { MultiSelectModule } from 'primeng/multiselect';
 
-export type StiColType = 'text' | 'date' | 'datetime' | 'currency' | 'boolean' | 'tag' | 'custom';
+export type StiColType =
+  | 'text'
+  | 'date'
+  | 'datetime'
+  | 'currency'
+  | 'boolean'
+  | 'tag'
+  | 'custom'
+  | 'attachment';
+
 export type StiTagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
 export interface PageChangedEvent {
@@ -40,6 +49,10 @@ export interface TableColumn<T = any> {
   tagSeverity?: (row: T) => StiTagSeverity;
   tagLabel?: (row: T) => string;
   tagClass?: (row: T) => string;
+
+  attachmentUrlGetter?: (row: T) => string;
+  attachmentLabelGetter?: (row: T) => string;
+  attachmentTypeGetter?: (row: T) => 'image' | 'file' | 'none';
 }
 
 export interface RowAction<T = any> {
@@ -77,21 +90,17 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Input() value: T[] = [];
   @Input() columns: TableColumn<T>[] = [];
 
-  // Header
   @Input() title = '';
   @Input() subtitle = '';
 
-  // Table behavior
   @Input() loading = false;
   @Input() striped = true;
   @Input() rowHover = true;
 
-  // Filters / Actions
   @Input() showColumnFilters = false;
   @Input() showActions = false;
   @Input() actions: RowAction<T>[] = [];
 
-  // Header buttons flags
   @Input() showImportCsv = false;
   @Input() showAdd = false;
   @Input() showDelete = false;
@@ -99,12 +108,10 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Input() addLabel = 'Add';
   @Input() deleteLabel = 'Delete';
 
-  // Checkbox selection
   @Input() showSelection = false;
   @Input() selection: T[] = [];
   @Output() selectionChange = new EventEmitter<T[]>();
 
-  // Pagination (two-way)
   private _rows = 10;
   @Input() set rows(v: number) {
     this._rows = Number(v ?? 10);
@@ -126,7 +133,6 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Input() paginator = true;
   @Input() rowsPerPageOptions: number[] = [10, 25, 50, 100];
 
-  // Events
   @Output() rowClicked = new EventEmitter<T>();
   @Output() actionClicked = new EventEmitter<ActionEvent<T>>();
   @Output() importCsvClicked = new EventEmitter<void>();
@@ -137,8 +143,22 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Input() lazy = false;
   @Output() pageChanged = new EventEmitter<PageChangedEvent>();
 
-  // Internal
   selectedColumns: TableColumn<T>[] = [];
+
+  getAttachmentUrl(row: T, col: TableColumn<T>): string {
+    if (col.attachmentUrlGetter) return col.attachmentUrlGetter(row) ?? '';
+    return '';
+  }
+
+  getAttachmentLabel(row: T, col: TableColumn<T>): string {
+    if (col.attachmentLabelGetter) return col.attachmentLabelGetter(row) ?? '';
+    return '';
+  }
+
+  getAttachmentType(row: T, col: TableColumn<T>): 'image' | 'file' | 'none' {
+    if (col.attachmentTypeGetter) return col.attachmentTypeGetter(row);
+    return 'none';
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['columns']) {
@@ -204,7 +224,6 @@ export class DataTableComponent<T = any> implements OnChanges {
     this.selectionChange.emit(selected);
   }
 
-  // Helpers
   getAlignClass(col: TableColumn<T>): string {
     if (col.align === 'center') return 'text-center';
     if (col.align === 'right') return 'text-right';
