@@ -1,6 +1,42 @@
- <!--Title--> 
+<div class="space-y-4">
   <div>
     <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
-      Student to Parent Assignment
+      Student Parent Assignment
     </h1>
   </div>
+
+  <sti-data-table
+    [title]="'Student Parent List'"
+    [value]="rows"
+    [columns]="cols"
+    [actions]="actions"
+    [loading]="loading"
+    [rows]="rowsPerPage"
+    [first]="first"
+    [totalRecords]="total"
+    [showSelection]="true"
+    [selection]="selectedRows"
+    (selectionChange)="selectedRows = $event"
+    [showActions]="true"
+    [showAdd]="true"
+    [showDelete]="true"
+    [addLabel]="'Add Student Parent'"
+    [deleteLabel]="'Delete Selected'"
+    (rowClicked)="onRow($event)"
+    (actionClicked)="onAction($event)"
+    (pageChanged)="onPageChanged($event)"
+    (addClicked)="openAddModal()"
+    (deleteClicked)="openDeleteModal()"
+  >
+  </sti-data-table>
+
+  <sti-student-parent-modal
+    (onSuccess)="onModalSuccess()"
+    (onCancel)="onModalCancel()"
+  ></sti-student-parent-modal>
+
+  <sti-confirm-dialog
+    (onConfirm)="confirmDelete()"
+    (onCancel)="handleCancelDelete()"
+  ></sti-confirm-dialog>
+</div>
