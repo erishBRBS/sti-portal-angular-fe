@@ -1,0 +1,188 @@
+<p-dialog
+  [(visible)]="visible"
+  (onShow)="onDialogShown()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="true"
+  [dismissableMask]="true"
+  [style]="{ width: 'min(720px, 95vw)' }"
+  [contentStyle]="{ 'max-height': '78vh', overflow: 'auto' }"
+  (onHide)="close()"
+>
+  <ng-template pTemplate="header">
+    <div class="w-full flex items-center justify-center">
+      <div class="text-lg font-bold text-red-700">{{ dialogTitle }}</div>
+    </div>
+  </ng-template>
+
+  <form #studentScheduleForm="ngForm" (ngSubmit)="onSave(studentScheduleForm)" class="p-4">
+    <!-- VIEW MODE -->
+    <ng-container *ngIf="mode === 'VIEW'; else formModeTpl">
+      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
+        <!-- LEFT: STUDENT -->
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Student Name:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ student_name || '-' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Course:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ course_name || '-' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Section:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ section_name || '-' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Year Level:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ year_level || '-' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: SCHEDULE -->
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Subject:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ subject_name || '-' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Day:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ schedule_day || '-' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Start Time:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ formatTime(schedule_start_time) }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              End Time:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ formatTime(schedule_end_time) }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Duration:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ schedule_duration || '-' }}
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-2">
+              Room:
+            </label>
+            <div class="w-full px-3 py-2 text-sm text-slate-700">
+              {{ schedule_room || '-' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ADD / UPDATE MODE -->
+    <ng-template #formModeTpl>
+      <div class="grid grid-cols-1 gap-x-8 gap-y-5 md:grid-cols-2">
+        <!-- LEFT: STUDENT -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Student:
+          </label>
+
+          <select
+            name="student_id"
+            [(ngModel)]="student_id"
+            #studentCtrl="ngModel"
+            required
+            class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+            [disabled]="loadingOptions"
+            [ngClass]="{
+              'ng-invalid ng-dirty': studentCtrl.invalid && (studentCtrl.touched || submitted)
+            }"
+          >
+            <option [ngValue]="null">Select Student</option>
+            <option *ngFor="let student of studentOptions" [ngValue]="student.value">
+              {{ student.label }}
+            </option>
+          </select>
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="studentCtrl.invalid && (studentCtrl.touched || submitted)"
+          >
+            Student is required.
+          </p>
+        </div>
+
+        <!-- RIGHT: SCHEDULE -->
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
+            <span class="text-red-600 mr-1">*</span> Subject:
+          </label>
+
+          <select
+            name="schedule_id"
+            [(ngModel)]="schedule_id"
+            #scheduleCtrl="ngModel"
+            required
+            class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500"
+            [disabled]="loadingOptions"
+            [ngClass]="{
+              'ng-invalid ng-dirty': scheduleCtrl.invalid && (scheduleCtrl.touched || submitted)
+            }"
+          >
+            <option [ngValue]="null">Select Subject</option>
+            <option *ngFor="let schedule of scheduleOptions" [ngValue]="schedule.value">
+              {{ schedule.label }}
+            </option>
+          </select>
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="scheduleCtrl.invalid && (scheduleCtrl.touched || submitted)"
+          >
+            Subject is required.
+          </p>
+        </div>
+      </div>
+    </ng-template>
+  </form>
+</p-dialog>
