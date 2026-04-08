@@ -12,6 +12,8 @@ import { AdminManagementComponent } from './user-management/admin/admin.componen
 import { StudentManagementComponent } from './user-management/student/student.component';
 import { ProfessorManagementComponent } from './user-management/professor/professor.component';
 import { ParentManagementComponent } from './user-management/parent/parent.component';
+import { StudentParentComponent } from './association/student-parent/student-parent.component';
+import { StudentScheduleComponent } from './association/student-schedule/student-schedule.component';
 
 
 export const AP_ROUTES: Routes = [
@@ -84,6 +86,19 @@ export const AP_ROUTES: Routes = [
     data: { roles: ['Admin'] },
     // canActivate: [roleGuard],
     component: StudentManagementComponent,
+  },
+  //ASSOCIATION
+  {
+    path: 'admin/association/student-parent',
+    data: { roles: ['Admin'] },
+    // canActivate: [roleGuard],
+    component: StudentParentComponent,
+  },
+  {
+    path: 'admin/association/student-schedule',
+    data: { roles: ['Admin'] },
+    // canActivate: [roleGuard],
+    component: StudentScheduleComponent,
   },
   {
     path: '',
