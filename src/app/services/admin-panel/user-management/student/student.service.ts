@@ -11,6 +11,7 @@ import { TokenStorageService } from "../../../../core/services/token-storage.ser
 
 export enum StudentEndPoints {
   getStudent = 'get/student',
+  listAllStudent = 'list-all/student',
   createStudent = 'create/student',
   updateStudent = 'update/student/{id}',
   getStudentById = 'get/student/{id}',
@@ -34,6 +35,7 @@ export class StudentService {
   token = `${environment.temp_token}`;
 
   private readonly getStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.getStudent}`;
+  private readonly listAllStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.listAllStudent}`;
   private readonly createStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.createStudent}`;
   private readonly getStudentByIdUrl = `${this.baseAPIUrl}${StudentEndPoints.getStudentById}`;
   private readonly updateStudentUrl = `${this.baseAPIUrl}${StudentEndPoints.updateStudent}`;
@@ -63,6 +65,12 @@ export class StudentService {
     return this.http.get<StudentModel>(this.getStudentUrl, {
       headers: this.authHeaders(),
       params,
+    });
+  }
+
+  listAllStudents(): Observable<ApiResponse<StudentData[]>> {
+    return this.http.get<ApiResponse<StudentData[]>>(this.listAllStudentUrl, {
+      headers: this.authHeaders(),
     });
   }
 

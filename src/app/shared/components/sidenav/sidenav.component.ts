@@ -23,6 +23,7 @@ export class SidenavComponent implements OnDestroy {
   isAdminPanelOpen = false;
   isUserManagementOpen = false;
   isCurriculumManagementOpen = false;
+  isAssociationOpen = false;
 
   currentRole: UserRole = 'student';
 
