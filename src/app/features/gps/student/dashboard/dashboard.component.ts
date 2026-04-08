@@ -14,6 +14,7 @@ import { Subject, filter, takeUntil } from 'rxjs';
 
 import { StudentGradeItem } from './../../../../models/gps/student/student.model';
 import { StudentGradeService } from './../../../../services/gps/student/student.service';
+import { AnnouncementService } from './../../../../services/general/announcement.service';
 
 interface QuickAction {
   label: string;
@@ -37,16 +38,17 @@ interface Announcement {
 export class StudentDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private studentGradeService = inject(StudentGradeService);
+  private announcementService = inject(AnnouncementService);
   private cdr = inject(ChangeDetectorRef);
   private destroy$ = new Subject<void>();
 
   constructor(@Inject(PLATFORM_ID) private platformId: object) {}
 
   loadingGrades = false;
+  loadingAnnouncements = false;
 
   stats = [
     { label: 'GWA', value: 'In Progress', icon: 'pi pi-star', color: 'yellow' },
-    // { label: 'Attendance', value: '92%', icon: 'pi pi-chart-line', color: 'yellow' }
   ];
 
   quickActions: QuickAction[] = [
@@ -65,30 +67,12 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     },
   ];
 
-  announcements: Announcement[] = [
-    {
-      title: 'Midterm Exam Schedule',
-      date: 'June 21, 2025',
-      content:
-        'Please check the posted midterm examination schedule for your assigned room and time.',
-    },
-    {
-      title: 'Class Advisory',
-      date: 'June 20, 2025',
-      content:
-        'Selected afternoon classes will shift to asynchronous mode due to campus maintenance.',
-    },
-    {
-      title: 'Submission Reminder',
-      date: 'June 19, 2025',
-      content:
-        'All pending requirements for Web Systems and Technologies must be submitted before Friday.',
-    },
-  ];
+  announcements: Announcement[] = [];
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
       this.loadMyGrades();
+      this.loadAnnouncements();
     }
 
     this.router.events
@@ -102,6 +86,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
           event.urlAfterRedirects.includes('/gps/student/dashboard')
         ) {
           this.loadMyGrades();
+          this.loadAnnouncements();
         }
       });
   }
@@ -116,6 +101,35 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(url);
   }
 
+  private loadAnnouncements(): void {
+    this.loadingAnnouncements = true;
+    this.cdr.detectChanges();
+
+    this.announcementService
+      .getAnnouncement(1, 5)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response) => {
+          const rows = response?.data ?? [];
+
+          this.announcements = rows.map((item: any) => ({
+            title: item.title ?? 'Untitled Announcement',
+            date: this.formatAnnouncementDate(item.created_at ?? item.updated_at ?? null),
+            content: item.description ?? '',
+          }));
+
+          this.loadingAnnouncements = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Failed to load announcements:', err);
+          this.announcements = [];
+          this.loadingAnnouncements = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
   private loadMyGrades(): void {
     this.loadingGrades = true;
     this.cdr.detectChanges();
@@ -125,17 +139,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response) => {
-          console.log('Grades API response:', response);
-
           const rows: StudentGradeItem[] = response?.data ?? [];
-          console.log('Rows:', rows);
-          console.log(
-            'Final averages:',
-            rows.map((item) => item.final_average),
-          );
-
           const gwaValue = this.computeGwa(rows);
-          console.log('Computed GWA:', gwaValue);
 
           this.stats = [
             {
@@ -166,6 +171,7 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
         },
       });
   }
+
   private computeGwa(rows: StudentGradeItem[]): string {
     if (!rows.length) {
       return 'In Progress';
@@ -193,5 +199,18 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
     const gwa = total / validAverages.length;
 
     return gwa.toFixed(2);
+  }
+
+  private formatAnnouncementDate(value?: string | null): string {
+    if (!value) return '-';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '-';
+
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   }
 }
