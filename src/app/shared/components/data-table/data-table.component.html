@@ -74,37 +74,34 @@
         </th>
 
         <th
-          *ngFor="let col of cols"
+          *ngFor="let col of columns"
           [ngClass]="[getAlignClass(col), col.headerClass || '']"
           [ngStyle]="getWidthStyle(col)"
-          [pSortableColumn]="col.sortable ? col.field : null"
+          [pSortableColumn]="col.sortable ? col.field : undefined"
         >
-          <div class="flex items-center gap-2">
-            <span class="font-semibold">{{ col.header }}</span>
-            <p-sortIcon *ngIf="col.sortable" [field]="col.field"></p-sortIcon>
-          </div>
+     <div class="flex items-center gap-2">
+
+       <!--LEFT: HEADER + SORT -->
+      <div class="flex items-center gap-2">
+        <span class="font-semibold">{{ col.header }}</span>
+     </div>
+
+      <!--RIGHT: DITO MO ILALAGAY FILTER -->
+       <p-columnFilter
+        *ngIf="showColumnFilters && col.field !== 'actions'"
+         [field]="col.field"
+         display="menu"
+         [showMatchModes]="false"
+         [showOperator]="false"
+         [showAddButton]="false">
+      </p-columnFilter>
+
+    </div>
         </th>
 
         <th *ngIf="showActions" class="text-right w-28">
           <span class="font-semibold">Actions</span>
         </th>
-      </tr>
-
-      <tr *ngIf="showColumnFilters">
-        <th *ngIf="showSelection"></th>
-
-        <th *ngFor="let col of cols">
-          <p-columnFilter
-            *ngIf="col.filter"
-            [field]="col.field"
-            [matchMode]="col.filterMatchMode || 'contains'"
-            [showMenu]="false"
-            type="text"
-            placeholder="Filter..."
-          ></p-columnFilter>
-        </th>
-
-        <th *ngIf="showActions"></th>
       </tr>
     </ng-template>
 
