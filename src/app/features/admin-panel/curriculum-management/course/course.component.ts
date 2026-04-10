@@ -9,7 +9,10 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { CourseModalComponent } from './course-modal/course-modal.component';
 import { finalize } from 'rxjs';
 import { CourseData } from '../../../../models/admin-panel/curriculum-management/course.model';
-import {DetailModalConfig, ViewDetailsComponent} from '../../../../shared/components/view-details/view-details.component';
+import {
+  DetailModalConfig,
+  ViewDetailsComponent,
+} from '../../../../shared/components/view-details/view-details.component';
 import { createACourseDetailConfig } from '../../../../helper/course.helper';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
@@ -21,12 +24,7 @@ type UserRow = {
 @Component({
   selector: 'sti-course',
   standalone: true,
-  imports: [
-    DataTableComponent, 
-    CourseModalComponent, 
-    ViewDetailsComponent,
-    ConfirmDialogComponent
-  ],
+  imports: [DataTableComponent, CourseModalComponent, ViewDetailsComponent, ConfirmDialogComponent],
   templateUrl: './course.component.html',
   styleUrl: './course.component.css',
 })
@@ -46,7 +44,7 @@ export class CourseComponent {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
-  
+
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   @ViewChild(CourseModalComponent) courseModal!: CourseModalComponent;
 
@@ -81,63 +79,57 @@ export class CourseComponent {
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
-  if (e.actionKey === 'edit') {
-    this.courseModal.updateDialog(e.row.id);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    if (e.actionKey === 'edit') {
+      this.courseModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
       // optional view function
       this.getCoursenById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteCourse(e.row.id);
+    }
+  }
+
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+
+    input.onchange = (event: any) => {
+      const file: File = event.target.files[0];
+
+      if (!file) return;
+
+      this.courseService.bulkUploadCourse(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadCourse(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Error', 'Failed to import CSV');
+        },
+      });
+    };
+
+    input.click();
+  }
+
+  openAddModal() {
+    this.courseModal?.showDialog();
+  }
+
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select a subject to delete.');
+      return;
     }
 
-  else if (e.actionKey === 'delete') {
-    this.deleteCourse(e.row.id);
-  }
-
-}
-
-openImportCsv() {
-
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
-
-  input.onchange = (event: any) => {
-    const file: File = event.target.files[0];
-
-    if (!file) return;
-
-    this.courseService.importCourse(file).subscribe({
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadCourse(this.currentPage, this.rowsPerPage);
-      },
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
-      }
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete selected courses?',
     });
-  };
-
-  input.click();
-}
-
-openAddModal() {
-  this.courseModal?.showDialog();
-}
-
-openDeleteModal() {
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a subject to delete.');
-    return;
   }
-
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete selected courses?'
-  });
-}
-
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -182,64 +174,63 @@ openDeleteModal() {
       });
   }
 
-deleteCourse(id: number) {
-  this.selectedDeleteId = id;
+  deleteCourse(id: number) {
+    this.selectedDeleteId = id;
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete this course?'
-  });
-}
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this course?',
+    });
+  }
 
-confirmDelete() {
+  confirmDelete() {
+    //  if multiple selected
+    if (this.selectedRows.length) {
+      const payload = {
+        id: this.selectedRows.map((row: UserRow) => row.id),
+      };
 
-  //  if multiple selected
-  if (this.selectedRows.length) {
+      this.courseService.deleteCourse(payload).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.selectedRows = [];
+          this.loadCourse(this.currentPage, this.rowsPerPage);
+        },
+        error: () => {
+          this.toast.error('Error', 'Failed to delete courses');
+        },
+      });
+
+      return;
+    }
+
+    // single delete
+    if (!this.selectedDeleteId) return;
+
     const payload = {
-      id: this.selectedRows.map((row: UserRow) => row.id)
+      id: [this.selectedDeleteId],
     };
 
     this.courseService.deleteCourse(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-        this.selectedRows = [];
         this.loadCourse(this.currentPage, this.rowsPerPage);
       },
       error: () => {
-        this.toast.error('Error', 'Failed to delete courses');
-      }
+        this.toast.error('Error', 'Failed to delete course');
+      },
     });
-
-    return;
   }
 
-  // single delete
-  if (!this.selectedDeleteId) return;
+  handleCancelDelete() {
+    this.selectedRows = []; // clear checkboxes
+    this.selectedDeleteId = null;
+  }
 
-  const payload = {
-    id: [this.selectedDeleteId]
-  };
-
-  this.courseService.deleteCourse(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-      this.loadCourse(this.currentPage, this.rowsPerPage);
-    },
-    error: () => {
-      this.toast.error('Error', 'Failed to delete course');
-    }
-  });
-}
-
-handleCancelDelete() {
-  this.selectedRows = [];         // clear checkboxes
-  this.selectedDeleteId = null;   
-}
-
-closeDeleteDialog() {
-  this.showDeleteDialog = false;
-  this.selectedDeleteId = null;
-}
+  closeDeleteDialog() {
+    this.showDeleteDialog = false;
+    this.selectedDeleteId = null;
+  }
 
   private getCoursenById(id: number): void {
     this.courseService.getCourseById(id).subscribe({
@@ -260,28 +251,25 @@ closeDeleteDialog() {
     });
   }
 
-deleteSelectedCourse(): void {
+  deleteSelectedCourse(): void {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id),
+    };
 
-  const payload = {
-    id: this.selectedRows.map((row: UserRow) => row.id)
-  };
+    this.courseService.deleteCourse(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
 
-  this.courseService.deleteCourse(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
+        // clear selection
+        this.selectedRows = [];
 
-      // clear selection
-      this.selectedRows = [];
-
-      // reload table
-      this.loadCourse(this.currentPage, this.rowsPerPage);
-    },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete sections');
-    }
-  });
-
-}
-
+        // reload table
+        this.loadCourse(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to delete sections');
+      },
+    });
+  }
 }

@@ -104,7 +104,7 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Input() showImportCsv = false;
   @Input() showAdd = false;
   @Input() showDelete = false;
-  @Input() importCsvLabel = 'Import .CSV';
+  @Input() importCsvLabel = 'Import';
   @Input() addLabel = 'Add';
   @Input() deleteLabel = 'Delete';
 

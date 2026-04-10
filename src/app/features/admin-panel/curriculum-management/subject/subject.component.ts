@@ -22,7 +22,12 @@ type UserRow = {
 @Component({
   selector: 'sti-subject',
   standalone: true,
-  imports: [DataTableComponent, SubjectModalComponent, ViewDetailsComponent, ConfirmDialogComponent],
+  imports: [
+    DataTableComponent,
+    SubjectModalComponent,
+    ViewDetailsComponent,
+    ConfirmDialogComponent,
+  ],
   templateUrl: './subject.component.html',
   styleUrl: './subject.component.css',
 })
@@ -64,12 +69,12 @@ export class SubjectComponent {
 
   selectedRows: any[] = [];
 
-subjectConfig: DetailModalConfig = {
-  title: 'Subject Details',
-  showProfile: false,
-  profileImage: '',
-  fields: [],
-};
+  subjectConfig: DetailModalConfig = {
+    title: 'Subject Details',
+    showProfile: false,
+    profileImage: '',
+    fields: [],
+  };
 
   ngOnInit(): void {
     this.loadSubject(1, this.rowsPerPage);
@@ -79,62 +84,56 @@ subjectConfig: DetailModalConfig = {
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
-  if (e.actionKey === 'edit') {
-    this.subjectModal.updateDialog(e.row.id);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    if (e.actionKey === 'edit') {
+      this.subjectModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
       // optional view function
       this.getSubjectById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteSubject(e.row.id);
+    }
+  }
+
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+
+    input.onchange = (event: any) => {
+      const file: File = event.target.files[0];
+
+      if (!file) return;
+
+      this.subjectService.bulkUploadSubject(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadSubject(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Error', 'Failed to import CSV');
+        },
+      });
+    };
+
+    input.click();
+  }
+  openAddModal() {
+    this.subjectModal.showDialog();
+  }
+
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select a subject to delete.');
+      return;
     }
 
-  else if (e.actionKey === 'delete') {
-    this.deleteSubject(e.row.id);
-  }
-
-}
-
-openImportCsv() {
-
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
-
-  input.onchange = (event: any) => {
-    const file: File = event.target.files[0];
-
-    if (!file) return;
-
-    this.subjectService.importSubject(file).subscribe({
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadSubject(this.currentPage, this.rowsPerPage);
-      },
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
-      }
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete selected subjects',
     });
-  };
-
-  input.click();
-}
-openAddModal() {
-  this.subjectModal.showDialog();
-}
-
-openDeleteModal() {
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a subject to delete.');
-    return;
   }
-
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete selected subjects'
-  });
-}
-
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -160,7 +159,7 @@ openDeleteModal() {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-         const mapped = res.data.map((a: SubjectData) => ({
+          const mapped = res.data.map((a: SubjectData) => ({
             id: a.id,
             subject_code: a.subject_code,
             subject_name: a.subject_name,
@@ -179,109 +178,106 @@ openDeleteModal() {
         },
       });
   }
-deleteSubject(id: number) {
-  this.selectedDeleteId = id;
+  deleteSubject(id: number) {
+    this.selectedDeleteId = id;
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete this section?'
-  });
-}
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this section?',
+    });
+  }
 
-confirmDelete() {
+  confirmDelete() {
+    //  if multiple selected
+    if (this.selectedRows.length) {
+      const payload = {
+        id: this.selectedRows.map((row: UserRow) => row.id),
+      };
 
-  //  if multiple selected
-  if (this.selectedRows.length) {
+      this.subjectService.deleteSubject(payload).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.selectedRows = [];
+          this.loadSubject(this.currentPage, this.rowsPerPage);
+        },
+        error: () => {
+          this.toast.error('Error', 'Failed to delete subjects?');
+        },
+      });
+
+      return;
+    }
+
+    // single delete
+    if (!this.selectedDeleteId) return;
+
     const payload = {
-      id: this.selectedRows.map((row: UserRow) => row.id)
+      id: [this.selectedDeleteId],
     };
 
     this.subjectService.deleteSubject(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-        this.selectedRows = [];
         this.loadSubject(this.currentPage, this.rowsPerPage);
       },
       error: () => {
-        this.toast.error('Error', 'Failed to delete subjects?');
-      }
+        this.toast.error('Error', 'Failed to delete subject');
+      },
     });
-
-    return;
   }
 
-  // single delete
-  if (!this.selectedDeleteId) return;
+  handleCancelDelete() {
+    this.selectedRows = []; // clear checkboxes
+    this.selectedDeleteId = null;
+  }
 
-  const payload = {
-    id: [this.selectedDeleteId]
-  };
+  closeDeleteDialog() {
+    this.showDeleteDialog = false;
+    this.selectedDeleteId = null;
+  }
 
-  this.subjectService.deleteSubject(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-      this.loadSubject(this.currentPage, this.rowsPerPage);
-    },
-    error: () => {
-      this.toast.error('Error', 'Failed to delete subject');
-    }
-  });
-}
+  private getSubjectById(id: number): void {
+    this.subjectService.getSubjectById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
 
-handleCancelDelete() {
-  this.selectedRows = [];         // clear checkboxes
-  this.selectedDeleteId = null;   
-}
+        this.ngZone.run(() => {
+          this.subjectConfig = createASubjectDetailConfig(
+            data,
+            this.subjectService.fileAPIUrl, // or '' if wala
+          );
 
-closeDeleteDialog() {
-  this.showDeleteDialog = false;
-  this.selectedDeleteId = null;
-}
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load subject details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
 
-private getSubjectById(id: number): void {
-  this.subjectService.getSubjectById(id).subscribe({
-    next: (response) => {
-      const data = response.data;
+  deleteSelectedSubject(): void {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id),
+    };
 
-      this.ngZone.run(() => {
-        this.subjectConfig = createASubjectDetailConfig(
-          data,
-          this.subjectService.fileAPIUrl // or '' if wala
-        );
+    this.subjectService.deleteSubject(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
 
-        this.showViewDetails = true;
-        this.cdr.detectChanges();
-      });
-    },
-    error: (err) => {
-      const msg = err?.error?.message ?? 'Failed to load subject details.';
-      this.toast.error('Error', msg);
-      console.error(err);
-    },
-  });
-}
+        // clear selection
+        this.selectedRows = [];
 
-deleteSelectedSubject(): void {
-
-  const payload = {
-    id: this.selectedRows.map((row: UserRow) => row.id)
-  };
-
-  this.subjectService.deleteSubject(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-
-      // clear selection
-      this.selectedRows = [];
-
-      // reload table
-      this.loadSubject(this.currentPage, this.rowsPerPage);
-    },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete sections');
-    }
-  });
-
-}
+        // reload table
+        this.loadSubject(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to delete sections');
+      },
+    });
+  }
 }

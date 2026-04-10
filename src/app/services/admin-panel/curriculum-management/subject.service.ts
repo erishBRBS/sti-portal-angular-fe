@@ -15,11 +15,12 @@ export enum SubjectEndPoints {
   getSubjectById = 'get/subject/{id}',
   updateSubject = 'update/subject/{id}',
   deleteSubject = 'delete/subject',
-  importSection = 'import/section'
+  bulkUploadSubject = 'bulk-upload/subjects'
 }
 
 export type SubjectResponse = ApiResponse<SubjectData>;
 export type DeleteSubjectResponse = ApiResponseNoData;
+export type bulkUploadSubjectResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
@@ -37,6 +38,7 @@ export class SubjectService {
   private readonly createSubjectUrl = `${this.baseAPIUrl}${SubjectEndPoints.createSubject}`;
   private readonly getSubjectByIdUrl = `${this.baseAPIUrl}${SubjectEndPoints.getSubjectById}`;
   private readonly deleteSubjectUrl = `${this.baseAPIUrl}${SubjectEndPoints.deleteSubject}`;
+  private readonly bulkUploadSubjectUrl = `${this.baseAPIUrl}${SubjectEndPoints.bulkUploadSubject}`;
 
   private authHeaders(): HttpHeaders {
   //  const token = localStorage.getItem('access_token'); 
@@ -90,15 +92,13 @@ updateSubject(id: number, payload: CreateSubjectPayload): Observable<SubjectResp
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
-  importSubject(file: File) {
 
-  const formData = new FormData();
-  formData.append('file', file);
+  bulkUploadSubject(file: File): Observable<bulkUploadSubjectResponse> {
+    const fd = new FormData();
+    fd.append('file', file);
 
-  return this.http.post<any>(
-    `${environment.apiUrl}/subjects/import`,
-    formData
-  );
-
-}
+    return this.http.post<bulkUploadSubjectResponse>(this.bulkUploadSubjectUrl, fd, {
+      headers: this.authHeaders(),
+    });
+  }
 }

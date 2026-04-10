@@ -26,11 +26,12 @@ export enum ScheduleEndPoints {
   getScheduleById = 'get/schedule/{id}',
   updateSchedule = 'update/schedule/{id}',
   deleteSchedule = 'delete/schedule',
-  importSchedule = 'import/schedule',
+  bulkUploadSchedule = 'bulk-upload/schedules',
 }
 
 export type ScheduleResponse = ApiResponse<ScheduleData>;
 export type DeleteScheduleResponse = ApiResponseNoData;
+export type bulkUploadScheduleResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
@@ -49,6 +50,7 @@ export class ScheduleService {
   private readonly getScheduleByIdUrl = `${this.baseAPIUrl}${ScheduleEndPoints.getScheduleById}`;
   private readonly updateScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.updateSchedule}`;
   private readonly deleteScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.deleteSchedule}`;
+  private readonly bulkUploadScheduleUrl = `${this.baseAPIUrl}${ScheduleEndPoints.bulkUploadSchedule}`;
 
   private authHeaders(): HttpHeaders {
     //  const token = localStorage.getItem('access_token');
@@ -98,14 +100,13 @@ export class ScheduleService {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
-  importSchedule(file: File) {
+
+  bulkUploadSchedule(file: File): Observable<bulkUploadScheduleResponse> {
     const fd = new FormData();
     fd.append('file', file);
 
-    return this.http.post<ApiResponseNoData>(
-      `${this.baseAPIUrl}${ScheduleEndPoints.importSchedule}`,
-      fd,
-      { headers: this.authHeaders() },
-    );
+    return this.http.post<bulkUploadScheduleResponse>(this.bulkUploadScheduleUrl, fd, {
+      headers: this.authHeaders(),
+    });
   }
 }

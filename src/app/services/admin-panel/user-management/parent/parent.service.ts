@@ -15,12 +15,13 @@ export enum ParentEndPoints {
   updateParent = 'update/parent/{id}',
   getParentById = 'get/parent/{id}',
   deleteParent = 'delete/parent',
-  importSection = 'import/section',
+  bulkUploadParent = 'bulk-upload/parents',
 }
 
 export type ParentResponse = ApiResponse<ParentData>;
 export type ParentListAllResponse = ApiResponse<ParentData[]>;
 export type DeleteParentResponse = ApiResponseNoData;
+export type bulkUploadParentResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
@@ -39,6 +40,7 @@ export class ParentService {
   private readonly getParentByIdUrl = `${this.baseAPIUrl}${ParentEndPoints.getParentById}`;
   private readonly updateParentUrl = `${this.baseAPIUrl}${ParentEndPoints.updateParent}`;
   private readonly deleteParentUrl = `${this.baseAPIUrl}${ParentEndPoints.deleteParent}`;
+  private readonly bulkUploadParentUrl = `${this.baseAPIUrl}${ParentEndPoints.bulkUploadParent}`;
 
   private authHeaders(): HttpHeaders {
     return new HttpHeaders({
@@ -122,12 +124,12 @@ export class ParentService {
     });
   }
 
-  importParent(file: File) {
+  bulkUploadParent(file: File): Observable<bulkUploadParentResponse> {
     const fd = new FormData();
     fd.append('file', file);
 
-    return this.http.post<ApiResponseNoData>(
-      `${this.baseAPIUrl}${ParentEndPoints.importSection}`,
+    return this.http.post<bulkUploadParentResponse>(
+      this.bulkUploadParentUrl,
       fd,
       { headers: this.authHeaders() }
     );
