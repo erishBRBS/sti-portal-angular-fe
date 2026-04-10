@@ -1,8 +1,8 @@
 <div>
-  <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">Professor Management</h1>
+  <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight mb-4">Professor Management</h1>
 
   <sti-data-table
-    title="Users"
+    title="Professors"
     subtitle=""
     [value]="rows"
     [columns]="cols"
@@ -16,7 +16,7 @@
     [(rows)]="rowsPerPage"
     [rowsPerPageOptions]="[12, 25, 50]"
     (pageChanged)="onPageChanged($event)"
-    [showColumnFilters]="false"
+    [showColumnFilters]="true"
     [showActions]="true"
     [actions]="actions"
     (rowClicked)="onRow($event)"

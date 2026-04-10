@@ -3,6 +3,8 @@
     Academic Year Management
   </h1>
 
+  
+
   <sti-data-table
     title="Academic Year"
     subtitle=""
@@ -18,7 +20,7 @@
     [(rows)]="rowsPerPage"
     [rowsPerPageOptions]="[12, 25, 50]"
     (pageChanged)="onPageChanged($event)"
-    [showColumnFilters]="false"
+    [showColumnFilters]="true"
     [showActions]="true"
     [actions]="actions"
     (rowClicked)="onRow($event)"

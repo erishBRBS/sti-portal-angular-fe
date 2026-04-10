@@ -250,4 +250,9 @@ export class DataTableComponent<T = any> implements OnChanges {
   get globalFilterFields(): string[] {
     return this.visibleColumns.map((c) => c.field);
   }
+
+  cols = [
+  { field: 'academic_year', header: 'Academic Year', filter: true },
+  { field: 'semester', header: 'Semester', filter: true }
+];
 }

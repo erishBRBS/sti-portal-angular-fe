@@ -8,10 +8,23 @@
       Monitor student gate attendance records
     </p>
   </div>
+  
+  
 
   <!-- Center container -->
   <div class="flex px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
+
+    <div class="w-full max-w-md">
+      <input
+      type="text"
+      [(ngModel)]="searchTerm"
+      (input)="filterData()"
+      placeholder="Search student..."
+      class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+
+   />
+</div>
       <sti-data-table
         [title]="'Face Recognition Records'"
         [subtitle]="'List of students gate attendance'"
