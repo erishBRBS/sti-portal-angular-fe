@@ -9,7 +9,10 @@ import { ProfessorService } from '../../../../services/admin-panel/user-manageme
 import { ProfessorModalComponent } from './professor-modal/professor-modal.component';
 import { finalize } from 'rxjs';
 import { ProfessorData } from '../../../../models/admin-panel/user-management/professor/professor.model';
-import { DetailModalConfig, ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import {
+  DetailModalConfig,
+  ViewDetailsComponent,
+} from '../../../../shared/components/view-details/view-details.component';
 import { createProfessorDetailConfig } from '../../../../helper/professor.helper';
 
 type UserRow = {
@@ -26,11 +29,7 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-professor',
   standalone: true,
-  imports: [
-    DataTableComponent, 
-    ProfessorModalComponent,
-    ViewDetailsComponent
-  ],
+  imports: [DataTableComponent, ProfessorModalComponent, ViewDetailsComponent],
   templateUrl: './professor.component.html',
   styleUrl: './professor.component.css',
 })
@@ -94,74 +93,67 @@ export class ProfessorManagementComponent {
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
-  if (e.actionKey === 'edit') {
-    this.professorModal.updateDialog(e.row.id);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    if (e.actionKey === 'edit') {
+      this.professorModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
-       this.getProfessorById(e.row.id);
+      this.getProfessorById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteProfessor(e.row.id);
     }
-
-  else if (e.actionKey === 'delete') {
-    this.deleteProfessor(e.row.id);
   }
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
 
-}
-openImportCsv() {
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
 
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
+      if (!file) return;
 
-  input.onchange = (event: any) => {
+      const fileName = file.name.toLowerCase();
+      const isValidFile =
+        fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
 
-    const file: File = event.target.files[0];
-
-    if (!file) return;
-
-    const isCSV = file.name.endsWith('.csv');
-
-    if (!isCSV) {
-      this.toast.error('Error', 'Please upload a CSV file');
-      return;
-    }
-
-    this.professorService.importProfessor(file).subscribe({
-
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadProfessor(this.currentPage, this.rowsPerPage);
-      },
-
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
+      if (!isValidFile) {
+        this.toast.error('Error', 'Please upload a CSV or Excel file.');
+        return;
       }
 
-    });
+      this.professorService.bulkUploadProfessor(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadProfessor(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          const msg = err?.error?.message ?? 'Failed to upload professor bulk file.';
+          this.toast.error('Error', msg);
+        },
+      });
+    };
 
-  };
-
-  input.click();
-}
+    input.click();
+  }
 
   openAddModal() {
     this.professorModal?.showDialog();
   }
 
-openDeleteModal() {
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select parent(s) to delete.');
+      return;
+    }
 
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select parent(s) to delete.');
-    return;
+    if (!confirm('Are you sure you want to delete selected parent(s)?')) {
+      return;
+    }
+
+    this.deleteSelectedProfessor();
   }
-
-  if (!confirm('Are you sure you want to delete selected parent(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedProfessor();
-}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -189,7 +181,7 @@ openDeleteModal() {
         next: (res) => {
           const mapped = res.data.map((a: ProfessorData) => ({
             id: a.id,
-            professor_name: a.full_name, 
+            professor_name: a.full_name,
             email_address: a.email,
             mobile_number: a.mobile_number,
             username: a.username,
@@ -211,52 +203,48 @@ openDeleteModal() {
       });
   }
 
+  deleteSelectedProfessor() {
+    const payload = {
+      id: this.selectedRows.map((row: any) => row.id),
+    };
 
-deleteSelectedProfessor() {
+    this.professorService.deleteProfessor(payload).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
 
-  const payload = {
-    id: this.selectedRows.map((row: any) => row.id)
-  };
+        // clear selection
+        this.selectedRows = [];
 
-  this.professorService.deleteProfessor(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
-
-      // clear selection
-      this.selectedRows = [];
-
-      // reload table
-      this.loadProfessor(this.currentPage, this.rowsPerPage);
-    },
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to delete parents.';
-      this.toast.error('Error', msg);
-    }
-  });
+        // reload table
+        this.loadProfessor(this.currentPage, this.rowsPerPage);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to delete parents.';
+        this.toast.error('Error', msg);
+      },
+    });
   }
 
   deleteProfessor(id: number) {
+    const payload = {
+      id: [id],
+    };
 
-  const payload = {
-    id: [id]
-  };
+    if (!confirm('Are you sure you want to delete this parent?')) return;
 
-  if (!confirm('Are you sure you want to delete this parent?')) return;
+    this.professorService.deleteProfessor(payload).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
 
-  this.professorService.deleteProfessor(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
-
-      // reload table
-      this.loadProfessor(this.currentPage, this.rowsPerPage);
-    },
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to delete parent.';
-      this.toast.error('Error', msg);
-    }
-  });
-
-}
+        // reload table
+        this.loadProfessor(this.currentPage, this.rowsPerPage);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to delete parent.';
+        this.toast.error('Error', msg);
+      },
+    });
+  }
 
   private getProfessorById(id: number): void {
     this.professorService.getProfessorById(id).subscribe({
@@ -264,7 +252,10 @@ deleteSelectedProfessor() {
         const data = response.data;
 
         this.ngZone.run(() => {
-          this.professorConfig = createProfessorDetailConfig(data, this.professorService.fileAPIUrl);
+          this.professorConfig = createProfessorDetailConfig(
+            data,
+            this.professorService.fileAPIUrl,
+          );
           this.showViewDetails = true;
           this.cdr.detectChanges();
         });

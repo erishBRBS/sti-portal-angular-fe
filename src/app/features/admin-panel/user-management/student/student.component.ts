@@ -9,7 +9,10 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { StudentModalComponent } from './student-modal/student-modal.component';
 import { finalize } from 'rxjs';
 import { StudentData } from '../../../../models/admin-panel/user-management/student/student.model';
-import { DetailModalConfig, ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
+import {
+  DetailModalConfig,
+  ViewDetailsComponent,
+} from '../../../../shared/components/view-details/view-details.component';
 import { createStudentDetailConfig } from '../../../../helper/student.helper';
 
 type UserRow = {
@@ -31,11 +34,7 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-student',
   standalone: true,
-  imports: [
-    DataTableComponent,
-    StudentModalComponent,
-    ViewDetailsComponent
-  ],
+  imports: [DataTableComponent, StudentModalComponent, ViewDetailsComponent],
   templateUrl: './student.component.html',
   styleUrl: './student.component.css',
 })
@@ -104,75 +103,68 @@ export class StudentManagementComponent {
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
+  onAction(e: { actionKey: string; row: UserRow }) {
     if (e.actionKey === 'edit') {
       this.studentModal?.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
       this.getStudentById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteStudent(e.row.id);
     }
-
-  else if (e.actionKey === 'delete') {
-    this.deleteStudent(e.row.id);
   }
 
-}
+  openImportCsv() {
+    console.log('import csv clicked');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
 
-openImportCsv() {
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
 
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
+      if (!file) return;
 
-  input.onchange = (event: any) => {
+      const fileName = file.name.toLowerCase();
+      const isValidFile =
+        fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
 
-    const file: File = event.target.files[0];
-
-    if (!file) return;
-
-    const isCSV = file.name.endsWith('.csv');
-
-    if (!isCSV) {
-      this.toast.error('Error', 'Please upload a CSV file');
-      return;
-    }
-
-    this.studentService.importStudent(file).subscribe({
-
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadStudent(this.currentPage, this.rowsPerPage);
-      },
-
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
+      if (!isValidFile) {
+        this.toast.error('Error', 'Please upload a CSV or Excel file.');
+        return;
       }
 
-    });
-
-  };
-
-  input.click();
-}
+      this.studentService.bulkUploadStudent(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadStudent(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          const msg = err?.error?.message ?? 'Failed to upload student bulk file.';
+          this.toast.error('Error', msg);
+        },
+      });
+    };
+      input.click();
+  }
 
   openAddModal() {
     this.studentModal?.showDialog();
   }
 
-openDeleteModal() {
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select parent(s) to delete.');
+      return;
+    }
 
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select parent(s) to delete.');
-    return;
+    if (!confirm('Are you sure you want to delete selected parent(s)?')) {
+      return;
+    }
+
+    this.deleteSelectedStudent();
   }
-
-  if (!confirm('Are you sure you want to delete selected parent(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedStudent();
-}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -227,69 +219,66 @@ openDeleteModal() {
       });
   }
 
-deleteSelectedStudent() {
+  deleteSelectedStudent() {
+    const payload = {
+      id: this.selectedRows.map((row: any) => row.id),
+    };
 
-  const payload = {
-    id: this.selectedRows.map((row: any) => row.id)
-  };
+    this.studentService.deleteStudent(payload).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
 
-  this.studentService.deleteStudent(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
+        // clear selection
+        this.selectedRows = [];
 
-      // clear selection
-      this.selectedRows = [];
-
-      // reload table
-      this.loadStudent(this.currentPage, this.rowsPerPage);
-    },
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to delete parents.';
-      this.toast.error('Error', msg);
-    }
-  });
+        // reload table
+        this.loadStudent(this.currentPage, this.rowsPerPage);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to delete parents.';
+        this.toast.error('Error', msg);
+      },
+    });
   }
 
-    deleteStudent(id: number) {
+  deleteStudent(id: number) {
+    const payload = {
+      id: [id],
+    };
 
-  const payload = {
-    id: [id]
-  };
+    if (!confirm('Are you sure you want to delete this parent?')) return;
 
-  if (!confirm('Are you sure you want to delete this parent?')) return;
+    this.studentService.deleteStudent(payload).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
 
-  this.studentService.deleteStudent(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
-
-      // reload table
-      this.loadStudent(this.currentPage, this.rowsPerPage);
-    },
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to delete parent.';
-      this.toast.error('Error', msg);
-    }
-  });
-
-}
+        // reload table
+        this.loadStudent(this.currentPage, this.rowsPerPage);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to delete parent.';
+        this.toast.error('Error', msg);
+      },
+    });
+  }
 
   private getStudentById(id: number): void {
-      this.studentService.getStudentById(id).subscribe({
-        next: (response) => {
-          const data = response.data;
-  
-          this.ngZone.run(() => {
-            this.studentConfig = createStudentDetailConfig(data, this.studentService.fileAPIUrl);
-            this.showViewDetails = true;
-            this.cdr.detectChanges();
-          });
-        },
-        error: (err) => {
-          const msg = err?.error?.message ?? 'Failed to load admin details.';
-          this.toast.error('Error', msg);
-          console.error(err);
-        },
-      });
+    this.studentService.getStudentById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.studentConfig = createStudentDetailConfig(data, this.studentService.fileAPIUrl);
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load admin details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
   }
 
   private mapStatus(status: string): UserStatus {
