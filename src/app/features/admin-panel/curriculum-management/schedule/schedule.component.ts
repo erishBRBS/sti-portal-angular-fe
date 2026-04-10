@@ -1,12 +1,19 @@
 import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
-import { DataTableComponent, RowAction, TableColumn } from '../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  RowAction,
+  TableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { ScheduleService } from '../../../../services/admin-panel/curriculum-management/schedule.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ScheduleModalComponent } from './schedule-modal/schedule-modal.component';
 import { finalize } from 'rxjs';
 import { ScheduleData } from '../../../../models/admin-panel/curriculum-management/schedule.model';
 import { createAScheduleDetailConfig } from '../../../../helper/schedule-helper';
-import { ViewDetailsComponent, DetailModalConfig } from '../../../../shared/components/view-details/view-details.component';
+import {
+  ViewDetailsComponent,
+  DetailModalConfig,
+} from '../../../../shared/components/view-details/view-details.component';
 import { TimeHelper } from '../../../../helper/time-helper';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 type UserRow = {
@@ -27,12 +34,14 @@ type UserRow = {
   selector: 'sti-schedule',
   standalone: true,
   imports: [
-    DataTableComponent, ScheduleModalComponent, ViewDetailsComponent, ConfirmDialogComponent
+    DataTableComponent,
+    ScheduleModalComponent,
+    ViewDetailsComponent,
+    ConfirmDialogComponent,
   ],
   templateUrl: './schedule.component.html',
   styleUrl: './schedule.component.css',
 })
-
 export class ScheduleComponent {
   cols: TableColumn<UserRow>[] = [
     { field: 'course_code', header: 'Course Code', sortable: true, filter: true },
@@ -53,14 +62,13 @@ export class ScheduleComponent {
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
 
-
-private readonly scheduleService = inject(ScheduleService);
+  private readonly scheduleService = inject(ScheduleService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
 
-@ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
-@ViewChild(ScheduleModalComponent)scheduleModal!: ScheduleModalComponent;
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(ScheduleModalComponent) scheduleModal!: ScheduleModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -78,7 +86,7 @@ private readonly scheduleService = inject(ScheduleService);
 
   selectedRows: any[] = [];
 
-    scheduleConfig: DetailModalConfig = {
+  scheduleConfig: DetailModalConfig = {
     title: 'Schedule Details',
     showProfile: true,
     profileImage: '',
@@ -93,64 +101,56 @@ private readonly scheduleService = inject(ScheduleService);
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
-  if (e.actionKey === 'edit') {
-    this.scheduleModal.updateDialog(e.row.id);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    if (e.actionKey === 'edit') {
+      this.scheduleModal.updateDialog(e.row.id);
+    } else if (e.actionKey === 'view') {
+      this.getScheduleById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteSchedule(e.row.id);
+    }
   }
 
-else if (e.actionKey === 'view') {
-  this.getScheduleById(e.row.id);
-}
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+    
+    input.onchange = (event: any) => {
+      const file: File = event.target.files[0];
 
-  else if (e.actionKey === 'delete') {
-    this.deleteSchedule(e.row.id);
+      if (!file) return;
+
+      this.scheduleService.bulkUploadSchedule(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadSchedule(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Error', 'Failed to import CSV');
+        },
+      });
+    };
+
+    input.click();
   }
-
-}
-
-openImportCsv() {
-
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
-
-  input.onchange = (event: any) => {
-    const file: File = event.target.files[0];
-
-    if (!file) return;
-
-    this.scheduleService.importSchedule(file).subscribe({
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadSchedule(this.currentPage, this.rowsPerPage);
-      },
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
-      }
-    });
-  };
-
-  input.click();
-}
-
 
   openAddModal() {
     this.scheduleModal?.showDialog();
   }
 
-openDeleteModal() {
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a subject to delete.');
-    return;
-  }
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select a subject to delete.');
+      return;
+    }
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete selected schedules?'
-  });
-}
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete selected schedules?',
+    });
+  }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -176,20 +176,20 @@ openDeleteModal() {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-         const mapped = res.data.map((a: ScheduleData) => ({
-           id: a.id,
-           course_code: a.course_code,
-           section_name: a.section.section_name,
-           professor_name: a.professor.professor_name,
-           subject_code: a.subject.subject_code,
-           subject_name: a.subject.subject_name,
-           day: a.day,
+          const mapped = res.data.map((a: ScheduleData) => ({
+            id: a.id,
+            course_code: a.course_code,
+            section_name: a.section.section_name,
+            professor_name: a.professor.professor_name,
+            subject_code: a.subject.subject_code,
+            subject_name: a.subject.subject_name,
+            day: a.day,
 
-          start_time: TimeHelper.formatTo12Hour(a.start_time),
-          end_time: TimeHelper.formatTo12Hour(a.end_time),
+            start_time: TimeHelper.formatTo12Hour(a.start_time),
+            end_time: TimeHelper.formatTo12Hour(a.end_time),
 
-          duration: a.duration,
-          room: a.room,
+            duration: a.duration,
+            room: a.room,
           }));
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
@@ -207,108 +207,102 @@ openDeleteModal() {
   }
 
   private getScheduleById(id: number): void {
-  this.scheduleService.getScheduleById(id).subscribe({
-    next: (response) => {
-      const data = response.data;
+    this.scheduleService.getScheduleById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
 
-      this.ngZone.run(() => {
-        this.scheduleConfig = createAScheduleDetailConfig(
-          data,
-          this.scheduleService.fileAPIUrl
-        );
+        this.ngZone.run(() => {
+          this.scheduleConfig = createAScheduleDetailConfig(data, this.scheduleService.fileAPIUrl);
 
-        this.showViewDetails = true;
-        this.cdr.detectChanges();
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load schedule details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
+
+  deleteSchedule(id: number) {
+    this.selectedDeleteId = id;
+
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this schedule?',
+    });
+  }
+
+  confirmDelete() {
+    //  if multiple selected
+    if (this.selectedRows.length) {
+      const payload = {
+        id: this.selectedRows.map((row: UserRow) => row.id),
+      };
+
+      this.scheduleService.deleteSchedule(payload).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.selectedRows = [];
+          this.loadSchedule(this.currentPage, this.rowsPerPage);
+        },
+        error: () => {
+          this.toast.error('Error', 'Failed to delete subjects');
+        },
       });
-    },
-    error: (err) => {
-      const msg = err?.error?.message ?? 'Failed to load schedule details.';
-      this.toast.error('Error', msg);
-      console.error(err);
-    },
-  });
-}
 
-deleteSchedule(id: number) {
-  this.selectedDeleteId = id;
+      return;
+    }
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete this schedule?'
-  });
-}
+    // single delete
+    if (!this.selectedDeleteId) return;
 
-confirmDelete() {
-
-  //  if multiple selected
-  if (this.selectedRows.length) {
     const payload = {
-      id: this.selectedRows.map((row: UserRow) => row.id)
+      id: [this.selectedDeleteId],
     };
 
     this.scheduleService.deleteSchedule(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-        this.selectedRows = [];
         this.loadSchedule(this.currentPage, this.rowsPerPage);
       },
       error: () => {
-        this.toast.error('Error', 'Failed to delete subjects');
-      }
+        this.toast.error('Error', 'Failed to delete schedule');
+      },
     });
-
-    return;
   }
 
-  // single delete
-  if (!this.selectedDeleteId) return;
+  handleCancelDelete() {
+    this.selectedRows = []; // clear checkboxes
+    this.selectedDeleteId = null;
+  }
 
-  const payload = {
-    id: [this.selectedDeleteId]
-  };
+  closeDeleteDialog() {
+    this.showDeleteDialog = false;
+    this.selectedDeleteId = null;
+  }
 
-  this.scheduleService.deleteSchedule(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-      this.loadSchedule(this.currentPage, this.rowsPerPage);
-    },
-    error: () => {
-      this.toast.error('Error', 'Failed to delete schedule');
-    }
-  });
-}
+  deleteSelectedSchedule(): void {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id),
+    };
 
-handleCancelDelete() {
-  this.selectedRows = [];         // clear checkboxes
-  this.selectedDeleteId = null;   
-}
+    this.scheduleService.deleteSchedule(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
 
-closeDeleteDialog() {
-  this.showDeleteDialog = false;
-  this.selectedDeleteId = null;
-}
+        // clear selection
+        this.selectedRows = [];
 
-deleteSelectedSchedule(): void {
-
-  const payload = {
-    id: this.selectedRows.map((row: UserRow) => row.id)
-  };
-
-  this.scheduleService.deleteSchedule(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-
-      // clear selection
-      this.selectedRows = [];
-
-      // reload table
-      this.loadSchedule(this.currentPage, this.rowsPerPage);
-    },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete sections');
-    }
-  });
-
-}
+        // reload table
+        this.loadSchedule(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to delete sections');
+      },
+    });
+  }
 }

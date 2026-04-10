@@ -22,6 +22,7 @@
     [showActions]="true"
     [showAdd]="true"
     [showDelete]="true"
+    [showImportCsv]="true"
     [addLabel]="'Add Student Parent'"
     [deleteLabel]="'Delete'"
     (rowClicked)="onRow($event)"
@@ -29,6 +30,7 @@
     (pageChanged)="onPageChanged($event)"
     (addClicked)="openAddModal()"
     (deleteClicked)="openDeleteModal()"
+    (importCsvClicked)="openImportCsv()"
   >
   </sti-data-table>
 
