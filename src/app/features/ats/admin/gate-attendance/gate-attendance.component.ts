@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import {
   DataTableComponent,
   TableColumn,
@@ -15,24 +16,25 @@ interface AttendanceRecord {
   date: string;
   timeIn: string;
   timeOut: string;
-  status: string;
   courseSection?: string;
 }
 
 @Component({
   selector: 'app-gate-attendance',
   standalone: true,
-  imports: [CommonModule, DataTableComponent],
+  imports: [CommonModule, DataTableComponent, FormsModule],
   templateUrl: './gate-attendance.component.html',
 })
 export class GateAttendanceComponent implements OnInit {
   attendanceRecords: AttendanceRecord[] = [];
+  originalRecords: AttendanceRecord[] = [];
   columns: TableColumn<AttendanceRecord>[] = [];
 
   rows = 12;
   first = 0;
   totalRecords = 0;
   loading = false;
+  searchTerm: string = '';
 
   ngOnInit(): void {
     this.initializeColumns();
@@ -73,15 +75,6 @@ export class GateAttendanceComponent implements OnInit {
         header: 'Time Out',
         sortable: true,
       },
-      {
-        field: 'status',
-        header: 'Status',
-        type: 'tag',
-        sortable: true,
-        tagLabel: (row) => row.status,
-        tagSeverity: (row) => this.getStatusSeverity(row.status),
-        tagClass: (row) => this.getStatusClass(row.status),
-      },
     ];
   }
 
@@ -96,7 +89,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-11',
         timeIn: '08:00',
         timeOut: '17:00',
-        status: 'Present',
       },
       {
         id: 'ATT002',
@@ -107,7 +99,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-11',
         timeIn: '08:15',
         timeOut: '17:00',
-        status: 'Late',
       },
       {
         id: 'ATT003',
@@ -118,7 +109,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-11',
         timeIn: '-',
         timeOut: '-',
-        status: 'Absent',
       },
       {
         id: 'ATT004',
@@ -129,7 +119,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-10',
         timeIn: '08:05',
         timeOut: '17:00',
-        status: 'Present',
       },
       {
         id: 'ATT005',
@@ -140,7 +129,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-10',
         timeIn: '08:20',
         timeOut: '17:00',
-        status: 'Late',
       },
       {
         id: 'ATT006',
@@ -151,7 +139,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-09',
         timeIn: '08:00',
         timeOut: '17:00',
-        status: 'Present',
       },
       {
         id: 'ATT007',
@@ -162,7 +149,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-09',
         timeIn: '08:00',
         timeOut: '17:00',
-        status: 'Present',
       },
       {
         id: 'ATT008',
@@ -173,7 +159,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-08',
         timeIn: '-',
         timeOut: '-',
-        status: 'Absent',
       },
       {
         id: 'ATT009',
@@ -184,7 +169,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-08',
         timeIn: '08:10',
         timeOut: '17:00',
-        status: 'Present',
       },
       {
         id: 'ATT010',
@@ -195,7 +179,6 @@ export class GateAttendanceComponent implements OnInit {
         date: '2023-09-07',
         timeIn: '08:25',
         timeOut: '17:00',
-        status: 'Late',
       },
     ];
 
@@ -203,37 +186,10 @@ export class GateAttendanceComponent implements OnInit {
       ...record,
       courseSection: `${record.course} - Section ${record.section}`,
     }));
-
+   
+    this.originalRecords = [...this.attendanceRecords]; 
     this.totalRecords = this.attendanceRecords.length;
   }
-
-  getStatusSeverity(
-    status: string,
-  ): 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast' {
-    switch (status.toLowerCase()) {
-      case 'present':
-        return 'success';
-      case 'late':
-        return 'warn';
-      case 'absent':
-        return 'danger';
-      default:
-        return 'secondary';
-    }
-  }
-  getStatusClass(status: string): string {
-  switch (status.toLowerCase()) {
-    case 'present':
-      return 'sti-status-present';
-    case 'late':
-      return 'sti-status-late';
-    case 'absent':
-      return 'sti-status-absent';
-    default:
-      return '';
-  }
-}
-
   onRowClicked(row: AttendanceRecord): void {
     console.log('Row clicked:', row);
   }
@@ -242,4 +198,17 @@ export class GateAttendanceComponent implements OnInit {
     this.rows = event.perPage;
     this.first = event.first;
   }
+
+  filterData(): void {
+  const term = this.searchTerm.toLowerCase();
+
+  this.attendanceRecords = this.originalRecords.filter(record =>
+    record.studentId.toLowerCase().includes(term) ||
+    record.name.toLowerCase().includes(term) ||
+    record.course.toLowerCase().includes(term) ||
+    record.section.toLowerCase().includes(term)
+  );
+
+  this.totalRecords = this.attendanceRecords.length;
+}
 }
