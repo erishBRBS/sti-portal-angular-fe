@@ -12,7 +12,7 @@
 >
   <ng-template pTemplate="header">
     <div class="w-full flex items-center justify-center">
-      <div class="text-lg font-bold text-red-700">{{ dialogTitle }}</div>
+      <div class="text-lg font-bold text-blue-700">{{ dialogTitle }}</div>
     </div>
   </ng-template>
 
@@ -184,5 +184,24 @@
         </div>
       </div>
     </ng-template>
+
+    <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
+
+  <button
+    pButton
+    type="button"
+    label="Cancel"
+    class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
+    (click)="close()"
+  ></button>
+
+  <button
+    pButton
+    type="submit"
+    label="Save"
+    class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+  ></button>
+
+</div>
   </form>
 </p-dialog>

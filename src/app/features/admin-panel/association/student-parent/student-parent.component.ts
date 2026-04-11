@@ -9,6 +9,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { StudentParentService } from '../../../../services/admin-panel/association/student-parent.service';
 import { StudentParentModalComponent } from './student-parent-modal/student-parent-modal.component';
+import { Dialog } from "primeng/dialog";
 
 type StudentParentRow = {
   id: number;
@@ -19,7 +20,7 @@ type StudentParentRow = {
 @Component({
   selector: 'sti-student-parent',
   standalone: true,
-  imports: [DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent],
+  imports: [DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent, Dialog],
   templateUrl: './student-parent.component.html',
 })
 export class StudentParentComponent {
@@ -48,6 +49,10 @@ export class StudentParentComponent {
   currentPage = 1;
   total = 0;
   first = 0;
+
+  visible = false;
+  student: any = null;
+  parent: any = null;
 
   selectedRows: StudentParentRow[] = [];
   selectedDeleteId: number | null = null;
@@ -215,4 +220,6 @@ export class StudentParentComponent {
     this.selectedRows = [];
     this.selectedDeleteId = null;
   }
+
+  
 }
