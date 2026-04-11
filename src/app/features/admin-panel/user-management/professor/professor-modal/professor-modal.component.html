@@ -12,7 +12,7 @@
 >
   <ng-template pTemplate="header">
     <div class="w-full flex items-center justify-center">
-      <div class="text-lg font-bold text-red-700">{{ dialogTitle }}</div>
+      <div class="text-lg font-bold text-blue-700">{{ dialogTitle }}</div>
     </div>
   </ng-template>
 
@@ -158,7 +158,7 @@
                   {{ fileName || 'Click to choose file' }}
                 </span>
 
-                <button type="button" pButton class="p-button-sm" label="Choose File" (click)="fileInput.click()"></button>
+                <button type="button" pButton class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700" label="Choose File" (click)="fileInput.click()"></button>
 
                 <button
                   *ngIf="fileName || previewUrl"
@@ -187,7 +187,7 @@
          pButton
          type="button"
          label="Cancel"
-         class="p-button-outlined"
+         class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
          (click)="close()">
      </button>
 
@@ -195,7 +195,7 @@
         pButton
         type="submit"
         [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
-        class="p-button-success">
+        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700">
      </button>
 
     </div>
