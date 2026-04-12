@@ -3,7 +3,7 @@
     <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
       Student Parent Assignment
     </h1>
-  </div>
+  </div>`
 
   <sti-data-table
     [title]="'Student Parent List'"
@@ -18,16 +18,19 @@
     [selection]="selectedRows"
     (selectionChange)="selectedRows = $event"
     [rowsPerPageOptions]="[12, 25, 50]"
+    [showColumnFilters]="true"
     [showActions]="true"
     [showAdd]="true"
     [showDelete]="true"
+    [showImportCsv]="true"
     [addLabel]="'Add Student Parent'"
-    [deleteLabel]="'Delete Selected'"
+    [deleteLabel]="'Delete'"
     (rowClicked)="onRow($event)"
     (actionClicked)="onAction($event)"
     (pageChanged)="onPageChanged($event)"
     (addClicked)="openAddModal()"
     (deleteClicked)="openDeleteModal()"
+    (importCsvClicked)="openImportCsv()"
   >
   </sti-data-table>
 
@@ -41,3 +44,4 @@
     (onCancel)="handleCancelDelete()"
   ></sti-confirm-dialog>
 </div>
+

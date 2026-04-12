@@ -17,10 +17,12 @@ export enum AttachStudentParentEndPoints {
   getStudentParentById = 'get/attach/student-to-parent/{id}',
   updateStudentParent = 'update/attach/student-to-parent/{id}',
   deleteStudentParent = 'delete/attach/student-to-parent',
+  bulkUploadStudentParent = 'bulk-upload/parent-student',
 }
 
 export type AssignStudentParentResponse = ApiResponse<AssignStudentParentModelData>;
-export type DeleteAssignStudentParentResponse = ApiResponseNoData;
+export type DeleteAssignParentStudentResponse = ApiResponseNoData;
+export type bulkUploadAssignStudentParentResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
@@ -38,6 +40,7 @@ export class StudentParentService {
   private readonly getStudentParentByIdUrl = `${this.baseAPIUrl}${AttachStudentParentEndPoints.getStudentParentById}`;
   private readonly updateStudentParentUrl = `${this.baseAPIUrl}${AttachStudentParentEndPoints.updateStudentParent}`;
   private readonly deleteStudentParentUrl = `${this.baseAPIUrl}${AttachStudentParentEndPoints.deleteStudentParent}`;
+  private readonly bulkUploadStudentParentUrl = `${this.baseAPIUrl}${AttachStudentParentEndPoints.bulkUploadStudentParent}`;
 
   private authHeaders(): HttpHeaders {
     return new HttpHeaders({
@@ -79,20 +82,18 @@ export class StudentParentService {
     });
   }
 
-  deleteStudentParent(payload: DeletePayload): Observable<DeleteAssignStudentParentResponse> {
-    return this.http.post<DeleteAssignStudentParentResponse>(this.deleteStudentParentUrl, payload, {
+  deleteStudentParent(payload: DeletePayload): Observable<DeleteAssignParentStudentResponse> {
+    return this.http.post<DeleteAssignParentStudentResponse>(this.deleteStudentParentUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
 
-  //   importStudentParent(file: File) {
-  //     const fd = new FormData();
-  //     fd.append('file', file);
+  bulkUploadStudentParent(file: File): Observable<bulkUploadAssignStudentParentResponse> {
+    const fd = new FormData();
+    fd.append('file', file);
 
-  //     return this.http.post<ApiResponseNoData>(
-  //       `${this.baseAPIUrl}${StudentParentEndPoints.importStudentParent}`,
-  //       fd,
-  //       { headers: this.authHeaders() },
-  //     );
-  //   }
+    return this.http.post<bulkUploadAssignStudentParentResponse>(this.bulkUploadStudentParentUrl, fd, {
+      headers: this.authHeaders(),
+    });
+  }
 }

@@ -9,6 +9,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { StudentParentService } from '../../../../services/admin-panel/association/student-parent.service';
 import { StudentParentModalComponent } from './student-parent-modal/student-parent-modal.component';
+import { Dialog } from "primeng/dialog";
 
 type StudentParentRow = {
   id: number;
@@ -19,11 +20,7 @@ type StudentParentRow = {
 @Component({
   selector: 'sti-student-parent',
   standalone: true,
-  imports: [
-    DataTableComponent,
-    StudentParentModalComponent,
-    ConfirmDialogComponent,
-  ],
+  imports: [DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent, Dialog],
   templateUrl: './student-parent.component.html',
 })
 export class StudentParentComponent {
@@ -33,7 +30,7 @@ export class StudentParentComponent {
   ];
 
   actions: RowAction<StudentParentRow>[] = [
-    { key: 'view', label: 'View', icon: 'pi pi-eye', buttonClass: 'text-rose-600', },
+    { key: 'view', label: 'View', icon: 'pi pi-eye', buttonClass: 'text-rose-600' },
     { key: 'edit', label: 'Edit', icon: 'pi pi-pencil' },
     { key: 'delete', label: 'Delete', icon: 'pi pi-trash', buttonClass: 'text-rose-600' },
   ];
@@ -52,6 +49,10 @@ export class StudentParentComponent {
   currentPage = 1;
   total = 0;
   first = 0;
+
+  visible = false;
+  student: any = null;
+  parent: any = null;
 
   selectedRows: StudentParentRow[] = [];
   selectedDeleteId: number | null = null;
@@ -72,6 +73,42 @@ export class StudentParentComponent {
     } else if (e.actionKey === 'delete') {
       this.deleteStudentParent(e.row.id);
     }
+  }
+
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
+
+      if (!file) return;
+
+      const fileName = file.name.toLowerCase();
+      const isValidFile =
+        fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+
+      if (!isValidFile) {
+        this.toast.error('Error', 'Please upload a CSV or Excel file.');
+        return;
+      }
+
+      this.studentParentService.bulkUploadStudentParent(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadStudentParent(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          const msg = err?.error?.message ?? 'Failed to upload student-parent bulk file.';
+          this.toast.error('Error', msg);
+        },
+      });
+    };
+
+    input.click();
   }
 
   openAddModal() {
@@ -183,4 +220,6 @@ export class StudentParentComponent {
     this.selectedRows = [];
     this.selectedDeleteId = null;
   }
+
+  
 }

@@ -80,6 +80,42 @@ export class StudentScheduleComponent {
     }
   }
 
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
+
+      if (!file) return;
+
+      const fileName = file.name.toLowerCase();
+      const isValidFile =
+        fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
+
+      if (!isValidFile) {
+        this.toast.error('Error', 'Please upload a CSV or Excel file.');
+        return;
+      }
+
+      this.studentScheduleService.bulkUploadStudentSchedule(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadStudentSchedule(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          const msg = err?.error?.message ?? 'Failed to upload student-schedule bulk file.';
+          this.toast.error('Error', msg);
+        },
+      });
+    };
+
+    input.click();
+  }
+
   openAddModal() {
     this.studentScheduleModal?.showDialog();
   }

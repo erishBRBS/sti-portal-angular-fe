@@ -1,5 +1,9 @@
 import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
-import { DataTableComponent, RowAction, TableColumn } from '../../../../shared/components/data-table/data-table.component';
+import {
+  DataTableComponent,
+  RowAction,
+  TableColumn,
+} from '../../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { SectionService } from '../../../../services/admin-panel/curriculum-management/section.service';
 import { SectionModalComponent } from './section-modal/section-modal.component';
@@ -10,7 +14,6 @@ import { DetailModalConfig } from '../../../../shared/components/view-details/vi
 import { ViewDetailsComponent } from '../../../../shared/components/view-details/view-details.component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
-
 type UserRow = {
   id: number;
   section_name: string;
@@ -20,7 +23,10 @@ type UserRow = {
   selector: 'sti-section',
   standalone: true,
   imports: [
-    DataTableComponent, SectionModalComponent, ViewDetailsComponent, ConfirmDialogComponent,
+    DataTableComponent,
+    SectionModalComponent,
+    ViewDetailsComponent,
+    ConfirmDialogComponent,
   ],
   templateUrl: './section.component.html',
   styleUrl: './section.component.css',
@@ -44,7 +50,7 @@ export class SectionComponent {
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
 
-@ViewChild(SectionModalComponent) sectionModal!: SectionModalComponent;
+  @ViewChild(SectionModalComponent) sectionModal!: SectionModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -61,8 +67,8 @@ export class SectionComponent {
   selectedDeleteId: number | null = null;
 
   selectedRows: any[] = [];
-  
-    sectionConfig: DetailModalConfig = {
+
+  sectionConfig: DetailModalConfig = {
     title: 'Section Details',
     showProfile: true,
     profileImage: '',
@@ -77,62 +83,57 @@ export class SectionComponent {
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
-  if (e.actionKey === 'edit') {
-    this.sectionModal.updateDialog(e.row.id);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    if (e.actionKey === 'edit') {
+      this.sectionModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
       // optional view function
       this.getSectionById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteSection(e.row.id);
     }
-
-  else if (e.actionKey === 'delete') {
-    this.deleteSection(e.row.id);
   }
 
-}
+  openImportCsv() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
 
-openImportCsv() {
+    input.onchange = (event: any) => {
+      const file: File = event.target.files[0];
 
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
+      if (!file) return;
 
-  input.onchange = (event: any) => {
-    const file: File = event.target.files[0];
+      this.sectionService.bulkUploadSection(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadSection(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Error', 'Failed to import CSV');
+        },
+      });
+    };
 
-    if (!file) return;
-
-    this.sectionService.importSection(file).subscribe({
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadSection(this.currentPage, this.rowsPerPage);
-      },
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
-      }
-    });
-  };
-
-  input.click();
-}
+    input.click();
+  }
 
   openAddModal() {
     this.sectionModal?.showDialog();
   }
 
-openDeleteModal() {
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select a section to delete.');
-    return;
-  }
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select a section to delete.');
+      return;
+    }
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete selected sections?'
-  });
-}
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete selected sections?',
+    });
+  }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -158,7 +159,7 @@ openDeleteModal() {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (res) => {
-         const mapped = res.data.map((a: SectionData) => ({
+          const mapped = res.data.map((a: SectionData) => ({
             id: a.id,
             section_name: a.section_name,
           }));
@@ -177,110 +178,103 @@ openDeleteModal() {
       });
   }
 
-deleteSection(id: number) {
-  this.selectedDeleteId = id;
+  deleteSection(id: number) {
+    this.selectedDeleteId = id;
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete this section?'
-  });
-}
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this section?',
+    });
+  }
 
-confirmDelete() {
+  confirmDelete() {
+    //  if multiple selected
+    if (this.selectedRows.length) {
+      const payload = {
+        id: this.selectedRows.map((row: UserRow) => row.id),
+      };
 
-  //  if multiple selected
-  if (this.selectedRows.length) {
+      this.sectionService.deleteSection(payload).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.selectedRows = [];
+          this.loadSection(this.currentPage, this.rowsPerPage);
+        },
+        error: () => {
+          this.toast.error('Error', 'Failed to delete sections');
+        },
+      });
+
+      return;
+    }
+
+    // single delete
+    if (!this.selectedDeleteId) return;
+
     const payload = {
-      id: this.selectedRows.map((row: UserRow) => row.id)
+      id: [this.selectedDeleteId],
     };
 
     this.sectionService.deleteSection(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-        this.selectedRows = [];
         this.loadSection(this.currentPage, this.rowsPerPage);
       },
       error: () => {
-        this.toast.error('Error', 'Failed to delete sections');
-      }
+        this.toast.error('Error', 'Failed to delete section');
+      },
     });
-
-    return;
   }
 
-  // single delete
-  if (!this.selectedDeleteId) return;
+  handleCancelDelete() {
+    this.selectedRows = []; // clear checkboxes
+    this.selectedDeleteId = null;
+  }
 
-  const payload = {
-    id: [this.selectedDeleteId]
-  };
+  closeDeleteDialog() {
+    this.showDeleteDialog = false;
+    this.selectedDeleteId = null;
+  }
 
-  this.sectionService.deleteSection(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-      this.loadSection(this.currentPage, this.rowsPerPage);
-    },
-    error: () => {
-      this.toast.error('Error', 'Failed to delete section');
-    }
-  });
+  private getSectionById(id: number): void {
+    this.sectionService.getSectionById(id).subscribe({
+      next: (response) => {
+        const data = response.data;
+
+        this.ngZone.run(() => {
+          this.sectionConfig = createASectionDetailConfig(data, this.sectionService.fileAPIUrl);
+
+          this.showViewDetails = true;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to load section details.';
+        this.toast.error('Error', msg);
+        console.error(err);
+      },
+    });
+  }
+
+  deleteSelectedSection(): void {
+    const payload = {
+      id: this.selectedRows.map((row: UserRow) => row.id),
+    };
+
+    this.sectionService.deleteSection(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+
+        // clear selection
+        this.selectedRows = [];
+
+        // reload table
+        this.loadSection(this.currentPage, this.rowsPerPage);
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error('Error', 'Failed to delete sections');
+      },
+    });
+  }
 }
-
-handleCancelDelete() {
-  this.selectedRows = [];         // clear checkboxes
-  this.selectedDeleteId = null;   
-}
-
-closeDeleteDialog() {
-  this.showDeleteDialog = false;
-  this.selectedDeleteId = null;
-}
-
-private getSectionById(id: number): void {
-  this.sectionService.getSectionById(id).subscribe({
-    next: (response) => {
-      const data = response.data;
-
-      this.ngZone.run(() => {
-        this.sectionConfig = createASectionDetailConfig(
-          data,
-          this.sectionService.fileAPIUrl
-        );
-
-        this.showViewDetails = true;
-        this.cdr.detectChanges();
-      });
-    },
-    error: (err) => {
-      const msg = err?.error?.message ?? 'Failed to load section details.';
-      this.toast.error('Error', msg);
-      console.error(err);
-    },
-  });
-}
-
-deleteSelectedSection(): void {
-
-  const payload = {
-    id: this.selectedRows.map((row: UserRow) => row.id)
-  };
-
-  this.sectionService.deleteSection(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-
-      // clear selection
-      this.selectedRows = [];
-
-      // reload table
-      this.loadSection(this.currentPage, this.rowsPerPage);
-    },
-    error: (err) => {
-      console.error(err);
-      this.toast.error('Error', 'Failed to delete sections');
-    }
-  });
-
-}
-}
-

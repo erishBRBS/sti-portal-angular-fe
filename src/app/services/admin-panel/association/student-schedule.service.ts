@@ -17,10 +17,12 @@ export enum AttachStudentScheduleEndPoints {
   getStudentScheduleById = 'get/attach/student-to-schedule/{id}',
   updateStudentSchedule = 'update/attach/student-to-schedule/{id}',
   deleteStudentSchedule = 'delete/attach/student-to-schedule',
+  bulkUploadStudentSchedule = 'bulk-upload/student-schedule',
 }
 
 export type AssignStudentScheduleResponse = ApiResponse<AssignStudentScheduleModelData>;
 export type DeleteAssignStudentScheduleResponse = ApiResponseNoData;
+export type bulkUploadAssignStudentScheduleResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
@@ -37,6 +39,7 @@ export class StudentScheduleService {
   private readonly getStudentScheduleByIdUrl = `${this.baseAPIUrl}${AttachStudentScheduleEndPoints.getStudentScheduleById}`;
   private readonly updateStudentScheduleUrl = `${this.baseAPIUrl}${AttachStudentScheduleEndPoints.updateStudentSchedule}`;
   private readonly deleteStudentScheduleUrl = `${this.baseAPIUrl}${AttachStudentScheduleEndPoints.deleteStudentSchedule}`;
+  private readonly bulkUploadStudentScheduleUrl = `${this.baseAPIUrl}${AttachStudentScheduleEndPoints.bulkUploadStudentSchedule}`;
 
   private authHeaders(): HttpHeaders {
     return new HttpHeaders({
@@ -79,11 +82,26 @@ export class StudentScheduleService {
     });
   }
 
-  deleteStudentSchedule(
-    payload: DeletePayload,
-  ): Observable<DeleteAssignStudentScheduleResponse> {
-    return this.http.post<DeleteAssignStudentScheduleResponse>(this.deleteStudentScheduleUrl, payload, {
-      headers: this.authHeaders().set('Content-Type', 'application/json'),
-    });
+  deleteStudentSchedule(payload: DeletePayload): Observable<DeleteAssignStudentScheduleResponse> {
+    return this.http.post<DeleteAssignStudentScheduleResponse>(
+      this.deleteStudentScheduleUrl,
+      payload,
+      {
+        headers: this.authHeaders().set('Content-Type', 'application/json'),
+      },
+    );
+  }
+
+  bulkUploadStudentSchedule(file: File): Observable<bulkUploadAssignStudentScheduleResponse> {
+    const fd = new FormData();
+    fd.append('file', file);
+
+    return this.http.post<bulkUploadAssignStudentScheduleResponse>(
+      this.bulkUploadStudentScheduleUrl,
+      fd,
+      {
+        headers: this.authHeaders(),
+      },
+    );
   }
 }

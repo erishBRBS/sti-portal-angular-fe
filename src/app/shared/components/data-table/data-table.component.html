@@ -14,18 +14,9 @@
 
     <div class="flex items-center gap-2 md:ml-auto" *ngIf="showImportCsv || showAdd || showDelete">
       <button
-        *ngIf="showDelete"
-        type="button"
-        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-        (click)="onDelete()"
-      >
-        {{ deleteLabel }}
-      </button>
-
-      <button
         *ngIf="showImportCsv"
         type="button"
-        class="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
+        class="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700"
         (click)="onImportCsv()"
       >
         <i class="pi pi-upload text-slate-600 dark:text-slate-300"></i>
@@ -35,11 +26,20 @@
       <button
         *ngIf="showAdd"
         type="button"
-        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        class="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
         (click)="onAdd()"
       >
         <i class="pi pi-plus"></i>
         {{ addLabel }}
+      </button>
+
+      <button
+        *ngIf="showDelete"
+        type="button"
+        class="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
+        (click)="onDelete()"
+      >
+        {{ deleteLabel }}
       </button>
     </div>
   </div>
@@ -178,9 +178,7 @@
                 </a>
 
                 <!-- NONE -->
-                <span *ngSwitchDefault class="text-slate-400">
-                  No attachment
-                </span>
+                <span *ngSwitchDefault class="text-slate-400"> No attachment </span>
               </ng-container>
             </ng-container>
 
@@ -197,9 +195,29 @@
                 *ngIf="isActionVisible(a, row)"
                 pButton
                 type="button"
-                class="p-button-text p-button-sm"
-                [ngClass]="a.buttonClass || ''"
-                [icon]="a.icon || 'pi pi-ellipsis-v'"
+                [text]="true"
+                [rounded]="true"
+                size="small"
+                [severity]="
+                  a.key === 'view'
+                    ? 'info'
+                    : a.key === 'update' || a.key === 'edit'
+                      ? 'warn'
+                      : a.key === 'delete'
+                        ? 'danger'
+                        : 'secondary'
+                "
+                [icon]="
+                  a.icon
+                    ? a.icon
+                    : a.key === 'view'
+                      ? 'pi pi-eye'
+                      : a.key === 'update' || a.key === 'edit'
+                        ? 'pi pi-pencil'
+                        : a.key === 'delete'
+                          ? 'pi pi-trash'
+                          : 'pi pi-ellipsis-v'
+                "
                 [pTooltip]="a.tooltip || a.label"
                 tooltipPosition="top"
                 (click)="fireAction(a.key, row, $event)"

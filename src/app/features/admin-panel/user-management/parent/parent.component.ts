@@ -3,7 +3,6 @@ import {
   DataTableComponent,
   RowAction,
   TableColumn,
-  
 } from '../../../../shared/components/data-table/data-table.component';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { ParentService } from '../../../../services/admin-panel/user-management/parent/parent.service';
@@ -11,9 +10,11 @@ import { ParentModalComponent } from './parent-modal/parent-modal.component';
 import { finalize } from 'rxjs';
 import { ParentData } from '../../../../models/admin-panel/user-management/parent/parent.model';
 import { ModalMode } from '../../../../enums/modal.mode';
-import { DetailModalConfig, ViewDetailsComponent } from './../../../../shared/components/view-details/view-details.component';
+import {
+  DetailModalConfig,
+  ViewDetailsComponent,
+} from './../../../../shared/components/view-details/view-details.component';
 import { createParentDetailConfig } from '../../../../helper/parent.helper';
-
 
 type UserRow = {
   id: number;
@@ -29,11 +30,7 @@ type UserStatus = UserRow['status'];
 @Component({
   selector: 'sti-parent',
   standalone: true,
-  imports: [
-    DataTableComponent,
-    ParentModalComponent,
-    ViewDetailsComponent,
-  ],
+  imports: [DataTableComponent, ParentModalComponent, ViewDetailsComponent],
   templateUrl: './parent.component.html',
   styleUrl: './parent.component.css',
 })
@@ -44,15 +41,6 @@ export class ParentManagementComponent {
     { field: 'middle_name', header: 'Middle Name', sortable: true, filter: true },
     { field: 'last_name', header: 'Last Name', sortable: true, filter: true },
     { field: 'email', header: 'Email', sortable: true, filter: true },
-    {
-      field: 'status',
-      header: 'Status',
-      sortable: true,
-      filter: true,
-      type: 'tag',
-      tagSeverity: (r) =>
-        r.status === 'Active' ? 'success' : r.status === 'Pending' ? 'warn' : 'danger',
-    },
     { field: 'createdAt', header: 'Created', sortable: true, filter: true, type: 'datetime' },
   ];
 
@@ -97,74 +85,68 @@ export class ParentManagementComponent {
     console.log('row click', row);
   }
 
-onAction(e: { actionKey: string; row: UserRow }) {
-
-  if (e.actionKey === 'edit') {
-    this.parentModal.updateDialog(e.row.id);
+  onAction(e: { actionKey: string; row: UserRow }) {
+    if (e.actionKey === 'edit') {
+      this.parentModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
       this.getParentById(e.row.id);
+    } else if (e.actionKey === 'delete') {
+      this.deleteParent(e.row.id);
     }
-
-  else if (e.actionKey === 'delete') {
-    this.deleteParent(e.row.id);
   }
 
-}
-  
-openImportCsv() {
+  openImportCsv() {
+    console.log('import csv clicked');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
 
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.csv';
+    input.onchange = (event: Event) => {
+      const target = event.target as HTMLInputElement;
+      const file = target.files?.[0];
 
-  input.onchange = (event: any) => {
+      if (!file) return;
 
-    const file: File = event.target.files[0];
-    if (!file) return;
+      const fileName = file.name.toLowerCase();
+      const isValidFile =
+        fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls');
 
-    const isCSV = file.name.endsWith('.csv');
-    if (!isCSV) {
-      this.toast.error('Error', 'Please upload a CSV file');
-      return;
-    }
-
-    this.parentService.importParent(file).subscribe({
-
-      next: (res) => {
-        this.toast.success('Success', res.message);
-        this.loadParent(this.currentPage, this.rowsPerPage);
-      },
-
-      error: (err) => {
-        console.error(err);
-        this.toast.error('Error', 'Failed to import CSV');
+      if (!isValidFile) {
+        this.toast.error('Error', 'Please upload a CSV or Excel file.');
+        return;
       }
 
-
-    });
-
-  };
-
-  input.click();
-}
+      this.parentService.bulkUploadParent(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadParent(this.currentPage, this.rowsPerPage);
+        },
+        error: (err) => {
+          console.error(err);
+          const msg = err?.error?.message ?? 'Failed to upload parent bulk file.';
+          this.toast.error('Error', msg);
+        },
+      });
+    };
+    input.click();
+  }
 
   openAddModal() {
     this.parentModal?.showDialog();
   }
 
-openDeleteModal() {
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select parent(s) to delete.');
+      return;
+    }
 
-  if (!this.selectedRows.length) {
-    this.toast.error('Error', 'Please select parent(s) to delete.');
-    return;
+    if (!confirm('Are you sure you want to delete selected parent(s)?')) {
+      return;
+    }
+
+    this.deleteSelectedParents();
   }
-
-  if (!confirm('Are you sure you want to delete selected parent(s)?')) {
-    return;
-  }
-
-  this.deleteSelectedParents();
-}
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
     this.first = e.first;
@@ -214,52 +196,48 @@ openDeleteModal() {
       });
   }
 
-deleteSelectedParents() {
+  deleteSelectedParents() {
+    const payload = {
+      id: this.selectedRows.map((row: any) => row.id),
+    };
 
-  const payload = {
-    id: this.selectedRows.map((row: any) => row.id)
-  };
+    this.parentService.deleteParent(payload).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
 
-  this.parentService.deleteParent(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
+        // clear selection
+        this.selectedRows = [];
 
-      // clear selection
-      this.selectedRows = [];
+        // reload table
+        this.loadParent(this.currentPage, this.rowsPerPage);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to delete parents.';
+        this.toast.error('Error', msg);
+      },
+    });
+  }
+  deleteParent(id: number) {
+    const payload = {
+      id: [id],
+    };
 
-      // reload table
-      this.loadParent(this.currentPage, this.rowsPerPage);
-    },
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to delete parents.';
-      this.toast.error('Error', msg);
-    }
-  });
+    if (!confirm('Are you sure you want to delete this parent?')) return;
 
-}
-deleteParent(id: number) {
+    this.parentService.deleteParent(payload).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
 
-  const payload = {
-    id: [id]
-  };
-
-  if (!confirm('Are you sure you want to delete this parent?')) return;
-
-  this.parentService.deleteParent(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
-
-      // reload table
-      this.loadParent(this.currentPage, this.rowsPerPage);
-    },
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to delete parent.';
-      this.toast.error('Error', msg);
-    }
-  });
-
-}
-   private getParentById(id: number): void {
+        // reload table
+        this.loadParent(this.currentPage, this.rowsPerPage);
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to delete parent.';
+        this.toast.error('Error', msg);
+      },
+    });
+  }
+  private getParentById(id: number): void {
     this.parentService.getParentById(id).subscribe({
       next: (response) => {
         const data = response.data;
@@ -277,8 +255,6 @@ deleteParent(id: number) {
       },
     });
   }
-
-
 
   private mapStatus(status: string): UserStatus {
     switch (status) {

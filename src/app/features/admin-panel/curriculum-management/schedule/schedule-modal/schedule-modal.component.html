@@ -13,7 +13,7 @@
   <!-- HEADER -->
   <ng-template pTemplate="header">
     <div class="flex items-center justify-center w-full">
-      <div class="text-lg font-bold text-blue-700">
+      <div  class="text-lg font-bold text-blue-600">
         {{ dialogTitle }}
       </div>
     </div>
@@ -208,7 +208,7 @@
      pButton
      type="button"
      label="Cancel"
-     class="p-button-outlined"
+     class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
      (click)="close()">
   </button>
 
@@ -216,7 +216,7 @@
      pButton
     type="submit"
      [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
-     class="p-button-success">
+     class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700">
   </button>
 
  </div>
