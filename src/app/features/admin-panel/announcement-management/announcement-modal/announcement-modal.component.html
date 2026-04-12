@@ -128,6 +128,36 @@
 
       <div class="md:col-span-2">
         <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Notification Headline
+        </label>
+        <input
+          pInputText
+          name="notificationHeadline"
+          [(ngModel)]="notificationHeadline"
+          [disabled]="isViewMode"
+          class="w-full"
+          required
+          placeholder="Enter Notification Headline"
+        />
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          Notification Description
+        </label>
+        <textarea
+          pTextarea
+          name="notificationDescription"
+          [(ngModel)]="notificationDescription"
+          [disabled]="isViewMode"
+          class="w-full"
+          rows="4"
+          placeholder="Enter Notification Description"
+        ></textarea>
+      </div>
+
+      <div class="md:col-span-2">
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
           <span class="text-red-600">*</span> Description
         </label>
         <textarea

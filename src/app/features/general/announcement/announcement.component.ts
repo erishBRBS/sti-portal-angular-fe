@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast.service';
 import { AnnouncementService } from '../../../services/general/announcement.service';
 import { AnnouncementData } from '../../../models/admin-panel/announcement/announcement.model';
@@ -26,7 +27,7 @@ interface Announcement {
   id: number;
   title: string;
   content: string;
-  priority: 'high' | 'normal' | 'low';
+  priority: 'urgent' | 'high' | 'normal' | 'low';
   author: string | null;
   date: string;
   status: 'active' | 'inactive';
@@ -62,7 +63,9 @@ export class AnnouncementComponent implements OnInit {
   constructor(
     private toast: ToastService,
     private announcementService: AnnouncementService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   announcements: Announcement[] = [];
@@ -73,14 +76,30 @@ export class AnnouncementComponent implements OnInit {
 
   isLoading = false;
 
+  pendingAnnouncementId: number | null = null;
+  highlightedAnnouncementId: number | null = null;
+
   priorityOptions: SelectOption[] = [
     { label: 'All Priorities', value: null },
+    { label: 'Urgent', value: 'urgent' },
     { label: 'High', value: 'high' },
     { label: 'Normal', value: 'normal' },
     { label: 'Low', value: 'low' },
   ];
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      const rawId = params.get('announcementId');
+      const parsedId = rawId ? Number(rawId) : null;
+
+      this.pendingAnnouncementId =
+        parsedId && !Number.isNaN(parsedId) ? parsedId : null;
+
+      if (this.pendingAnnouncementId && this.announcements.length) {
+        this.focusAnnouncement();
+      }
+    });
+
     this.loadAnnouncements();
   }
 
@@ -102,6 +121,10 @@ export class AnnouncementComponent implements OnInit {
 
         this.isLoading = false;
         this.cdr.detectChanges();
+
+        if (this.pendingAnnouncementId) {
+          this.focusAnnouncement();
+        }
       },
       error: (error) => {
         console.error('Failed to load announcements:', error);
@@ -114,6 +137,52 @@ export class AnnouncementComponent implements OnInit {
         this.toast.error('Failed to load announcements', 'Error');
       },
     });
+  }
+
+  private focusAnnouncement(): void {
+    if (!this.pendingAnnouncementId) return;
+
+    const exists = this.announcements.some((a) => a.id === this.pendingAnnouncementId);
+
+    if (!exists) {
+      this.toast.error('Error', 'Linked announcement not found.');
+      return;
+    }
+
+    // reset filters para siguradong makita yung item
+    this.searchTerm = '';
+    this.filterPriority = null;
+    this.filterAnnouncements();
+
+    this.highlightedAnnouncementId = this.pendingAnnouncementId;
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      const target = document.getElementById(`announcement-${this.pendingAnnouncementId}`);
+
+      if (target) {
+        target.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
+      }
+    }, 100);
+
+    setTimeout(() => {
+      this.highlightedAnnouncementId = null;
+      this.cdr.detectChanges();
+    }, 2500);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: {
+        announcementId: null,
+      },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+
+    this.pendingAnnouncementId = null;
   }
 
   private mapApiAnnouncement(item: AnnouncementApiItem): Announcement {
@@ -146,9 +215,10 @@ export class AnnouncementComponent implements OnInit {
     return null;
   }
 
-  private mapPriority(priority?: string | null): 'high' | 'normal' | 'low' {
+  private mapPriority(priority?: string | null): 'urgent' | 'high' | 'normal' | 'low' {
     const value = (priority || '').toLowerCase();
 
+    if (value === 'urgent') return 'urgent';
     if (value === 'high') return 'high';
     if (value === 'normal') return 'normal';
     return 'low';
