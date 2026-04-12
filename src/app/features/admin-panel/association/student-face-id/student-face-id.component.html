@@ -1,1 +1,27 @@
-<p>student-face-id works!</p>
+<div class="space-y-4">
+  <div>
+    <h1 class="text-xl font-bold text-gray-800 dark:text-white tracking-tight">
+      Student Face ID
+    </h1>
+  </div>
+
+  <sti-data-table-images
+    [title]="'Student List'"
+    [columns]="cols"
+    [value]="rows"
+    [rows]="10"
+    [loading]="false"
+    [showGlobalFilter]="true"
+    [showAdd]="true"
+    [showDelete]="true"
+    [addLabel]="'Add'"
+    [deleteLabel]="'Delete'"
+    (addClicked)="openAddModal()"
+    (deleteClicked)="openDeleteModal()"
+  ></sti-data-table-images>
+
+  <sti-student-face-capture-dialog
+  (uploaded)="onUploaded()"
+></sti-student-face-capture-dialog>
+
+</div>
