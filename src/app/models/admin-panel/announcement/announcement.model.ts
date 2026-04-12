@@ -11,6 +11,9 @@ export interface AnnouncementData {
   status: AnnouncementStatus;
   attachment?: string;
   is_deleted: number | boolean;
+
+  notification_headline: string;
+  notification_description?: string;
 }
 
 export type AnnouncementModel = PaginatedResponse<AnnouncementData>;

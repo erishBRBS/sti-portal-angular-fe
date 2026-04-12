@@ -33,12 +33,6 @@ export class LandingPage implements OnInit, OnDestroy {
       isOpen: false,
     },
     {
-      question: 'How do parents receive attendance notifications?',
-      answer:
-        'Notifications are automatically sent via the Semaphore SMS gateway and email as soon as a student taps their ID at the main gate. Parents can update their contact information through the Parent Portal to ensure they receive these alerts.',
-      isOpen: false,
-    },
-    {
       question: 'Why can’t I view my grades in the portal?',
       answer:
         'Grade viewing is enabled once the accounting office clears your tuition balance. If your balance is settled and you still cannot see your grades, please contact the Registrar for system access assistance.',
@@ -72,8 +66,6 @@ export class LandingPage implements OnInit, OnDestroy {
       return 'Avoid bending your ID card, as it might damage the internal RFID antenna.';
     if (q.includes('lost'))
       return 'A temporary gate pass can be requested at the guard house while waiting for a replacement.';
-    if (q.includes('parents'))
-      return 'Standard network rates may apply for SMS alerts depending on your service provider.';
     if (q.includes('grades'))
       return 'You can download a PDF copy of your unofficial grade slip directly from the portal.';
     if (q.includes('facial'))
@@ -85,7 +77,6 @@ export class LandingPage implements OnInit, OnDestroy {
     const q = question.toLowerCase();
     if (q.includes('rfid')) return 'Attendance Manual • RFID Scanner Locations';
     if (q.includes('lost')) return 'Replacement Form • ID Fee Schedule';
-    if (q.includes('parents')) return 'SMS Setup Guide • Parent Portal Login';
     if (q.includes('grades')) return 'Accounting Clearance • Registrar Contacts';
     if (q.includes('facial')) return 'Campus Security Policy • Privacy Guidelines';
     return 'User Handbook • Support Ticket • Office Directory';
@@ -101,18 +92,11 @@ export class LandingPage implements OnInit, OnDestroy {
         'Facial recognition and RFID integration at the STI Bacoor main entrance.',
     },
     {
-      src: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=600&h=400&q=80',
+      src: 'https://www.iitms.co.in/rfid-based-attendance-system/img/what-is-rfid-img.webp',
       alt: 'Real-time Attendance',
       title: 'RFID Attendance Logs',
       description:
         'Automated classroom logging system with sub-second processing speed.',
-    },
-    {
-      src: 'https://images.unsplash.com/photo-1535223289827-42f1e9919769?auto=format&fit=crop&w=600&h=400&q=80',
-      alt: 'SMS Notification System',
-      title: 'Parent Alert System',
-      description:
-        'Real-time SMS notifications sent via Semaphore API for student security.',
     },
     {
       src: 'https://images.unsplash.com/photo-1568992688065-536aad8a12f6?auto=format&fit=crop&w=600&h=400&q=80',
@@ -198,7 +182,8 @@ export class LandingPage implements OnInit, OnDestroy {
   isMobileMenuOpen = false;
 
   toggleMobileMenu() {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+    this.isMobileMenuOpen = false;
+    this.openLoginModal();
   }
 
   scrollToSection(sectionId: string) {
@@ -223,7 +208,6 @@ export class LandingPage implements OnInit, OnDestroy {
   private scrollObserver: IntersectionObserver | null = null;
 
   ngOnInit() {
-    // ✅ Browser-only: timers, DOM, IntersectionObserver
     if (isPlatformBrowser(this.platformId)) {
       this.autoSlideInterval = setInterval(() => this.nextImage(), 4000);
       setTimeout(() => this.initScrollAnimations(), 100);
@@ -238,7 +222,6 @@ export class LandingPage implements OnInit, OnDestroy {
   private initScrollAnimations() {
     if (!isPlatformBrowser(this.platformId)) return;
 
-    // safety: if missing in some browsers/environments
     if (typeof IntersectionObserver === 'undefined') return;
 
     this.scrollObserver = new IntersectionObserver(
