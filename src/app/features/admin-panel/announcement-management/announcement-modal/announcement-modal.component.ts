@@ -58,6 +58,9 @@ export class AnnouncementModalComponent {
   priority: AnnouncementPriority = 'Normal';
   status: AnnouncementStatus = 'Active';
 
+  notificationHeadline = '';
+  notificationDescription = '';
+
   attachment: File | null = null;
   previewUrl: string | null = null;
   fileName = '';
@@ -136,6 +139,8 @@ export class AnnouncementModalComponent {
     this.description = '';
     this.priority = 'Normal';
     this.status = 'Active';
+    this.notificationHeadline = '';
+    this.notificationDescription = '';
 
     this.clearAttachmentControls();
 
@@ -166,6 +171,8 @@ export class AnnouncementModalComponent {
     this.description = '';
     this.priority = 'Normal';
     this.status = 'Active';
+    this.notificationHeadline = '';
+    this.notificationDescription = '';
     this.clearAttachmentControls();
     this.visible = false;
   }
@@ -235,6 +242,8 @@ export class AnnouncementModalComponent {
       description: this.description,
       priority: this.priority,
       status: this.status,
+      notification_headline: this.notificationHeadline,
+      notification_description: this.notificationDescription || this.description,
     };
 
     this.announcementService.createAnnouncement(payload, this.attachment).subscribe({
@@ -257,22 +266,22 @@ export class AnnouncementModalComponent {
       description: this.description,
       priority: this.priority,
       status: this.status,
+      notification_headline: this.notificationHeadline,
+      notification_description: this.notificationDescription || this.description,
     };
 
-    this.announcementService
-      .updateAnnouncement(this.currentID, payload, this.attachment)
-      .subscribe({
-        next: (res) => {
-          this.toast.success('Success', res.message);
-          this.resetForm();
-          this.onSuccess.emit();
-          this.close();
-        },
-        error: (err) => {
-          const msg = err?.error?.message ?? 'Something went wrong.';
-          this.toast.error('Error', msg);
-        },
-      });
+    this.announcementService.updateAnnouncement(this.currentID, payload, this.attachment).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.resetForm();
+        this.onSuccess.emit();
+        this.close();
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Something went wrong.';
+        this.toast.error('Error', msg);
+      },
+    });
   }
 
   private getAnnouncementById(id: number): void {
@@ -284,6 +293,10 @@ export class AnnouncementModalComponent {
         this.description = data.description;
         this.priority = data.priority;
         this.status = data.status;
+
+        // kailangan ibalik ito ng backend sa getAnnouncementById
+        this.notificationHeadline = data.notification_headline ?? '';
+        this.notificationDescription = data.notification_description ?? '';
 
         this.fileName = data.attachment ? this.extractFileName(data.attachment) : '';
         this.attachment = null;

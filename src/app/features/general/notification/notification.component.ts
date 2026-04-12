@@ -1,10 +1,15 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { NotificationService } from '../../../services/general/notification.service';
+import { NotificationData } from '../../../models/general/notification/notification.model';
+import { ToastService } from '../../../shared/services/toast.service';
 
 type AlertItem = {
+  id: number;
+  announcementId: number | null;
   title: string;
   desc: string;
-  time: string;
   icon: string;
   color: string;
 };
@@ -15,34 +20,63 @@ type AlertItem = {
   imports: [CommonModule],
   templateUrl: './notification.component.html',
 })
-export class NotificationComponent {
-  alerts: AlertItem[] = [
-    {
-      title: 'Grade Deadline',
-      desc: 'Prelim grading period for BSIT-3A ends tomorrow at 5:00 PM.',
-      time: '2h ago',
-      icon: 'pi pi-exclamation-circle',
-      color: 'bg-amber-100 text-amber-600 dark:bg-amber-900/20',
-    },
-    {
-      title: 'Attendance Alert',
-      desc: 'Juan Dela Cruz (BSIT-1B) has been marked absent for 3 consecutive days.',
-      time: '5h ago',
-      icon: 'pi pi-calendar-times',
-      color: 'bg-rose-100 text-rose-600 dark:bg-rose-900/20',
-    },
-    {
-      title: 'System Update',
-      desc: 'The Faculty Portal has been updated to version 2.4. New export features are now available.',
-      time: '1d ago',
-      icon: 'pi pi-cog',
-      color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20',
-    },
-  ];
+export class NotificationComponent implements OnInit {
+  private notificationService = inject(NotificationService);
+  private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
+  private router = inject(Router);
 
-  markAllAsRead() {
-    // optional: hook to API / state
-    // for now you can clear or flag them
-    // this.alerts = this.alerts.map(a => ({ ...a, read: true }))
+  alerts: AlertItem[] = [];
+  loading = false;
+
+  ngOnInit(): void {
+    this.loadNotifications();
+  }
+
+  loadNotifications(page = 1, perPage = 50): void {
+    this.loading = true;
+
+    this.notificationService.getNotifications(page, perPage).subscribe({
+      next: (res) => {
+        const mapped: AlertItem[] = res.data.map((n: NotificationData) => ({
+          id: n.id,
+          announcementId: n.announcement_id ?? null,
+          title: n.headline,
+          desc: n.description,
+          icon: 'pi pi-bell',
+          color: 'bg-blue-100 text-blue-600 dark:bg-blue-900/20',
+        }));
+
+        queueMicrotask(() => {
+          this.alerts = mapped;
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      },
+      error: (err) => {
+        console.error('getNotifications failed', err);
+
+        queueMicrotask(() => {
+          this.alerts = [];
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+
+        this.toast.error('Error', 'Failed to load notifications.');
+      },
+    });
+  }
+
+  openNotification(item: AlertItem): void {
+    if (!item.announcementId) {
+      this.toast.error('Error', 'No linked announcement found.');
+      return;
+    }
+
+    this.router.navigate(['/general/announcements'], {
+      queryParams: {
+        announcementId: item.announcementId,
+      },
+    });
   }
 }

@@ -73,6 +73,11 @@ export class AnnouncementService {
     fd.append('description', payload.description ?? '');
     fd.append('priority', payload.priority ?? 'Normal');
     fd.append('status', payload.status ?? 'Active');
+    fd.append('notification_headline', payload.notification_headline ?? '');
+    fd.append(
+      'notification_description',
+      payload.notification_description ?? payload.description ?? '',
+    );
 
     if (attachment) {
       fd.append('attachment', attachment);
@@ -96,6 +101,11 @@ export class AnnouncementService {
     fd.append('description', payload.description ?? '');
     fd.append('priority', payload.priority ?? 'Normal');
     fd.append('status', payload.status ?? 'Active');
+    fd.append('notification_headline', payload.notification_headline ?? '');
+    fd.append(
+      'notification_description',
+      payload.notification_description ?? payload.description ?? '',
+    );
 
     if (attachment) {
       fd.append('attachment', attachment);

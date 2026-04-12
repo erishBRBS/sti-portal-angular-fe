@@ -9,4 +9,7 @@ export interface CreateAnnouncementPayload {
   priority: AnnouncementPriority;
   status: AnnouncementStatus;
   attachment?: File | null;
+
+  notification_headline: string;
+  notification_description?: string;
 }
