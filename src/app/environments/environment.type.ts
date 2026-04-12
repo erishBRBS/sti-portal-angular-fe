@@ -1,6 +1,7 @@
 export interface Environment {
   production: boolean;
   apiUrl: string;
+  pythonUrl: string;
   appName: string;
   version: string;
   apiTimeout: number;
