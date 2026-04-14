@@ -6,6 +6,7 @@ import { StudentFaceCaptureDialogComponent } from './student-face-capture-dialog
 import { StudentFaceIDService } from '../../../../services/admin-panel/association/student-face-id.service';
 import { FaceRecognitionData } from '../../../../models/admin-panel/association/student-face-id.model';
 import { ToastService } from '../../../../shared/services/toast.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 type StudentFaceIDRow = {
   id: number;
@@ -18,7 +19,7 @@ type StudentFaceIDRow = {
 @Component({
   selector: 'sti-student-face-id',
   standalone: true,
-  imports: [CommonModule, DataTableImagesComponent, StudentFaceCaptureDialogComponent],
+  imports: [CommonModule, DataTableImagesComponent, StudentFaceCaptureDialogComponent, ConfirmDialogComponent],
   templateUrl: './student-face-id.component.html',
 })
 export class StudentFaceIdComponent {
@@ -51,6 +52,11 @@ export class StudentFaceIdComponent {
       sortable: true,
       width: '200px',
     },
+    {
+     field: 'actions',
+     header: 'Actions',
+     width: '120px',
+   },
   ];
 
   private readonly studentFaceIDService = inject(StudentFaceIDService);
@@ -66,6 +72,10 @@ export class StudentFaceIdComponent {
   total = 0;
   first = 0;
 
+selectedRows: StudentFaceIDRow[] = [];
+selectedDeleteId: number | null = null;
+
+  @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   @ViewChild(StudentFaceCaptureDialogComponent)
   studentFaceCaptureDialogComponent!: StudentFaceCaptureDialogComponent;
 
@@ -77,7 +87,27 @@ export class StudentFaceIdComponent {
     this.studentFaceCaptureDialogComponent.showDialog();
   }
 
-  openDeleteModal(): void {}
+  openDeleteModal() {
+    if (!this.selectedRows.length) {
+      this.toast.error('Error', 'Please select a record to delete.');
+      return;
+    }
+
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete selected students face?',
+    });
+  }
+
+  onAction(e: { actionKey: string; row: StudentFaceIDRow }) {
+  if (e.actionKey === 'delete') {
+    this.deleteStudentFaceID(e.row.id);
+  }
+
+  if (e.actionKey === 'edit') {
+   this.studentFaceCaptureDialogComponent.openEdit(e.row);
+  }
+}
 
   onUploaded(): void {
     this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
@@ -116,5 +146,57 @@ export class StudentFaceIdComponent {
         });
       },
     });
+  }
+
+  deleteStudentFaceID(id: number) {
+  this.selectedDeleteId = id;
+
+  this.confirmDialog.open({
+    title: 'Confirm Deletion',
+    message: 'Are you sure you want to delete this student face ID?',
+  });
+}
+
+confirmDelete() {
+
+  if (this.selectedRows.length) {
+    const payload = {
+      ids: this.selectedRows.map((row: StudentFaceIDRow) => row.id),
+    };
+
+    this.studentFaceIDService.deleteStudentFaceID(payload).subscribe({
+      next: (res) => {
+        this.toast.success('Success', res.message);
+        this.selectedRows = [];
+        this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
+      },
+      error: () => {
+        this.toast.error('Error', 'Failed to delete selected records');
+      },
+    });
+
+    return;
+  }
+
+
+  if (!this.selectedDeleteId) return;
+
+  const payload = {
+    ids: [this.selectedDeleteId],
+  };
+
+  this.studentFaceIDService.deleteStudentFaceID(payload).subscribe({
+    next: (res) => {
+      this.toast.success('Success', res.message);
+      this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
+    },
+    error: () => {
+      this.toast.error('Error', 'Failed to delete record');
+    },
+  });
+}
+  handleCancelDelete() {
+    this.selectedRows = [];
+    this.selectedDeleteId = null;
   }
 }
