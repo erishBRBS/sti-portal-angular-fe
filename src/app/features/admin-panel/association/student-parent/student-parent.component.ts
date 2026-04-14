@@ -9,7 +9,7 @@ import { ToastService } from '../../../../shared/services/toast.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { StudentParentService } from '../../../../services/admin-panel/association/student-parent.service';
 import { StudentParentModalComponent } from './student-parent-modal/student-parent-modal.component';
-import { Dialog } from "primeng/dialog";
+
 
 type StudentParentRow = {
   id: number;
@@ -20,7 +20,7 @@ type StudentParentRow = {
 @Component({
   selector: 'sti-student-parent',
   standalone: true,
-  imports: [DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent, Dialog],
+  imports: [DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent],
   templateUrl: './student-parent.component.html',
 })
 export class StudentParentComponent {

@@ -19,8 +19,9 @@ import { finalize } from 'rxjs';
 import { ToastService } from '../../../../../shared/services/toast.service';
 
 type CapturedPhoto = {
-  file: File;
+  file: File | null;
   preview: string;
+  isExisting?: boolean;
 };
 
 @Component({
@@ -51,6 +52,13 @@ export class StudentFaceCaptureDialogComponent implements OnDestroy {
   startingCamera = false;
   uploading = false;
 
+  selectedRows: any[] = [];
+
+  mode: 'ADD' | 'EDIT' = 'ADD';
+  dialogTitle = 'Add Student Face ID';
+
+  selectedData: any = null;
+
   private readonly toast = inject(ToastService);
 
   get canCapture(): boolean {
@@ -79,9 +87,21 @@ export class StudentFaceCaptureDialogComponent implements OnDestroy {
 
   showDialog(): void {
     this.visible = true;
-    // this.resetForm();
-    // this.loadDropdownOptions();
   }
+
+  resetForm() {
+  this.studentNo = '';
+  this.studentName = '';
+
+  this.capturedPhotos = [];
+  this.cameraError = '';
+
+  this.selectedData = null;
+
+  // reset flags
+  this.uploading = false;
+  this.startingCamera = false;
+}
 
   async onDialogShow(): Promise<void> {
     await this.startCamera();
@@ -90,6 +110,7 @@ export class StudentFaceCaptureDialogComponent implements OnDestroy {
   onDialogHide(): void {
     this.stopCamera();
     this.resetCapturedPhotos();
+    this.resetForm();
     this.studentNo = '';
     this.cameraError = '';
   }
@@ -197,11 +218,11 @@ export class StudentFaceCaptureDialogComponent implements OnDestroy {
   }
 
   save(): void {
-    if (!this.canUpload) return;
-
-    this.uploading = true;
-
-    const files = this.capturedPhotos.map((item) => item.file);
+    if (this.mode === 'EDIT') {
+    this.updateFace();
+    return;
+  }
+   const files = this.capturedPhotos.filter(item => item.file !== null).map(item => item.file as File);
 
     const payload: EnrollFaceIDPayload = {
       student_no: this.studentNo,
@@ -225,7 +246,60 @@ export class StudentFaceCaptureDialogComponent implements OnDestroy {
       });
   }
 
-  private enrollFaceIDLaravel(payload: EnrollFaceIDPayload): void {
+  openAdd() {
+  this.mode = 'ADD';
+  this.dialogTitle = 'Register Student Face';
+
+  this.resetForm();
+  this.visible = true;
+}
+
+updateFace(): void {
+  if (!this.selectedData) return;
+
+  const files = this.capturedPhotos
+    .filter(p => p.file !== null)
+    .map(p => p.file as File);
+
+  const payload = {
+    id: this.selectedData.id,
+    images: files
+  };
+
+  this.studentFaceIDService.updateStudentFaceID(payload).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+      this.uploaded.emit();
+      this.closeDialog();
+    },
+    error: () => {
+      this.toast.error('Error', 'Failed to update');
+    },
+  });
+}
+
+openEdit(data: any) {
+  this.mode = 'EDIT';
+  this.dialogTitle = 'Update Student Face';
+
+  this.selectedData = data;
+
+  this.studentNo = data.student_no;
+  this.studentName = data.full_name;
+
+
+  this.capturedPhotos = data.image_paths.map((img: string) => ({
+    preview: img,
+    file: null, 
+    isExisting: true
+  }));
+
+  this.visible = true;
+}
+
+
+
+private enrollFaceIDLaravel(payload: EnrollFaceIDPayload): void {
     this.studentFaceIDService
       .enrollFaceIDLaravel(payload)
       .pipe(finalize(() => (this.uploading = false)))

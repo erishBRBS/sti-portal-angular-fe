@@ -152,6 +152,10 @@ export class StudentFaceIDService {
     );
   }
 
+  updateStudentFaceID(payload: any) {
+  return this.http.post('/update-face-id', payload);
+}
+
   deleteStudentFaceID(payload: DeleteFaceIDPayload): Observable<StudenFaceIDResponse> {
     return this.http.post<StudenFaceIDResponse>(this.deleteStudentFaceIDUrl, payload, {
       headers: this.authHeaders(),
