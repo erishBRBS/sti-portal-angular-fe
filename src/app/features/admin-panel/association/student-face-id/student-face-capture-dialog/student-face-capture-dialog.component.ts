@@ -55,7 +55,7 @@ export class StudentFaceCaptureDialogComponent implements OnDestroy {
   selectedRows: any[] = [];
 
   mode: 'ADD' | 'EDIT' = 'ADD';
-  dialogTitle = 'Update Student Face ID';
+  dialogTitle = 'Add Student Face ID';
 
   selectedData: any = null;
 
