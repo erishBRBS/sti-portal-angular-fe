@@ -10,6 +10,7 @@
     [columns]="cols"
     [value]="rows"
     [rows]="10"
+    [(selection)]="selectedRows"
     [loading]="false"
     [showGlobalFilter]="true"
     [showAdd]="true"
@@ -18,10 +19,16 @@
     [deleteLabel]="'Delete'"
     (addClicked)="openAddModal()"
     (deleteClicked)="openDeleteModal()"
+    (actionClicked)="onAction($event)"
   ></sti-data-table-images>
 
   <sti-student-face-capture-dialog
   (uploaded)="onUploaded()"
 ></sti-student-face-capture-dialog>
+
+    <sti-confirm-dialog
+    (onConfirm)="confirmDelete()"
+    (onCancel)="handleCancelDelete()"
+  ></sti-confirm-dialog>
 
 </div>

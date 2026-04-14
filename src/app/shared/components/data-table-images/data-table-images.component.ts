@@ -6,6 +6,7 @@ import { TagModule } from 'primeng/tag';
 import { ImageModule } from 'primeng/image';
 import { InputTextModule } from 'primeng/inputtext';
 import { SharedTableColumn, SharedTagSeverity } from './data-table-images.types';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'sti-data-table-images',
@@ -16,7 +17,8 @@ import { SharedTableColumn, SharedTagSeverity } from './data-table-images.types'
     TableModule,
     TagModule,
     ImageModule,
-    InputTextModule
+    InputTextModule,
+    ButtonModule,
   ],
   templateUrl: './data-table-images.component.html',
   styleUrl: './data-table-images.component.css',
@@ -42,6 +44,16 @@ export class DataTableImagesComponent {
 
   @Output() addClicked = new EventEmitter<void>();
   @Output() deleteClicked = new EventEmitter<void>();
+
+  @Input() selection: any[] = [];
+  @Output() selectionChange = new EventEmitter<any[]>();  
+
+  @Input() showColumnFilters = false;
+  @Input() showActions = false;
+  @Output() actionClicked = new EventEmitter<{ actionKey: string; row: any }>();
+  
+
+  selectedRows: any[] = [];
 
   resolveFieldData(rowData: any, field: string): any {
     if (!rowData || !field) return null;
@@ -131,4 +143,10 @@ export class DataTableImagesComponent {
   onDelete() {
     this.deleteClicked.emit();
   }
+
+fireAction(action: string, row: any, event: Event) {
+  event.stopPropagation();
+
+  this.actionClicked.emit({ actionKey: action, row }); // ✅ gawin ganito
+}
 }

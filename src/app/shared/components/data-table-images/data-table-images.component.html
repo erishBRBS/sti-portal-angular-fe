@@ -1,122 +1,166 @@
 <div class="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
- <!-- Header -->
-  <div
-    class="sti-table-shell-header flex flex-col gap-3 border-b border-slate-200 p-4 md:flex-row md:items-center md:justify-between dark:border-slate-800"
-  >
-    <div class="flex items-center gap-2 md:ml-auto" *ngIf="showAdd || showDelete">
-      <button
-        *ngIf="showDelete"
-        type="button"
-        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-        (click)="onDelete()"
-      >
-        {{ deleteLabel }}
-      </button>
 
-      <button
-        *ngIf="showAdd"
-        type="button"
-        class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-        (click)="onAdd()"
-      >
-        <i class="pi pi-plus"></i>
-        {{ addLabel }}
-      </button>
-    </div>
+  <!-- HEADER -->
+  <div class="flex justify-end gap-2 border-b border-slate-200 p-4 dark:border-slate-800"
+       *ngIf="showAdd || showDelete">
+
+<div class="flex w-full md:w-auto justify-end gap-2" *ngIf="showAdd || showDelete">
+
+    <!-- ADD -->
+    <button
+      *ngIf="showAdd"
+      type="button"
+      class="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+      (click)="onAdd()"
+    >
+      <i class="pi pi-plus"></i>
+      {{ addLabel }}
+    </button>
+
+    <!-- DELETE -->
+    <button
+      *ngIf="showDelete"
+      type="button"
+      class="cursor-pointer inline-flex items-center gap-2 rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700"
+      (click)="onDelete()"
+    >
+      {{ deleteLabel }}
+    </button>
+
   </div>
+</div>
 
+  <!-- TABLE -->
   <p-table
-    #dt
     [value]="value"
     [columns]="columns"
-    [loading]="loading"
+    [(selection)]="selectedRows"
+    dataKey="id"
     [paginator]="paginator"
     [rows]="rows"
-    [rowsPerPageOptions]="rowsPerPageOptions"
-    [globalFilterFields]="getComputedGlobalFilterFields()"
+    [loading]="loading"
     responsiveLayout="scroll"
     styleClass="p-datatable-sm"
     [tableStyle]="{ 'min-width': '60rem' }"
+    [(selection)]="selection"
+    (selectionChange)="selectionChange.emit($event)"
   >
+
+    <!-- HEADER -->
     <ng-template pTemplate="header" let-columns>
       <tr>
-        <th
-          *ngFor="let col of columns"
-          [pSortableColumn]="col.sortable ? col.field : null"
-          [style.width]="col.width"
-          class="whitespace-nowrap bg-gray-50 text-sm font-semibold text-gray-700 dark:bg-neutral-800 dark:text-gray-200"
-        >
-          <div class="flex items-center gap-2">
-            <span>{{ col.header }}</span>
-            <p-sortIcon *ngIf="col.sortable" [field]="col.field"></p-sortIcon>
-          </div>
+
+        <!-- CHECKBOX -->
+        <th style="width: 3rem">
+            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
         </th>
+
+        <!-- DYNAMIC COLUMNS -->
+        <th *ngFor="let col of columns"
+            [style.width]="col.width"
+            class="bg-gray-50 text-sm font-semibold">
+
+         <div class="flex items-center gap-2">
+
+            {{ col.header }}
+
+            <!-- FILTER -->
+            <p-columnFilter
+              *ngIf="!['image_paths', 'actions'].includes(col.field)"
+              [field]="col.field"
+              display="menu"
+              [showMatchModes]="false"
+              [showOperator]="false"
+              [showAddButton]="false">
+            </p-columnFilter>
+
+          </div>
+
+        </th>
+
       </tr>
     </ng-template>
 
+    <!-- BODY -->
     <ng-template pTemplate="body" let-rowData let-columns="columns">
-      <tr class="align-top">
-        <td
-          *ngFor="let col of columns"
-          [style.width]="col.width"
-          [ngClass]="col.className"
-          class="text-sm text-gray-700 dark:text-gray-200"
-        >
-          <ng-container [ngSwitch]="col.type || 'text'">
+      <tr>
+
+        <!-- CHECKBOX -->
+        <td>
+          <p-tableCheckbox [value]="rowData"></p-tableCheckbox>
+        </td>
+
+        <!-- CELLS -->
+        <td *ngFor="let col of columns">
+
+          <ng-container [ngSwitch]="col.field">
+
+            <!-- ACTIONS -->
+            <ng-container *ngSwitchCase="'actions'">
+              <div class="flex justify-center gap-2">
+
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-pencil"
+                  severity="warn"
+                  text
+                  rounded
+                  size="small"
+                  (click)="fireAction('edit', rowData, $event)">
+                </button>
+
+                <button
+                  pButton
+                  type="button"
+                  icon="pi pi-trash"
+                  severity="danger"
+                  text
+                  rounded
+                  size="small"
+                  (click)="fireAction('delete', rowData, $event)">
+                </button>
+
+              </div>
+            </ng-container>
 
             <!-- IMAGES -->
-            <ng-container *ngSwitchCase="'images'">
-              <ng-container *ngIf="getImages(rowData, col).length > 0; else emptyCell">
-                <div class="flex flex-wrap items-center gap-2">
-                  <p-image
-                    *ngFor="let image of getVisibleImages(rowData, col); trackBy: trackByIndex"
-                    [src]="image"
-                    [alt]="col.header"
-                    [preview]="true"
-                    imageClass="h-14 w-14 rounded-xl border border-gray-200 object-cover shadow-sm dark:border-neutral-700"
-                  ></p-image>
-
-                  <span
-                    *ngIf="getHiddenImageCount(rowData, col) > 0"
-                    class="inline-flex h-14 min-w-14 items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 px-2 text-xs font-semibold text-gray-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-gray-300"
-                  >
-                    +{{ getHiddenImageCount(rowData, col) }}
-                  </span>
-                </div>
-              </ng-container>
+            <ng-container *ngSwitchCase="'image_paths'">
+              <div class="flex gap-2 flex-wrap">
+                <p-image
+                  *ngFor="let img of getVisibleImages(rowData, col)"
+                  [src]="img"
+                  [preview]="true"
+                  imageClass="w-14 h-14 rounded-lg object-cover">
+                </p-image>
+              </div>
             </ng-container>
 
             <!-- DATE -->
-            <ng-container *ngSwitchCase="'date'">
-              <span>
-                {{ formatCellDate(getCellValue(rowData, col)) }}
-              </span>
+            <ng-container *ngSwitchCase="'create_at'">
+              {{ formatCellDate(getCellValue(rowData, col)) }}
             </ng-container>
 
-            <!-- DEFAULT TEXT -->
+            <!-- DEFAULT -->
             <ng-container *ngSwitchDefault>
-              <span>
-                {{ getCellValue(rowData, col) || col.emptyText || '-' }}
-              </span>
+              {{ getCellValue(rowData, col) || '-' }}
             </ng-container>
 
           </ng-container>
 
-          <ng-template #emptyCell>
-            <span class="text-gray-400 dark:text-gray-500">
-              {{ col.emptyText || '-' }}
-            </span>
-          </ng-template>
         </td>
+
       </tr>
     </ng-template>
 
+    <!-- EMPTY -->
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td [attr.colspan]="columns.length" class="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <td [attr.colspan]="columns.length + 1" class="text-center p-4">
           No records found.
         </td>
       </tr>
     </ng-template>
+
   </p-table>
 </div>
