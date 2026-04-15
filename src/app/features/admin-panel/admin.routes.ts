@@ -15,6 +15,8 @@ import { ParentManagementComponent } from './user-management/parent/parent.compo
 import { StudentParentComponent } from './association/student-parent/student-parent.component';
 import { StudentScheduleComponent } from './association/student-schedule/student-schedule.component';
 import { ChangeUserPasswordComponent } from './change-user-password/change-user-password.component';
+import { StudentFaceIdComponent } from './association/student-face-id/student-face-id.component';
+
 
 export const AP_ROUTES: Routes = [
   //ANNOUNCEMENT MANAGEMENT
@@ -106,6 +108,12 @@ export const AP_ROUTES: Routes = [
     data: { roles: ['Admin'] },
     // canActivate: [roleGuard],
     component: StudentScheduleComponent,
+  },
+  {
+    path: 'admin/association/student-face-id',
+    data: { roles: ['Admin'] },
+    // canActivate: [roleGuard],
+    component: StudentFaceIdComponent,
   },
   {
     path: '',

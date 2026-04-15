@@ -10,6 +10,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { StudentParentService } from '../../../../services/admin-panel/association/student-parent.service';
 import { StudentParentModalComponent } from './student-parent-modal/student-parent-modal.component';
 
+
 type StudentParentRow = {
   id: number;
   student_name: string;
@@ -48,6 +49,10 @@ export class StudentParentComponent {
   currentPage = 1;
   total = 0;
   first = 0;
+
+  visible = false;
+  student: any = null;
+  parent: any = null;
 
   selectedRows: StudentParentRow[] = [];
   selectedDeleteId: number | null = null;
@@ -215,4 +220,6 @@ export class StudentParentComponent {
     this.selectedRows = [];
     this.selectedDeleteId = null;
   }
+
+  
 }

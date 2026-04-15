@@ -108,7 +108,7 @@
                 *ngIf="!isViewMode"
                 type="button"
                 pButton
-                class="p-button-sm"
+               class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
                 label="Choose File"
                 (click)="attachmentInput.click()"
               ></button>
@@ -178,11 +178,11 @@
         pButton
         type="button"
         label="Cancel"
-        class="p-button-outlined"
+        class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
         (click)="close()"
       ></button>
 
-      <button pButton type="submit" [label]="dialogButtonLabel" class="p-button-success"></button>
+      <button pButton type="submit" [label]="dialogButtonLabel" class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"></button>
     </div>
   </form>
 </p-dialog>
