@@ -67,26 +67,29 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
                   [class.border-red-400]="touchedInvalid('username')"
                 />
               </div>
+            </div>
               <p *ngIf="touchedInvalid('username')" class="text-[11px] text-red-600 font-semibold -mt-2">
                 Username is required.
               </p>
 
-              <div class="relative">
-                <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                <input
-                  type="password"
-                  formControlName="password"
-                  placeholder="Password"
-                  class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl
-                         text-gray-800 placeholder:text-gray-400 caret-blue-600
-                         focus:border-[#1a4b8c] focus:bg-white outline-none transition-all text-sm"
-                  [class.border-red-400]="touchedInvalid('password')"
-                />
-              </div>
-              <p *ngIf="touchedInvalid('password')" class="text-[11px] text-red-600 font-semibold -mt-2">
-                Password is required.
-              </p>
-            </div>
+          <div class="relative">
+             <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="Password"
+              class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl
+              text-gray-800 placeholder:text-gray-400 caret-blue-600
+              focus:border-[#1a4b8c] focus:bg-white outline-none transition-all text-sm"
+              [class.border-red-400]="touchedInvalid('password')"/>
+
+           <!-- Eye Icon -->
+            <i
+             class="fas absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 text-xs"
+             [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+             (click)="showPassword = !showPassword"></i>
+        </div>
 
             <div class="flex justify-end">
               <a class="text-[11px] font-semibold text-[#1a4b8c] hover:underline cursor-pointer">
@@ -113,7 +116,9 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
             <p class="text-center text-[11px] text-gray-400 mt-4">
               STI College Bacoor • Smart Student Portal
             </p>
+            
           </form>
+          
         </div>
       </div>
     </div>
@@ -127,6 +132,7 @@ export class LoginModalComponent {
   loading = false;
   message: string | null = null;
   loginError: string | null = null;
+  showPassword: boolean = false;
 
   form: FormGroup;
 
