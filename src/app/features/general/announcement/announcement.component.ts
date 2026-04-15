@@ -1,6 +1,12 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ToastService } from '../../../shared/services/toast.service';
 import { AnnouncementService } from '../../../services/general/announcement.service';
@@ -61,6 +67,7 @@ interface SelectOption {
 })
 export class AnnouncementComponent implements OnInit {
   constructor(
+    @Inject(PLATFORM_ID) private platformId: object,
     private toast: ToastService,
     private announcementService: AnnouncementService,
     private cdr: ChangeDetectorRef,
@@ -100,14 +107,17 @@ export class AnnouncementComponent implements OnInit {
       }
     });
 
-    this.loadAnnouncements();
+    // ✅ browser lang tatawag ng API
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadAnnouncements();
+    }
   }
 
   loadAnnouncements(): void {
     this.isLoading = true;
     this.cdr.detectChanges();
 
-    this.announcementService.getAnnouncement(1, 10).subscribe({
+    this.announcementService.getAnnouncement(1, 20).subscribe({
       next: (response: any) => {
         const rawItems: AnnouncementApiItem[] = Array.isArray(response?.data)
           ? response.data
@@ -132,9 +142,12 @@ export class AnnouncementComponent implements OnInit {
         this.announcements = [];
         this.filteredAnnouncements = [];
         this.isLoading = false;
-
         this.cdr.detectChanges();
-        this.toast.error('Failed to load announcements', 'Error');
+
+        // ✅ optional: huwag magpakita ng toast pag 401
+        if (error?.status !== 401) {
+          this.toast.error('Failed to load announcements', 'Error');
+        }
       },
     });
   }
@@ -142,14 +155,15 @@ export class AnnouncementComponent implements OnInit {
   private focusAnnouncement(): void {
     if (!this.pendingAnnouncementId) return;
 
-    const exists = this.announcements.some((a) => a.id === this.pendingAnnouncementId);
+    const exists = this.announcements.some(
+      (a) => a.id === this.pendingAnnouncementId
+    );
 
     if (!exists) {
       this.toast.error('Error', 'Linked announcement not found.');
       return;
     }
 
-    // reset filters para siguradong makita yung item
     this.searchTerm = '';
     this.filterPriority = null;
     this.filterAnnouncements();
@@ -158,7 +172,9 @@ export class AnnouncementComponent implements OnInit {
     this.cdr.detectChanges();
 
     setTimeout(() => {
-      const target = document.getElementById(`announcement-${this.pendingAnnouncementId}`);
+      const target = document.getElementById(
+        `announcement-${this.pendingAnnouncementId}`
+      );
 
       if (target) {
         target.scrollIntoView({
@@ -215,7 +231,9 @@ export class AnnouncementComponent implements OnInit {
     return null;
   }
 
-  private mapPriority(priority?: string | null): 'urgent' | 'high' | 'normal' | 'low' {
+  private mapPriority(
+    priority?: string | null
+  ): 'urgent' | 'high' | 'normal' | 'low' {
     const value = (priority || '').toLowerCase();
 
     if (value === 'urgent') return 'urgent';
@@ -261,8 +279,9 @@ export class AnnouncementComponent implements OnInit {
     if (lower.endsWith('.avi')) return 'video/x-msvideo';
     if (lower.endsWith('.pdf')) return 'application/pdf';
     if (lower.endsWith('.doc')) return 'application/msword';
-    if (lower.endsWith('.docx'))
+    if (lower.endsWith('.docx')) {
       return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    }
 
     return 'application/octet-stream';
   }

@@ -5,7 +5,7 @@
     <div class="flex items-center gap-3 min-w-0">
       <button
         type="button"
-        class="sm:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+        class="min-[821px]:hidden w-10 h-10 rounded-xl flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
         (click)="menuClick.emit()"
         aria-label="Open menu"
       >
@@ -47,11 +47,11 @@
         <button
           pButton
           icon="pi pi-bell"
-          routerLink="general/notifications"
           class="p-button-rounded p-button-text p-button-secondary dark:text-gray-300"
+          (click)="onNotificationClick()"
         ></button>
 
-        <span class="absolute top-2 right-2 flex h-2 w-2">
+        <span *ngIf="hasUnreadNotifications" class="absolute top-2 right-2 flex h-2 w-2">
           <span
             class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"
           ></span>
@@ -68,7 +68,7 @@
             [image]="avatarUrl"
             size="large"
             shape="circle"
-            styleClass="relative border-2 border-yellow-300  shadow-sm cursor-pointer scale-90 transition-transform group-active:scale-75"
+            styleClass="relative border-2 border-yellow-300 shadow-sm cursor-pointer scale-90 transition-transform group-active:scale-75"
           ></p-avatar>
         </a>
 

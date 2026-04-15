@@ -1,5 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { finalize } from 'rxjs';
 
 import {
@@ -40,6 +47,7 @@ export class AnnouncementComponent implements OnInit {
   private readonly announcementService = inject(AnnouncementService);
   private readonly toast = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly platformId = inject(PLATFORM_ID);
 
   cols: TableColumn<AnnouncementRow>[] = [
     { field: 'title', header: 'Title', sortable: true, filter: true },
@@ -77,7 +85,10 @@ export class AnnouncementComponent implements OnInit {
   selectedRows: AnnouncementRow[] = [];
 
   ngOnInit(): void {
-    this.loadAnnouncements(1, this.rowsPerPage);
+    // browser lang tatawag ng API para iwas SSR/refresh 401
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadAnnouncements(1, this.rowsPerPage);
+    }
   }
 
   onRow(row: AnnouncementRow): void {
@@ -132,6 +143,11 @@ export class AnnouncementComponent implements OnInit {
   }
 
   loadAnnouncements(page: number, perPage: number): void {
+    // dagdag safety check
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
     this.loading = true;
 
     this.announcementService
@@ -169,7 +185,13 @@ export class AnnouncementComponent implements OnInit {
         error: (err) => {
           console.error('getAnnouncement failed', err);
           this.rows = [];
-          this.toast.error('Error', 'Failed to load announcements.');
+
+          // optional: huwag mag-toast sa 401 kung SSR/refresh auth timing issue
+          if (err?.status !== 401) {
+            this.toast.error('Error', 'Failed to load announcements.');
+          }
+
+          this.cdr.markForCheck();
         },
       });
   }
@@ -209,7 +231,6 @@ export class AnnouncementComponent implements OnInit {
       return;
     }
 
-    // bulk delete lang kapag walang selectedDeleteId
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row) => row.id),

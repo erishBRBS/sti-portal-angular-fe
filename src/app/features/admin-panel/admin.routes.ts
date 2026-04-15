@@ -14,6 +14,7 @@ import { ProfessorManagementComponent } from './user-management/professor/profes
 import { ParentManagementComponent } from './user-management/parent/parent.component';
 import { StudentParentComponent } from './association/student-parent/student-parent.component';
 import { StudentScheduleComponent } from './association/student-schedule/student-schedule.component';
+import { ChangeUserPasswordComponent } from './change-user-password/change-user-password.component';
 import { StudentFaceIdComponent } from './association/student-face-id/student-face-id.component';
 
 
@@ -25,8 +26,15 @@ export const AP_ROUTES: Routes = [
     data: { roles: ['Admin'] },
     component: AnnouncementComponent,
   },
+  //Change User Password
+  {
+    path: 'admin/change-user-password',
+    // canActivate: [roleGuard],
+    data: { roles: ['Admin'] },
+    component: ChangeUserPasswordComponent,
+  },
   //CURRICULUM MANAGEMENT
-    {
+  {
     path: 'admin/curriculum-management/course',
     data: { roles: ['Admin'] },
     // canActivate: [roleGuard],

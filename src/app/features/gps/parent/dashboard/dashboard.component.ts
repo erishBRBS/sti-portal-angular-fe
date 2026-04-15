@@ -3,9 +3,10 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -74,6 +75,7 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private parentStudentService = inject(ParentStudentService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   selectedStudent = '';
@@ -116,6 +118,7 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.initDashboard();
   }
 
@@ -125,6 +128,8 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
   }
 
   initDashboard(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.errorMessage = '';
     this.loadingChildren = true;
     this.loadingClasses = false;
@@ -182,6 +187,8 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
   }
 
   onStudentChange(value: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     const normalizedValue = String(value ?? '').trim();
 
     if (!normalizedValue) return;
@@ -195,6 +202,8 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadTodayClasses(studentId: number): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (!studentId) {
       this.todayClasses = [];
       this.updateStats();
@@ -316,6 +325,8 @@ export class ParentDashboardComponent implements OnInit, OnDestroy {
   }
 
   handleQuickAction(action: QuickAction): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
     this.router.navigateByUrl(url);
   }

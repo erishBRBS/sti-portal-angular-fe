@@ -1,14 +1,15 @@
 <main class="mx-auto w-full space-y-8 animate-fadeIn">
-  <!-- Header (layout/spacing natin) -->
   <div class="space-y-2 text-center md:text-left">
-    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">Dashboard</h2>
-    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">System Overview & Insights</p>
+    <h2 class="text-xl font-black tracking-tighter text-blue-600 dark:text-blue-400">
+      Dashboard
+    </h2>
+    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">
+      System Overview & Insights
+    </p>
   </div>
 
-  <!-- Center container (layout/spacing natin) -->
   <div class="flex justify-center px-4 sm:px-6 pb-6">
     <div class="w-full space-y-6">
-      <!-- Stats Cards (style like your sample) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div
           *ngFor="let stat of stats"
@@ -23,7 +24,8 @@
                 stat.color === 'yellow',
               'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400':
                 stat.color === 'green',
-              'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400': stat.color === 'red',
+              'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400':
+                stat.color === 'red'
             }"
           >
             <i [class]="stat.icon"></i>
@@ -33,6 +35,7 @@
             <p class="text-2xl font-bold text-slate-900 dark:text-white leading-none">
               {{ stat.value | number }}
             </p>
+
             <p class="text-sm text-slate-500 dark:text-slate-400 font-medium mt-1">
               {{ stat.label }}
             </p>
@@ -45,6 +48,13 @@
             </p>
           </div>
         </div>
+      </div>
+
+      <div
+        *ngIf="loading"
+        class="text-sm text-slate-500 dark:text-slate-400 font-medium text-center py-2"
+      >
+        Loading dashboard statistics...
       </div>
     </div>
   </div>

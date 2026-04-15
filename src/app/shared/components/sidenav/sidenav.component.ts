@@ -20,7 +20,7 @@ export class SidenavComponent implements OnDestroy {
   isAttendanceOpen = true;
   isGradesOpen = true;
 
-  isAdminPanelOpen = false;
+  isAdminPanelOpen = true;
   isUserManagementOpen = false;
   isCurriculumManagementOpen = false;
   isAssociationOpen = false;
