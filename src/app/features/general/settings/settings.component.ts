@@ -35,6 +35,8 @@ export class SettingsComponent {
 
   changePasswordVisible = false;
   isSavingPassword = false;
+  showNewPassword: boolean = false;
+  showConfirmPassword: boolean = false;
 
   constructor(private toast: ToastService) {}
 

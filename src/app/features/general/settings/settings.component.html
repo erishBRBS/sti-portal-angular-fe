@@ -70,24 +70,58 @@
         </div> -->
 
         <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+           <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
             New Password
           </label>
-          <input pInputText type="password" class="w-full" formControlName="newPassword" />
-          <small *ngIf="f.newPassword.touched && f.newPassword.errors?.['minlength']" class="text-rose-500 text-xs font-bold">
-            Minimum 8 characters
-          </small>
-        </div>
 
-        <div class="space-y-1">
-          <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
-            Confirm Password
-          </label>
-          <input pInputText type="password" class="w-full" formControlName="confirmPassword" />
-          <small *ngIf="(f.confirmPassword.touched || f.newPassword.touched) && mismatch" class="text-rose-500 text-xs font-bold">
-            Passwords do not match
-          </small>
-        </div>
+       <div class="relative">
+           <input
+            pInputText
+            [type]="showNewPassword ? 'text' : 'password'"
+            class="w-full pr-10"
+            formControlName="newPassword"
+           />
+
+            <!-- Eye Icon -->
+           <i
+            class="fas absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-500 text-xs"
+            [ngClass]="showNewPassword ? 'fa-eye-slash' : 'fa-eye'"
+            (click)="showNewPassword = !showNewPassword"
+         ></i>
+       </div>
+
+     <small *ngIf="f.newPassword.touched && f.newPassword.errors?.['minlength']"
+      class="text-rose-500 text-xs font-bold">
+      Minimum 8 characters
+    </small>
+  </div>
+
+   <div class="space-y-1">
+    <label class="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+     Confirm Password
+    </label>
+
+    <div class="relative">
+      <input
+      pInputText
+      [type]="showConfirmPassword ? 'text' : 'password'"
+      class="w-full pr-10"
+      formControlName="confirmPassword"
+    />
+
+    <!-- Eye Icon -->
+    <i
+      class="fas absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-500 text-xs"
+      [ngClass]="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"
+      (click)="showConfirmPassword = !showConfirmPassword"
+    ></i>
+  </div>
+
+  <small *ngIf="(f.confirmPassword.touched || f.newPassword.touched) && mismatch"
+    class="text-rose-500 text-xs font-bold">
+    Passwords do not match
+  </small>
+</div>
       </form>
     </div>
   </app-dialog>
