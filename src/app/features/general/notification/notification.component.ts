@@ -1,5 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { NotificationService } from '../../../services/general/notification.service';
 import { NotificationData } from '../../../models/general/notification/notification.model';
@@ -25,15 +31,20 @@ export class NotificationComponent implements OnInit {
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
+  private platformId = inject(PLATFORM_ID);
 
   alerts: AlertItem[] = [];
   loading = false;
 
   ngOnInit(): void {
-    this.loadNotifications();
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadNotifications();
+    }
   }
 
   loadNotifications(page = 1, perPage = 50): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.loading = true;
 
     this.notificationService.getNotifications(page, perPage).subscribe({
@@ -68,6 +79,8 @@ export class NotificationComponent implements OnInit {
   }
 
   openNotification(item: AlertItem): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (!item.announcementId) {
       this.toast.error('Error', 'No linked announcement found.');
       return;
