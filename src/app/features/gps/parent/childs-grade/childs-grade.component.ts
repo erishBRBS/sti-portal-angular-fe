@@ -3,9 +3,10 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
 
@@ -66,6 +67,7 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   private parentStudentService = inject(ParentStudentService);
   private academicYearService = inject(AcademicYearService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   students: Student[] = [];
@@ -130,6 +132,7 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.loadChildren();
   }
 
@@ -139,6 +142,8 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   }
 
   loadChildren(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.loading = true;
 
     this.parentStudentService
@@ -178,6 +183,8 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   }
 
   loadAcademicPeriods(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.academicYearService
       .getListAllAcademicYear()
       .pipe(takeUntil(this.destroy$))
@@ -227,6 +234,8 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   }
 
   onStudentChange(studentId: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.selectedStudent = String(studentId ?? '').trim();
     this.syncSelectedStudentDisplay();
 
@@ -240,12 +249,16 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   }
 
   onAcademicYearChange(academicYear: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.selectedAcademicYear = String(academicYear ?? '').trim();
     this.buildSemesterOptions();
     this.loadGrades();
   }
 
   onSemesterChange(semester: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.selectedSemester = String(semester ?? '').trim();
     this.resolveSelectedAcademicYearId();
     this.loadGrades();
@@ -296,6 +309,8 @@ export class ChildGradeComponent implements OnInit, OnDestroy {
   }
 
   loadGrades(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (!this.selectedStudent || !this.selectedAcademicYearId) {
       this.currentGrades = [];
       this.cdr.detectChanges();
