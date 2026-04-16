@@ -1,11 +1,4 @@
-import {
-  Component,
-  HostListener,
-  OnDestroy,
-  OnInit,
-  Inject,
-  PLATFORM_ID,
-} from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LoginModalComponent } from '../../auth/components/login-modal.component';
 
@@ -88,36 +81,31 @@ export class LandingPage implements OnInit, OnDestroy {
       src: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Gate Entry Terminal',
       title: 'Gate Entry Verification',
-      description:
-        'Facial recognition and RFID integration at the STI Bacoor main entrance.',
+      description: 'Facial recognition and RFID integration at the STI Bacoor main entrance.',
     },
     {
       src: 'https://www.iitms.co.in/rfid-based-attendance-system/img/what-is-rfid-img.webp',
       alt: 'Real-time Attendance',
       title: 'RFID Attendance Logs',
-      description:
-        'Automated classroom logging system with sub-second processing speed.',
+      description: 'Automated classroom logging system with sub-second processing speed.',
     },
     {
       src: 'https://images.unsplash.com/photo-1568992688065-536aad8a12f6?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Admin Control Center',
       title: 'Centralized Dashboard',
-      description:
-        'Master control panel for administrators to manage student and faculty records.',
+      description: 'Master control panel for administrators to manage student and faculty records.',
     },
     {
       src: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'Student Grade Portal',
       title: 'Academic Grade Portal',
-      description:
-        'Secure access for students to view preliminary and final grades.',
+      description: 'Secure access for students to view preliminary and final grades.',
     },
     {
       src: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=600&h=400&q=80',
       alt: 'System Security',
       title: 'Security & Audit Logs',
-      description:
-        'Complete transparency of all gate and portal activity for campus safety.',
+      description: 'Complete transparency of all gate and portal activity for campus safety.',
     },
   ];
 
@@ -139,14 +127,12 @@ export class LandingPage implements OnInit, OnDestroy {
   }
 
   nextImage() {
-    this.currentImageIndex =
-      (this.currentImageIndex + 1) % this.campusImages.length;
+    this.currentImageIndex = (this.currentImageIndex + 1) % this.campusImages.length;
   }
 
   prevImage() {
     this.currentImageIndex =
-      (this.currentImageIndex - 1 + this.campusImages.length) %
-      this.campusImages.length;
+      (this.currentImageIndex - 1 + this.campusImages.length) % this.campusImages.length;
   }
 
   selectImage(index: number) {
@@ -181,11 +167,6 @@ export class LandingPage implements OnInit, OnDestroy {
   // ---------------- Header / Scroll ----------------
   isMobileMenuOpen = false;
 
-  toggleMobileMenu() {
-    this.isMobileMenuOpen = false;
-    this.openLoginModal();
-  }
-
   scrollToSection(sectionId: string) {
     if (!isPlatformBrowser(this.platformId)) return;
     const el = document.getElementById(sectionId);
@@ -197,11 +178,17 @@ export class LandingPage implements OnInit, OnDestroy {
   isLoginModalOpen = false;
 
   openLoginModal() {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.isLoginModalOpen = true;
   }
 
   closeModal() {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.isLoginModalOpen = false;
+  }
+
+  toggleMobileMenu() {
+    this.openLoginModal();
   }
 
   // ---------------- Scroll animations ----------------
@@ -230,7 +217,7 @@ export class LandingPage implements OnInit, OnDestroy {
           if (entry.isIntersecting) entry.target.classList.add('visible');
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     document.querySelectorAll('.animate-on-scroll').forEach((el) => {
