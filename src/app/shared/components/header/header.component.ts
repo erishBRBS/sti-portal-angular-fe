@@ -1,13 +1,24 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  EventEmitter,
+  Inject,
+  OnDestroy,
+  OnInit,
+  Output,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { BadgeModule } from 'primeng/badge';
 import { TooltipModule } from 'primeng/tooltip';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
+
 import { AuthService } from '../../../core/services/auth.service';
 import { SessionUser } from '../../../core/model/auth.model';
+import { AnnouncementService } from '../../../services/general/announcement.service';
 
 @Component({
   selector: 'app-header',
@@ -30,17 +41,30 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   isDarkMode = false;
   isUserReady = false;
+  hasUnreadNotifications = false;
 
   displayName = '';
   roleLabel = '';
   currentDate = new Date();
   greeting = '';
   avatarUrl = '';
+  userKey = 'guest';
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private announcementService: AnnouncementService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   ngOnInit(): void {
     this.setGreeting();
+
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadTheme();
+    }
+
     this.loadLoggedInUser();
   }
 
@@ -71,14 +95,66 @@ export class HeaderComponent implements OnInit, OnDestroy {
         }
 
         this.roleLabel = roleName || '';
+        this.userKey = username || this.displayName || 'guest';
 
         const fallbackName = this.displayName || 'User';
         const fallbackAvatar = `https://api.dicebear.com/9.x/thumbs/svg?seed=${encodeURIComponent(fallbackName)}`;
 
-        this.avatarUrl = this.authService.$fileAPIUrl + imagePath || fallbackAvatar;
+        this.avatarUrl = imagePath
+          ? this.authService.$fileAPIUrl + imagePath
+          : fallbackAvatar;
 
         this.isUserReady = true;
+
+        if (isPlatformBrowser(this.platformId)) {
+          this.checkUnreadAnnouncements();
+        }
+
+        this.cdr.detectChanges();
       });
+  }
+
+  private getAnnouncementSeenKey(): string {
+    return `announcement_seen_at_${this.userKey}`;
+  }
+
+  private checkUnreadAnnouncements(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    this.announcementService.getAnnouncement(1, 1).subscribe({
+      next: (res: any) => {
+        const latest = Array.isArray(res?.data) ? res.data[0] : null;
+
+        if (!latest?.created_at) {
+          this.hasUnreadNotifications = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        const latestCreatedAt = new Date(latest.created_at).getTime();
+        const seenAt = localStorage.getItem(this.getAnnouncementSeenKey());
+        const seenTime = seenAt ? new Date(seenAt).getTime() : 0;
+
+        this.hasUnreadNotifications = latestCreatedAt > seenTime;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to check unread announcements:', err);
+        this.hasUnreadNotifications = false;
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  onNotificationClick(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.getAnnouncementSeenKey(), new Date().toISOString());
+    }
+
+    this.hasUnreadNotifications = false;
+    this.cdr.detectChanges();
+
+    this.router.navigate(['general/notifications']);
   }
 
   private setGreeting(): void {
@@ -90,6 +166,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.greeting = 'Good Afternoon';
     } else {
       this.greeting = 'Good Evening';
+    }
+  }
+
+  private loadTheme(): void {
+    if (typeof document === 'undefined' || typeof localStorage === 'undefined') return;
+
+    const savedTheme = localStorage.getItem('theme');
+    const isDark = savedTheme === 'dark' || document.documentElement.classList.contains('dark');
+
+    this.isDarkMode = isDark;
+
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
     }
   }
 

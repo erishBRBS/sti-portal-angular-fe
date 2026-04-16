@@ -3,9 +3,10 @@ import {
   Component,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SelectModule } from 'primeng/select';
 import { Subject, takeUntil } from 'rxjs';
@@ -59,6 +60,7 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   private parentStudentService = inject(ParentStudentService);
   private academicYearService = inject(AcademicYearService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
   private destroy$ = new Subject<void>();
 
   selectedClass: ChildClassBlock | null = null;
@@ -94,6 +96,7 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   classes: ChildClassBlock[] = [];
 
   ngOnInit(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
     this.loadChildren();
   }
 
@@ -118,6 +121,8 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   loadChildren(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.loadingStudents = true;
     this.errorMessage = '';
 
@@ -159,6 +164,8 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   loadAcademicPeriods(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.academicYearService
       .getListAllAcademicYear()
       .pipe(takeUntil(this.destroy$))
@@ -211,6 +218,8 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   onStudentChange(value: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.selectedStudent = String(value ?? '').trim();
 
     if (!this.selectedStudent || !this.selectedAcademicYearId) {
@@ -223,12 +232,16 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   onAcademicYearChange(value: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.selectedAcademicYear = String(value ?? '').trim();
     this.buildSemesterOptions();
     this.loadSchedule();
   }
 
   onSemesterChange(value: string): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     this.selectedSemester = String(value ?? '').trim();
     this.resolveSelectedAcademicYearId();
     this.loadSchedule();
@@ -265,6 +278,8 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   loadSchedule(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     if (!this.selectedStudent || !this.selectedAcademicYearId) {
       this.classes = [];
       this.cdr.detectChanges();
@@ -402,6 +417,8 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   openDetails(classInfo: ChildClassBlock, event?: Event): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     event?.stopPropagation();
     this.selectedClass = { ...classInfo };
     this.isModalOpen = true;
@@ -409,6 +426,8 @@ export class ChildScheduleComponent implements OnInit, OnDestroy {
   }
 
   closeModal(event?: Event): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
     event?.stopPropagation();
     this.isModalOpen = false;
     this.selectedClass = null;

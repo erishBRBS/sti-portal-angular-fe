@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { TokenStorageService } from '../../core/services/token-storage.service';
 import { ApiResponse, ApiResponseNoData } from '../../models/pagination.model';
@@ -37,6 +38,14 @@ export class AnnouncementService {
   private readonly getAnnouncementByIdUrl = `${this.baseAPIUrl}${AnnouncementEndPoints.getAnnouncementById}`;
   private readonly updateAnnouncementUrl = `${this.baseAPIUrl}${AnnouncementEndPoints.updateAnnouncement}`;
   private readonly deleteAnnouncementUrl = `${this.baseAPIUrl}${AnnouncementEndPoints.deleteAnnouncement}`;
+
+  // ✅ refresh trigger for header / other listeners
+  private announcementChangedSource = new Subject<void>();
+  announcementChanged$ = this.announcementChangedSource.asObservable();
+
+  notifyAnnouncementChanged(): void {
+    this.announcementChangedSource.next();
+  }
 
   private authHeaders(): HttpHeaders {
     return new HttpHeaders({
@@ -85,7 +94,9 @@ export class AnnouncementService {
 
     return this.http.post<AnnouncementResponse>(this.createAnnouncementUrl, fd, {
       headers: this.authHeaders(),
-    });
+    }).pipe(
+      tap(() => this.notifyAnnouncementChanged())
+    );
   }
 
   updateAnnouncement(
@@ -113,12 +124,16 @@ export class AnnouncementService {
 
     return this.http.post<AnnouncementResponse>(url, fd, {
       headers: this.authHeaders(),
-    });
+    }).pipe(
+      tap(() => this.notifyAnnouncementChanged())
+    );
   }
 
   deleteAnnouncement(payload: DeletePayload): Observable<DeleteAnnouncementResponse> {
     return this.http.post<DeleteAnnouncementResponse>(this.deleteAnnouncementUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
-    });
+    }).pipe(
+      tap(() => this.notifyAnnouncementChanged())
+    );
   }
 }
