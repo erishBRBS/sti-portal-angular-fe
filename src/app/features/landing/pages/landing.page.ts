@@ -153,12 +153,16 @@ export class LandingPage implements OnInit, OnDestroy {
   @HostListener('touchstart', ['$event'])
   onTouchStart(event: TouchEvent) {
     if (!isPlatformBrowser(this.platformId)) return;
+    if (this.isLoginModalOpen) return;
+
     this.touchStartX = event.touches[0].clientX;
   }
 
   @HostListener('touchend', ['$event'])
   onTouchEnd(event: TouchEvent) {
     if (!isPlatformBrowser(this.platformId)) return;
+    if (this.isLoginModalOpen) return;
+
     const touchEndX = event.changedTouches[0].clientX;
     const diff = touchEndX - this.touchStartX;
     if (Math.abs(diff) > 50) diff > 0 ? this.prevImage() : this.nextImage();
