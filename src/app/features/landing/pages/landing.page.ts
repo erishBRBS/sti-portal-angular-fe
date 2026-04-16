@@ -186,6 +186,7 @@ export class LandingPage implements OnInit, OnDestroy {
 
   openLoginModal() {
     if (!isPlatformBrowser(this.platformId)) return;
+    this.isMobileMenuOpen = false;
     this.isLoginModalOpen = true;
   }
 
@@ -195,7 +196,8 @@ export class LandingPage implements OnInit, OnDestroy {
   }
 
   toggleMobileMenu() {
-    this.openLoginModal();
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 
   // ---------------- Scroll animations ----------------
