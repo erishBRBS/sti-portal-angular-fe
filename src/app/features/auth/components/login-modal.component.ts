@@ -3,11 +3,8 @@ import {
   EventEmitter,
   Input,
   Output,
-  OnDestroy,
-  Inject,
-  PLATFORM_ID,
 } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
   Validators,
@@ -24,24 +21,20 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   template: `
-    <div
-      *ngIf="open"
-      class="fixed inset-0 z-[9999] bg-[#0a192f]/60"
-    >
-      <button
-        type="button"
-        class="absolute inset-0 touch-manipulation"
+    <div *ngIf="open" class="fixed inset-0 z-[99999]">
+      <div
+        class="absolute inset-0 bg-[#0a192f]/60"
         (click)="handleClose()"
-        aria-label="Close modal backdrop"
-      ></button>
+      ></div>
 
       <div
-        class="absolute inset-0 overflow-y-auto overscroll-contain p-4 sm:p-6 pointer-events-none"
+        class="absolute inset-0 overflow-y-auto"
+        style="-webkit-overflow-scrolling: touch;"
       >
-        <div class="flex min-h-full items-center justify-center">
+        <div class="flex min-h-full items-center justify-center p-4 sm:p-6">
           <div
             (click)="$event.stopPropagation()"
-            class="pointer-events-auto relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl touch-manipulation"
+            class="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
           >
             <div class="relative bg-gradient-to-br from-[#1a4b8c] to-[#2d68b8] p-5 text-center">
               <button
@@ -49,6 +42,7 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
                 (click)="handleClose()"
                 class="absolute right-3 top-3 rounded-md p-2 text-white/70 transition-all hover:text-white active:scale-95"
                 aria-label="Close"
+                style="touch-action: manipulation;"
               >
                 <i class="fas fa-times text-sm"></i>
               </button>
@@ -75,7 +69,8 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
                     [class.text-[#1a4b8c]]="form.get('role')?.value === r"
                     [class.shadow-sm]="form.get('role')?.value === r"
                     [class.text-gray-500]="form.get('role')?.value !== r"
-                    class="flex-1 rounded-lg py-2 text-[10px] font-bold uppercase transition-all touch-manipulation active:scale-[0.98]"
+                    class="flex-1 rounded-lg py-2 text-[10px] font-bold uppercase transition-all active:scale-[0.98]"
+                    style="touch-action: manipulation;"
                   >
                     {{ r }}
                   </button>
@@ -125,9 +120,10 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
 
                     <button
                       type="button"
-                      class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-3 py-2 text-xs text-gray-500 touch-manipulation active:scale-95"
+                      class="absolute right-2 top-1/2 -translate-y-1/2 rounded-md px-3 py-2 text-xs text-gray-500 active:scale-95"
                       (click)="showPassword = !showPassword"
                       aria-label="Toggle password visibility"
+                      style="touch-action: manipulation;"
                     >
                       <i [ngClass]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
                     </button>
@@ -158,7 +154,8 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
                 <button
                   type="submit"
                   [disabled]="form.invalid || loading"
-                  class="mt-2 w-full rounded-xl bg-[#1a4b8c] py-3 text-sm font-bold text-white shadow-md transition-all touch-manipulation active:scale-[0.98] hover:bg-[#2d68b8] disabled:cursor-not-allowed disabled:bg-gray-300"
+                  class="mt-2 w-full rounded-xl bg-[#1a4b8c] py-3 text-sm font-bold text-white shadow-md transition-all active:scale-[0.98] hover:bg-[#2d68b8] disabled:cursor-not-allowed disabled:bg-gray-300"
+                  style="touch-action: manipulation;"
                 >
                   {{ loading ? 'Signing in...' : 'Sign In' }}
                 </button>
@@ -174,19 +171,8 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
     </div>
   `,
 })
-export class LoginModalComponent implements OnDestroy {
-  private _open = false;
-  private lockedScrollY = 0;
-
-  @Input()
-  set open(value: boolean) {
-    this._open = value;
-    this.syncBodyScroll();
-  }
-  get open(): boolean {
-    return this._open;
-  }
-
+export class LoginModalComponent {
+  @Input() open = false;
   @Output() close = new EventEmitter<void>();
 
   roles: RoleUI[] = ['Student', 'Parent', 'Professor', 'Admin'];
@@ -201,17 +187,12 @@ export class LoginModalComponent implements OnDestroy {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    @Inject(PLATFORM_ID) private platformId: object
   ) {
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]],
       role: ['Student' as RoleUI, Validators.required],
     });
-  }
-
-  ngOnDestroy(): void {
-    this.unlockBodyScroll();
   }
 
   touchedInvalid(name: 'username' | 'password') {
@@ -277,42 +258,5 @@ export class LoginModalComponent implements OnDestroy {
           err?.error?.message ?? 'Login failed. Please try again.';
       },
     });
-  }
-
-  private syncBodyScroll(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    if (this._open) {
-      this.lockBodyScroll();
-    } else {
-      this.unlockBodyScroll();
-    }
-  }
-
-  private lockBodyScroll(): void {
-    this.lockedScrollY = window.scrollY || window.pageYOffset || 0;
-
-    document.body.style.position = 'fixed';
-    document.body.style.top = `-${this.lockedScrollY}px`;
-    document.body.style.left = '0';
-    document.body.style.right = '0';
-    document.body.style.width = '100%';
-    document.body.style.overflow = 'hidden';
-  }
-
-  private unlockBodyScroll(): void {
-    if (!isPlatformBrowser(this.platformId)) return;
-
-    const top = document.body.style.top;
-    const scrollY = top ? Math.abs(parseInt(top, 10)) : this.lockedScrollY;
-
-    document.body.style.position = '';
-    document.body.style.top = '';
-    document.body.style.left = '';
-    document.body.style.right = '';
-    document.body.style.width = '';
-    document.body.style.overflow = '';
-
-    window.scrollTo(0, scrollY || 0);
   }
 }
