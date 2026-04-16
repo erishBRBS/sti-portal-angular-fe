@@ -1,6 +1,19 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormBuilder, Validators, ReactiveFormsModule, FormGroup } from '@angular/forms';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnDestroy,
+  Inject,
+  PLATFORM_ID,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  FormBuilder,
+  Validators,
+  ReactiveFormsModule,
+  FormGroup,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -13,126 +26,159 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
   template: `
     <div
       *ngIf="open"
-      class="fixed inset-0 z-[100] flex items-center justify-center bg-[#0a192f]/60 backdrop-blur-sm p-4 animate-fadeIn"
+      class="fixed inset-0 z-[9999] overflow-y-auto overscroll-contain bg-[#0a192f]/60 backdrop-blur-sm"
     >
-      <div class="absolute inset-0" (click)="close.emit()"></div>
+      <div class="absolute inset-0" (click)="handleClose()"></div>
 
       <div
-        class="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden relative z-10 animate-zoomIn95 border border-gray-100"
+        class="relative flex min-h-[100dvh] items-center justify-center p-4 sm:p-6"
       >
-        <div class="bg-gradient-to-br from-[#1a4b8c] to-[#2d68b8] p-5 text-center relative">
-          <button
-            type="button"
-            (click)="handleClose()"
-            class="absolute top-3 right-3 text-white/50 hover:text-white transition-all"
-            aria-label="Close"
-          >
-            <i class="fas fa-times text-sm"></i>
-          </button>
-
-          <div class="w-12 h-12 bg-white rounded-xl mx-auto mb-2 flex items-center justify-center shadow-md">
-            <i class="fas fa-user-shield text-[#1a4b8c] text-xl"></i>
-          </div>
-
-          <h2 class="text-white font-bold text-base tracking-tight">Portal Login</h2>
-        </div>
-
-        <div class="p-6">
-          <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
-            <div class="flex bg-gray-100 p-1 rounded-xl mb-4">
-              <button
-                *ngFor="let r of roles"
-                type="button"
-                (click)="form.patchValue({ role: r })"
-                [class.bg-white]="form.get('role')?.value === r"
-                [class.text-[#1a4b8c]]="form.get('role')?.value === r"
-                [class.shadow-sm]="form.get('role')?.value === r"
-                [class.text-gray-500]="form.get('role')?.value !== r"
-                class="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all"
-              >
-                {{ r }}
-              </button>
-            </div>
-
-            <div class="space-y-3">
-              <div class="relative">
-                <i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                <input
-                  type="text"
-                  formControlName="username"
-                  placeholder="Username"
-                  class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl
-                         text-gray-800 placeholder:text-gray-400 caret-blue-600
-                         focus:border-[#1a4b8c] focus:bg-white outline-none transition-all text-sm"
-                  [class.border-red-400]="touchedInvalid('username')"
-                />
-              </div>
-            </div>
-              <p *ngIf="touchedInvalid('username')" class="text-[11px] text-red-600 font-semibold -mt-2">
-                Username is required.
-              </p>
-
-          <div class="relative">
-             <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="Password"
-              class="w-full pl-10 pr-10 py-2.5 bg-gray-50 border border-gray-200 rounded-xl
-              text-gray-800 placeholder:text-gray-400 caret-blue-600
-              focus:border-[#1a4b8c] focus:bg-white outline-none transition-all text-sm"
-              [class.border-red-400]="touchedInvalid('password')"/>
-
-           <!-- Eye Icon -->
-            <i
-             class="fas absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 text-xs"
-             [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
-             (click)="showPassword = !showPassword"></i>
-        </div>
-
-            <div class="flex justify-end">
-              <a class="text-[11px] font-semibold text-[#1a4b8c] hover:underline cursor-pointer">
-                Forgot Password?
-              </a>
-            </div>
-
-            <p *ngIf="loginError" class="text-center text-red-600 text-xs font-semibold">
-              {{ loginError }}
-            </p>
-
-            <p *ngIf="message" class="text-center text-emerald-600 text-xs font-semibold">
-              {{ message }}
-            </p>
-
+        <div
+          (click)="$event.stopPropagation()"
+          class="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl"
+        >
+          <div class="relative bg-gradient-to-br from-[#1a4b8c] to-[#2d68b8] p-5 text-center">
             <button
-              type="submit"
-              [disabled]="form.invalid || loading"
-              class="w-full bg-[#1a4b8c] hover:bg-[#2d68b8] disabled:bg-gray-300 text-white font-bold py-3 rounded-xl shadow-md transform active:scale-[0.98] transition-all text-sm mt-2 disabled:cursor-not-allowed"
+              type="button"
+              (click)="handleClose()"
+              class="absolute right-3 top-3 text-white/60 transition-all hover:text-white"
+              aria-label="Close"
             >
-              {{ loading ? 'Signing in...' : 'Sign In' }}
+              <i class="fas fa-times text-sm"></i>
             </button>
 
-            <p class="text-center text-[11px] text-gray-400 mt-4">
-              STI College Bacoor • Smart Student Portal
-            </p>
-            
-          </form>
-          
+            <div
+              class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-md"
+            >
+              <i class="fas fa-user-shield text-xl text-[#1a4b8c]"></i>
+            </div>
+
+            <h2 class="text-base font-bold tracking-tight text-white">
+              Portal Login
+            </h2>
+          </div>
+
+          <div class="p-6">
+            <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4">
+              <div class="mb-4 flex rounded-xl bg-gray-100 p-1">
+                <button
+                  *ngFor="let r of roles"
+                  type="button"
+                  (click)="form.patchValue({ role: r })"
+                  [class.bg-white]="form.get('role')?.value === r"
+                  [class.text-[#1a4b8c]]="form.get('role')?.value === r"
+                  [class.shadow-sm]="form.get('role')?.value === r"
+                  [class.text-gray-500]="form.get('role')?.value !== r"
+                  class="flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase transition-all"
+                >
+                  {{ r }}
+                </button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="relative">
+                  <i
+                    class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+                  ></i>
+                  <input
+                    type="text"
+                    formControlName="username"
+                    placeholder="Username"
+                    class="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-4 text-sm text-gray-800 caret-blue-600 outline-none transition-all placeholder:text-gray-400 focus:border-[#1a4b8c] focus:bg-white"
+                    [class.border-red-400]="touchedInvalid('username')"
+                  />
+                </div>
+
+                <p
+                  *ngIf="touchedInvalid('username')"
+                  class="-mt-2 text-[11px] font-semibold text-red-600"
+                >
+                  Username is required.
+                </p>
+
+                <div class="relative">
+                  <i
+                    class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+                  ></i>
+
+                  <input
+                    [type]="showPassword ? 'text' : 'password'"
+                    formControlName="password"
+                    placeholder="Password"
+                    class="w-full rounded-xl border border-gray-200 bg-gray-50 py-2.5 pl-10 pr-10 text-sm text-gray-800 caret-blue-600 outline-none transition-all placeholder:text-gray-400 focus:border-[#1a4b8c] focus:bg-white"
+                    [class.border-red-400]="touchedInvalid('password')"
+                  />
+
+                  <button
+                    type="button"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+                    (click)="showPassword = !showPassword"
+                    aria-label="Toggle password visibility"
+                  >
+                    <i [ngClass]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                  </button>
+                </div>
+
+                <p
+                  *ngIf="touchedInvalid('password')"
+                  class="-mt-2 text-[11px] font-semibold text-red-600"
+                >
+                  Password is required.
+                </p>
+              </div>
+
+              <div class="flex justify-end">
+                <a class="cursor-pointer text-[11px] font-semibold text-[#1a4b8c] hover:underline">
+                  Forgot Password?
+                </a>
+              </div>
+
+              <p *ngIf="loginError" class="text-center text-xs font-semibold text-red-600">
+                {{ loginError }}
+              </p>
+
+              <p *ngIf="message" class="text-center text-xs font-semibold text-emerald-600">
+                {{ message }}
+              </p>
+
+              <button
+                type="submit"
+                [disabled]="form.invalid || loading"
+                class="mt-2 w-full rounded-xl bg-[#1a4b8c] py-3 text-sm font-bold text-white shadow-md transition-all active:scale-[0.98] hover:bg-[#2d68b8] disabled:cursor-not-allowed disabled:bg-gray-300"
+              >
+                {{ loading ? 'Signing in...' : 'Sign In' }}
+              </button>
+
+              <p class="mt-4 text-center text-[11px] text-gray-400">
+                STI College Bacoor • Smart Student Portal
+              </p>
+            </form>
+          </div>
         </div>
       </div>
     </div>
   `,
 })
-export class LoginModalComponent {
-  @Input() open = false;
+export class LoginModalComponent implements OnDestroy {
+  private _open = false;
+  private lockedScrollY = 0;
+
+  @Input()
+  set open(value: boolean) {
+    this._open = value;
+    this.syncBodyScroll();
+  }
+  get open(): boolean {
+    return this._open;
+  }
+
   @Output() close = new EventEmitter<void>();
 
   roles: RoleUI[] = ['Student', 'Parent', 'Professor', 'Admin'];
   loading = false;
   message: string | null = null;
   loginError: string | null = null;
-  showPassword: boolean = false;
+  showPassword = false;
 
   form: FormGroup;
 
@@ -140,12 +186,17 @@ export class LoginModalComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    @Inject(PLATFORM_ID) private platformId: object
   ) {
     this.form = this.fb.group({
       username: ['', [Validators.required]],
       password: ['', [Validators.required]],
       role: ['Student' as RoleUI, Validators.required],
     });
+  }
+
+  ngOnDestroy(): void {
+    this.unlockBodyScroll();
   }
 
   touchedInvalid(name: 'username' | 'password') {
@@ -176,7 +227,6 @@ export class LoginModalComponent {
     this.loginError = null;
 
     const { username, password, role } = this.form.value;
-
     const roleParam = String(role).toLowerCase();
 
     this.authService.login(roleParam, { username, password }).subscribe({
@@ -208,8 +258,46 @@ export class LoginModalComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.loginError = err?.error?.message ?? 'Login failed. Please try again.';
+        this.loginError =
+          err?.error?.message ?? 'Login failed. Please try again.';
       },
     });
+  }
+
+  private syncBodyScroll(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    if (this._open) {
+      this.lockBodyScroll();
+    } else {
+      this.unlockBodyScroll();
+    }
+  }
+
+  private lockBodyScroll(): void {
+    this.lockedScrollY = window.scrollY || window.pageYOffset || 0;
+
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${this.lockedScrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+  }
+
+  private unlockBodyScroll(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    const top = document.body.style.top;
+    const scrollY = top ? Math.abs(parseInt(top, 10)) : this.lockedScrollY;
+
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+
+    window.scrollTo(0, scrollY || 0);
   }
 }
