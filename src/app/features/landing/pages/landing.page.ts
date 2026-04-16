@@ -165,7 +165,10 @@ export class LandingPage implements OnInit, OnDestroy {
 
     const touchEndX = event.changedTouches[0].clientX;
     const diff = touchEndX - this.touchStartX;
-    if (Math.abs(diff) > 50) diff > 0 ? this.prevImage() : this.nextImage();
+
+    if (Math.abs(diff) > 50) {
+      diff > 0 ? this.prevImage() : this.nextImage();
+    }
   }
 
   // ---------------- Header / Scroll ----------------
