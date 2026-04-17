@@ -2,15 +2,22 @@ import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { SessionUser } from '../model/auth.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class TokenStorageService {
   private readonly TOKEN_KEY = 'token';
   private readonly USER_KEY = 'user';
 
-  constructor(@Inject(PLATFORM_ID) private platformId: object) {}
+  constructor(@Inject(PLATFORM_ID) private readonly platformId: Object) {}
 
   private get isBrowser(): boolean {
     return isPlatformBrowser(this.platformId);
+  }
+
+  setToken(token: string): void {
+    if (!this.isBrowser) return;
+    localStorage.setItem(this.TOKEN_KEY, token);
   }
 
   getToken(): string | null {
@@ -18,9 +25,14 @@ export class TokenStorageService {
     return localStorage.getItem(this.TOKEN_KEY);
   }
 
-  setToken(token: string): void {
+  removeToken(): void {
     if (!this.isBrowser) return;
-    localStorage.setItem(this.TOKEN_KEY, token);
+    localStorage.removeItem(this.TOKEN_KEY);
+  }
+
+  setUser(user: SessionUser): void {
+    if (!this.isBrowser) return;
+    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   getUser(): SessionUser | null {
@@ -32,13 +44,14 @@ export class TokenStorageService {
     try {
       return JSON.parse(raw) as SessionUser;
     } catch {
+      localStorage.removeItem(this.USER_KEY);
       return null;
     }
   }
 
-  setUser(user: SessionUser): void {
+  removeUser(): void {
     if (!this.isBrowser) return;
-    localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    localStorage.removeItem(this.USER_KEY);
   }
 
   clearAll(): void {
