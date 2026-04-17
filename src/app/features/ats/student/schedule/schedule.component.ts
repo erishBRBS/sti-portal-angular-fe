@@ -1,5 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  PLATFORM_ID,
+  inject,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subject, filter, takeUntil } from 'rxjs';
 
@@ -27,6 +34,9 @@ interface SubjectSchedule {
   templateUrl: './schedule.component.html',
 })
 export class StudentScheduleComponent implements OnInit, OnDestroy {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private router = inject(Router);
   private studentService = inject(StudentService);
   private cdr = inject(ChangeDetectorRef);
@@ -44,6 +54,8 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
   semesterLabel = '';
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+
     this.loadMySchedules();
 
     this.router.events
@@ -64,6 +76,8 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
   }
 
   private loadMySchedules(): void {
+    if (!this.isBrowser) return;
+
     this.loadingSchedules = true;
     this.cdr.detectChanges();
 
@@ -179,6 +193,8 @@ export class StudentScheduleComponent implements OnInit, OnDestroy {
   }
 
   openDetails(subjectInfo: SubjectSchedule, event?: Event): void {
+    if (!this.isBrowser) return;
+
     event?.stopPropagation();
     this.selectedSubject = { ...subjectInfo };
     this.cdr.detectChanges();
