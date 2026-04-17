@@ -1,6 +1,13 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { finalize } from 'rxjs/operators';
 import {
   DataTableComponent,
   TableColumn,
@@ -23,7 +30,7 @@ interface AttendanceRecord {
 @Component({
   selector: 'app-gate-attendance',
   standalone: true,
-  imports: [CommonModule, DataTableComponent, FormsModule,],
+  imports: [CommonModule, DataTableComponent, FormsModule],
   templateUrl: './gate-attendance.component.html',
 })
 export class GateAttendanceComponent implements OnInit {
@@ -31,21 +38,27 @@ export class GateAttendanceComponent implements OnInit {
   originalRecords: AttendanceRecord[] = [];
   columns: TableColumn<AttendanceRecord>[] = [];
 
-  constructor(private gateAttendanceService: GateAttendanceService) {}
-
   rows = 12;
   first = 0;
   totalRecords = 0;
   loading = false;
-  searchTerm: string = '';
+  searchTerm = '';
 
-  
-
-  
+  constructor(
+    private gateAttendanceService: GateAttendanceService,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: object
+  ) {}
 
   ngOnInit(): void {
     this.initializeColumns();
-    this.loadAttendance();
+
+    // Huwag mag-fetch habang SSR
+    if (isPlatformBrowser(this.platformId)) {
+      setTimeout(() => {
+        this.loadAttendance();
+      });
+    }
   }
 
   initializeColumns(): void {
@@ -59,7 +72,6 @@ export class GateAttendanceComponent implements OnInit {
         field: 'name',
         header: 'Name',
         sortable: true,
-        
       },
       {
         field: 'courseSection',
@@ -77,126 +89,140 @@ export class GateAttendanceComponent implements OnInit {
         field: 'timeIn',
         header: 'Time In',
         sortable: true,
-       
       },
       {
         field: 'timeOut',
         header: 'Time Out',
         sortable: true,
-        
       },
     ];
   }
 
   formatTime(time: string): string {
-  if (!time || time === '-') return '-';
+    if (!time || time === '-') return '-';
 
-  const [hours, minutes, seconds] = time.split(':').map(Number);
-  const date = new Date();
-  date.setHours(hours, minutes, seconds);
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    const date = new Date();
+    date.setHours(hours, minutes, seconds);
 
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
-}
-
-
-
-loadAttendance(): void {
-  this.loading = true;
-
-const params = {
-  student_no: '000001'
-};
-
-  this.gateAttendanceService.getGateMonitoring(params)
-    .subscribe({
-      next: (res: any) => {
-        console.log('API response:', res);
-
-       const data = Array.isArray(res?.data) ? res.data : [];
-          this.attendanceRecords = data
-            .filter((record: any) => record.student_no && record.full_name)
-            .map((record: any) => ({
-              id: record.id,
-              studentId: record.student_no,
-              name: record.full_name,
-              course: record.course,
-              section: record.section,
-              date: record.date,
-              timeIn: this.formatTime(record.time_in),
-              timeOut: this.formatTime(record.time_out),
-              courseSection: `${record.course} - Section ${record.section}`,
-           }));
-
-        this.originalRecords = [...this.attendanceRecords];
-        this.totalRecords = data.length;
-
-        setTimeout(() => {
-          this.loading = false;
-        });
-      },
-      error: (err) => {
-        console.error('Error loading attendance:', err);
-        this.loading = false;
-      }
+    return date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: true,
     });
-}
+  }
+
+  private mapRecords(data: any[]): AttendanceRecord[] {
+    return data
+      .filter((record: any) => record.student_no && record.full_name)
+      .map((record: any) => ({
+        id: String(record.id),
+        studentId: record.student_no,
+        name: record.full_name,
+        course: record.course ?? '',
+        section: record.section ?? '',
+        date: record.date,
+        timeIn: this.formatTime(record.time_in),
+        timeOut: this.formatTime(record.time_out),
+        courseSection: `${record.course ?? ''} - Section ${record.section ?? ''}`,
+      }));
+  }
+
+  loadAttendance(): void {
+    this.loading = true;
+
+    const params = {
+      student_no: '000001',
+    };
+
+    this.gateAttendanceService
+      .getGateMonitoring(params)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (res: any) => {
+          console.log('API response:', res);
+
+          const data = Array.isArray(res?.data) ? res.data : [];
+          this.attendanceRecords = this.mapRecords(data);
+          this.originalRecords = [...this.attendanceRecords];
+          this.totalRecords = this.attendanceRecords.length;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading attendance:', err);
+
+          if (err?.status === 401) {
+            console.warn('Unauthorized request. Possible missing token during SSR or expired token.');
+          }
+
+          this.attendanceRecords = [];
+          this.originalRecords = [];
+          this.totalRecords = 0;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  loadAttendancePage(page: number): void {
+    this.loading = true;
+
+    const params = {
+      page,
+      per_page: this.rows,
+      student_no: '000001',
+    };
+
+    this.gateAttendanceService
+      .getGateMonitoring(params)
+      .pipe(
+        finalize(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (res: any) => {
+          const data = Array.isArray(res?.data) ? res.data : [];
+          this.attendanceRecords = this.mapRecords(data);
+          this.originalRecords = [...this.attendanceRecords];
+          this.totalRecords = res?.total ?? this.attendanceRecords.length;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error loading attendance page:', err);
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  onPageChanged(event: PageChangedEvent): void {
+    this.rows = event.perPage;
+    this.first = event.first;
+
+    const page = Math.floor(this.first / this.rows) + 1;
+    this.loadAttendancePage(page);
+  }
+
   onRowClicked(row: AttendanceRecord): void {
     console.log('Row clicked:', row);
   }
 
-  loadAttendancePage(page: number): void {
-  this.loading = true;
-
- this.gateAttendanceService.getGateMonitoring()
-    .subscribe({
-      next: (res: any) => {
-        const data = res?.data || [];
-
-          this.attendanceRecords = data.map((record: any) => ({
-              id: record.id,
-              studentId: record.student_no,
-              name: record.full_name,
-              course: record.course,
-              section: record.section,
-              date: record.date,
-              timeIn: this.formatTime(record.time_in),
-              timeOut: this.formatTime(record.time_out),
-              courseSection: `${record.course} - Section ${record.section}`,
-           }));
-
-        this.totalRecords = res?.total || 0;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
-    });
-}
-
-onPageChanged(event: PageChangedEvent): void {
-  this.rows = event.perPage;
-  this.first = event.first;
-
-  const page = Math.floor(this.first / this.rows) + 1;
-
-  this.loadAttendancePage(page);
-}
-
   filterData(): void {
-  const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm.toLowerCase().trim();
 
-  this.attendanceRecords = this.originalRecords.filter(record =>
-    record.studentId.toLowerCase().includes(term) ||
-    record.name.toLowerCase().includes(term) ||
-    record.course.toLowerCase().includes(term) ||
-    record.section.toLowerCase().includes(term)
-  );
+    this.attendanceRecords = this.originalRecords.filter((record) =>
+      record.studentId.toLowerCase().includes(term) ||
+      record.name.toLowerCase().includes(term) ||
+      record.course.toLowerCase().includes(term) ||
+      record.section.toLowerCase().includes(term)
+    );
 
-  this.totalRecords = this.attendanceRecords.length;
-}
+    this.totalRecords = this.attendanceRecords.length;
+  }
 }
