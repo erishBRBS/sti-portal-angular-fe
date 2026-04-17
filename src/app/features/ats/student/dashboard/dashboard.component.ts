@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
@@ -40,6 +40,9 @@ interface QuickAction {
   templateUrl: './dashboard.component.html',
 })
 export class StudentDashboardComponent implements OnInit, OnDestroy {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private router = inject(Router);
   private studentService = inject(StudentService);
   private cdr = inject(ChangeDetectorRef);
@@ -63,6 +66,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   classes: TodayClass[] = [];
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
+
     this.setTodayDate();
     this.loadMySchedules();
 
@@ -85,11 +90,15 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   }
 
   handleQuickAction(action: QuickAction): void {
+    if (!this.isBrowser) return;
+
     const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
     this.router.navigateByUrl(url);
   }
 
   private setTodayDate(): void {
+    if (!this.isBrowser) return;
+
     this.todayDate = new Date().toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -99,6 +108,8 @@ export class StudentDashboardComponent implements OnInit, OnDestroy {
   }
 
   private loadMySchedules(): void {
+    if (!this.isBrowser) return;
+
     this.loadingSchedules = true;
     this.cdr.detectChanges();
 

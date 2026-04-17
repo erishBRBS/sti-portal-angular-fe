@@ -1,5 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import { ProfessorService } from '../../../../services/ats/professor/professor.service';
 import { ProfessorSchedule } from '../../../../models/ats/professor/professor.model';
 
@@ -23,6 +29,9 @@ interface ClassBlock {
   templateUrl: './schedule.component.html',
 })
 export class ProfessorScheduleComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private professorService = inject(ProfessorService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -38,10 +47,13 @@ export class ProfessorScheduleComponent implements OnInit {
   classes: ClassBlock[] = [];
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadSchedules();
   }
 
   loadSchedules(): void {
+    if (!this.isBrowser) return;
+
     this.isLoading = true;
     this.cdr.detectChanges();
 
@@ -186,6 +198,8 @@ export class ProfessorScheduleComponent implements OnInit {
   }
 
   openDetails(classInfo: ClassBlock, event?: Event): void {
+    if (!this.isBrowser) return;
+
     event?.stopPropagation();
     this.selectedClass = { ...classInfo };
     this.cdr.detectChanges();

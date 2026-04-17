@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -16,6 +24,7 @@ import {
 } from '../../../../shared/components/view-details/view-details.component';
 import { TimeHelper } from '../../../../helper/time-helper';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+
 type UserRow = {
   id: number;
   course_code: string;
@@ -34,6 +43,7 @@ type UserRow = {
   selector: 'sti-schedule',
   standalone: true,
   imports: [
+    CommonModule,
     DataTableComponent,
     ScheduleModalComponent,
     ViewDetailsComponent,
@@ -43,6 +53,9 @@ type UserRow = {
   styleUrl: './schedule.component.css',
 })
 export class ScheduleComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<UserRow>[] = [
     { field: 'course_code', header: 'Course Code', sortable: true, filter: true },
     { field: 'section_name', header: 'Section Name', sortable: true, filter: true },
@@ -84,7 +97,7 @@ export class ScheduleComponent {
   showDeleteDialog = false;
   selectedDeleteId: number | null = null;
 
-  selectedRows: any[] = [];
+  selectedRows: UserRow[] = [];
 
   scheduleConfig: DetailModalConfig = {
     title: 'Schedule Details',
@@ -94,9 +107,10 @@ export class ScheduleComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadSchedule(1, this.rowsPerPage);
   }
-  // MARK: - This part is for all button function
+
   onRow(row: UserRow) {
     console.log('row click', row);
   }
@@ -112,10 +126,12 @@ export class ScheduleComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
-    
+
     input.onchange = (event: any) => {
       const file: File = event.target.files[0];
 
@@ -137,10 +153,13 @@ export class ScheduleComponent {
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.scheduleModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a subject to delete.');
       return;
@@ -153,22 +172,25 @@ export class ScheduleComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadSchedule(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadSchedule(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
-    // Handle cancel if needed
     console.log('Add form cancelled');
   }
 
-  // MARK: - This part is for API call function
   loadSchedule(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.scheduleService
@@ -184,13 +206,12 @@ export class ScheduleComponent {
             subject_code: a.subject.subject_code,
             subject_name: a.subject.subject_name,
             day: a.day,
-
             start_time: TimeHelper.formatTo12Hour(a.start_time),
             end_time: TimeHelper.formatTo12Hour(a.end_time),
-
             duration: a.duration,
             room: a.room,
           }));
+
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
             this.total = res.pagination.total;
@@ -200,20 +221,21 @@ export class ScheduleComponent {
           });
         },
         error: (err) => {
-          console.error('getAdmins failed', err);
+          console.error('getSchedule failed', err);
           this.rows = [];
         },
       });
   }
 
   private getScheduleById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.scheduleService.getScheduleById(id).subscribe({
       next: (response) => {
         const data = response.data;
 
         this.ngZone.run(() => {
           this.scheduleConfig = createAScheduleDetailConfig(data, this.scheduleService.fileAPIUrl);
-
           this.showViewDetails = true;
           this.cdr.detectChanges();
         });
@@ -227,6 +249,8 @@ export class ScheduleComponent {
   }
 
   deleteSchedule(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
@@ -236,7 +260,8 @@ export class ScheduleComponent {
   }
 
   confirmDelete() {
-    //  if multiple selected
+    if (!this.isBrowser) return;
+
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row: UserRow) => row.id),
@@ -256,7 +281,6 @@ export class ScheduleComponent {
       return;
     }
 
-    // single delete
     if (!this.selectedDeleteId) return;
 
     const payload = {
@@ -275,7 +299,7 @@ export class ScheduleComponent {
   }
 
   handleCancelDelete() {
-    this.selectedRows = []; // clear checkboxes
+    this.selectedRows = [];
     this.selectedDeleteId = null;
   }
 
@@ -285,6 +309,8 @@ export class ScheduleComponent {
   }
 
   deleteSelectedSchedule(): void {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: this.selectedRows.map((row: UserRow) => row.id),
     };
@@ -292,11 +318,7 @@ export class ScheduleComponent {
     this.scheduleService.deleteSchedule(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-
-        // clear selection
         this.selectedRows = [];
-
-        // reload table
         this.loadSchedule(this.currentPage, this.rowsPerPage);
       },
       error: (err) => {

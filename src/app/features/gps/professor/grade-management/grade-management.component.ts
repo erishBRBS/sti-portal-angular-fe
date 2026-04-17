@@ -1,8 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { GradeModalComponent } from '../grade-management/grade-mangement-modal/grade-mangement-modal.component';
-import { ViewChild } from '@angular/core';
 import {
   ActionEvent,
   DataTableComponent,
@@ -50,6 +56,9 @@ interface StudentGradeRow {
   templateUrl: './grade-management.component.html',
 })
 export class GradeManagementComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private gradePortalService = inject(GradePortalService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -123,6 +132,7 @@ export class GradeManagementComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadStudentGrades();
   }
 
@@ -176,10 +186,13 @@ export class GradeManagementComponent implements OnInit {
   }
 
   reloadData(): void {
+    if (!this.isBrowser) return;
     this.loadStudentGrades();
   }
 
   private loadStudentGrades(): void {
+    if (!this.isBrowser) return;
+
     this.loading = true;
     this.cdr.detectChanges();
 

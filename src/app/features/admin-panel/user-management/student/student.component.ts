@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -31,16 +39,19 @@ type UserRow = {
 };
 
 type UserStatus = UserRow['status'];
+
 @Component({
   selector: 'sti-student',
   standalone: true,
-  imports: [DataTableComponent, StudentModalComponent, ViewDetailsComponent],
+  imports: [CommonModule, DataTableComponent, StudentModalComponent, ViewDetailsComponent],
   templateUrl: './student.component.html',
   styleUrl: './student.component.css',
 })
 export class StudentManagementComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<UserRow>[] = [
-    // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'first_name', header: 'First Name', sortable: true, filter: true },
     { field: 'middle_name', header: 'Middle Name', sortable: true, filter: true },
     { field: 'last_name', header: 'Last Name', sortable: true, filter: true },
@@ -86,7 +97,7 @@ export class StudentManagementComponent {
   openModal = false;
   showViewDetails = false;
 
-  selectedRows: any[] = [];
+  selectedRows: UserRow[] = [];
 
   studentConfig: DetailModalConfig = {
     title: 'Student Details',
@@ -96,9 +107,10 @@ export class StudentManagementComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadStudent(1, this.rowsPerPage);
   }
-  // MARK: - This part is for all button function
+
   onRow(row: UserRow) {
     console.log('row click', row);
   }
@@ -114,6 +126,8 @@ export class StudentManagementComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     console.log('import csv clicked');
     const input = document.createElement('input');
     input.type = 'file';
@@ -146,14 +160,18 @@ export class StudentManagementComponent {
         },
       });
     };
-      input.click();
+
+    input.click();
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.studentModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select parent(s) to delete.');
       return;
@@ -167,22 +185,25 @@ export class StudentManagementComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadStudent(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadStudent(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
-    // Handle cancel if needed
     console.log('Add form cancelled');
   }
 
-  // MARK: - This part is for API call function
   loadStudent(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.studentService
@@ -204,6 +225,7 @@ export class StudentManagementComponent {
             status: this.mapStatus(a.status),
             createdAt: a.created_at,
           }));
+
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
             this.total = res.pagination.total;
@@ -220,6 +242,8 @@ export class StudentManagementComponent {
   }
 
   deleteSelectedStudent() {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: this.selectedRows.map((row: any) => row.id),
     };
@@ -227,11 +251,7 @@ export class StudentManagementComponent {
     this.studentService.deleteStudent(payload).subscribe({
       next: (res: any) => {
         this.toast.success('Success', res.message);
-
-        // clear selection
         this.selectedRows = [];
-
-        // reload table
         this.loadStudent(this.currentPage, this.rowsPerPage);
       },
       error: (err: any) => {
@@ -242,6 +262,8 @@ export class StudentManagementComponent {
   }
 
   deleteStudent(id: number) {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: [id],
     };
@@ -251,8 +273,6 @@ export class StudentManagementComponent {
     this.studentService.deleteStudent(payload).subscribe({
       next: (res: any) => {
         this.toast.success('Success', res.message);
-
-        // reload table
         this.loadStudent(this.currentPage, this.rowsPerPage);
       },
       error: (err: any) => {
@@ -263,6 +283,8 @@ export class StudentManagementComponent {
   }
 
   private getStudentById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.studentService.getStudentById(id).subscribe({
       next: (response) => {
         const data = response.data;
@@ -288,7 +310,7 @@ export class StudentManagementComponent {
       case 'inactive':
         return 'Inactive';
       default:
-        return 'Pending'; // or 'Inactive' depende sa backend mo
+        return 'Pending';
     }
   }
 }

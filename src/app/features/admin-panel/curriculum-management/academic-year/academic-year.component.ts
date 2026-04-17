@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -25,15 +33,17 @@ type AcademicYearRow = {
   selector: 'sti-academic-year',
   standalone: true,
   imports: [
+    CommonModule,
     DataTableComponent,
     AcademicYearModalComponent,
     ViewDetailsComponent,
-    ConfirmDialogComponent
+    ConfirmDialogComponent,
   ],
   templateUrl: './academic-year.component.html',
-
 })
 export class AcademicYearComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
 
   cols: TableColumn<AcademicYearRow>[] = [
     { field: 'academic_year', header: 'Academic Year', sortable: true, filter: true },
@@ -75,10 +85,10 @@ export class AcademicYearComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadAcademicYear(1, this.rowsPerPage);
   }
 
-  // MARK: - UI Actions
   onRow(row: AcademicYearRow) {
     console.log('row click', row);
   }
@@ -86,20 +96,21 @@ export class AcademicYearComponent {
   onAction(e: { actionKey: string; row: AcademicYearRow }) {
     if (e.actionKey === 'edit') {
       this.academicYearModal.updateDialog(e.row.id);
-
     } else if (e.actionKey === 'view') {
       this.getAcademicYearById(e.row.id);
-
     } else if (e.actionKey === 'delete') {
       this.deleteAcademicYear(e.row.id);
     }
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.academicYearModal.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select an academic year to delete.');
       return;
@@ -107,17 +118,20 @@ export class AcademicYearComponent {
 
     this.confirmDialog.open({
       title: 'Confirm Deletion',
-      message: 'Are you sure you want to delete selected academic years?'
+      message: 'Are you sure you want to delete selected academic years?',
     });
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadAcademicYear(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadAcademicYear(1, this.rowsPerPage);
   }
 
@@ -125,8 +139,9 @@ export class AcademicYearComponent {
     console.log('Modal cancelled');
   }
 
-  // MARK: - API Calls
   loadAcademicYear(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.academicYearService
@@ -156,20 +171,22 @@ export class AcademicYearComponent {
   }
 
   deleteAcademicYear(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
       title: 'Confirm Deletion',
-      message: 'Are you sure you want to delete this academic year?'
+      message: 'Are you sure you want to delete this academic year?',
     });
   }
 
   confirmDelete() {
+    if (!this.isBrowser) return;
 
-    // MULTIPLE DELETE
     if (this.selectedRows.length) {
       const payload = {
-        id: this.selectedRows.map((row) => row.id)
+        id: this.selectedRows.map((row) => row.id),
       };
 
       this.academicYearService.deleteAcademicYear(payload).subscribe({
@@ -180,17 +197,16 @@ export class AcademicYearComponent {
         },
         error: () => {
           this.toast.error('Error', 'Failed to delete academic years');
-        }
+        },
       });
 
       return;
     }
 
-    // SINGLE DELETE
     if (!this.selectedDeleteId) return;
 
     const payload = {
-      id: [this.selectedDeleteId]
+      id: [this.selectedDeleteId],
     };
 
     this.academicYearService.deleteAcademicYear(payload).subscribe({
@@ -200,7 +216,7 @@ export class AcademicYearComponent {
       },
       error: () => {
         this.toast.error('Error', 'Failed to delete academic year');
-      }
+      },
     });
   }
 
@@ -210,6 +226,8 @@ export class AcademicYearComponent {
   }
 
   private getAcademicYearById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.academicYearService.getAcademicYearById(id).subscribe({
       next: (response) => {
         const data = response.data;

@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -24,10 +31,13 @@ type StudentScheduleRow = {
 @Component({
   selector: 'app-student-schedule',
   standalone: true,
-  imports: [DataTableComponent, StudentScheduleModalComponent, ConfirmDialogComponent],
+  imports: [CommonModule, DataTableComponent, StudentScheduleModalComponent, ConfirmDialogComponent],
   templateUrl: './student-schedule.component.html',
 })
 export class StudentScheduleComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<StudentScheduleRow>[] = [
     { field: 'student_name', header: 'Student Name', sortable: true, filter: true },
     { field: 'course', header: 'Course', sortable: true, filter: true },
@@ -63,6 +73,7 @@ export class StudentScheduleComponent {
   selectedDeleteId: number | null = null;
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadStudentSchedule(1, this.rowsPerPage);
   }
 
@@ -81,6 +92,8 @@ export class StudentScheduleComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
@@ -117,10 +130,13 @@ export class StudentScheduleComponent {
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.studentScheduleModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a record to delete.');
       return;
@@ -133,12 +149,15 @@ export class StudentScheduleComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadStudentSchedule(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadStudentSchedule(1, this.rowsPerPage);
   }
 
@@ -147,6 +166,8 @@ export class StudentScheduleComponent {
   }
 
   loadStudentSchedule(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     forkJoin({
@@ -213,7 +234,6 @@ export class StudentScheduleComponent {
           console.error('getStudentSchedule failed', err);
           this.rows = [];
 
-          // Huwag na mag-toast sa initial refresh auth/network flicker
           if (err?.status !== 401 && err?.status !== 0) {
             this.toast.error('Error', 'Failed to load student schedule.');
           }
@@ -222,6 +242,8 @@ export class StudentScheduleComponent {
   }
 
   deleteStudentSchedule(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
@@ -231,6 +253,8 @@ export class StudentScheduleComponent {
   }
 
   confirmDelete() {
+    if (!this.isBrowser) return;
+
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row: StudentScheduleRow) => row.id),

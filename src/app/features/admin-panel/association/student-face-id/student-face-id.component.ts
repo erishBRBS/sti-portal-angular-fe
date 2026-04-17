@@ -1,5 +1,12 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import { DataTableImagesComponent } from '../../../../shared/components/data-table-images/data-table-images.component';
 import { SharedTableColumn } from '../../../../shared/components/data-table-images/data-table-images.types';
 import { StudentFaceCaptureDialogComponent } from './student-face-capture-dialog/student-face-capture-dialog.component';
@@ -19,10 +26,18 @@ type StudentFaceIDRow = {
 @Component({
   selector: 'sti-student-face-id',
   standalone: true,
-  imports: [CommonModule, DataTableImagesComponent, StudentFaceCaptureDialogComponent, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    DataTableImagesComponent,
+    StudentFaceCaptureDialogComponent,
+    ConfirmDialogComponent,
+  ],
   templateUrl: './student-face-id.component.html',
 })
 export class StudentFaceIdComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   faceDialogVisible = false;
 
   cols: SharedTableColumn[] = [
@@ -53,10 +68,10 @@ export class StudentFaceIdComponent {
       width: '200px',
     },
     {
-     field: 'actions',
-     header: 'Actions',
-     width: '120px',
-   },
+      field: 'actions',
+      header: 'Actions',
+      width: '120px',
+    },
   ];
 
   private readonly studentFaceIDService = inject(StudentFaceIDService);
@@ -72,22 +87,26 @@ export class StudentFaceIdComponent {
   total = 0;
   first = 0;
 
-selectedRows: StudentFaceIDRow[] = [];
-selectedDeleteId: number | null = null;
+  selectedRows: StudentFaceIDRow[] = [];
+  selectedDeleteId: number | null = null;
 
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
   @ViewChild(StudentFaceCaptureDialogComponent)
   studentFaceCaptureDialogComponent!: StudentFaceCaptureDialogComponent;
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadStudenFaceID(1, this.rowsPerPage);
   }
 
   openAddModal(): void {
+    if (!this.isBrowser) return;
     this.studentFaceCaptureDialogComponent.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a record to delete.');
       return;
@@ -100,21 +119,23 @@ selectedDeleteId: number | null = null;
   }
 
   onAction(e: { actionKey: string; row: StudentFaceIDRow }) {
-  if (e.actionKey === 'delete') {
-    this.deleteStudentFaceID(e.row.id);
-  }
+    if (e.actionKey === 'delete') {
+      this.deleteStudentFaceID(e.row.id);
+    }
 
-  if (e.actionKey === 'edit') {
-   this.studentFaceCaptureDialogComponent.openEdit(e.row);
+    if (e.actionKey === 'edit') {
+      this.studentFaceCaptureDialogComponent.openEdit(e.row);
+    }
   }
-}
 
   onUploaded(): void {
+    if (!this.isBrowser) return;
     this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
   }
 
-  // MARK: - This part is for API call function
   loadStudenFaceID(page: number, perPage: number): void {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.studentFaceIDService.getFaceRecognition(page, perPage).subscribe({
@@ -137,7 +158,7 @@ selectedDeleteId: number | null = null;
         });
       },
       error: (err) => {
-        console.error('getAdmins failed', err);
+        console.error('getFaceRecognition failed', err);
 
         queueMicrotask(() => {
           this.rows = [];
@@ -149,52 +170,55 @@ selectedDeleteId: number | null = null;
   }
 
   deleteStudentFaceID(id: number) {
-  this.selectedDeleteId = id;
+    if (!this.isBrowser) return;
 
-  this.confirmDialog.open({
-    title: 'Confirm Deletion',
-    message: 'Are you sure you want to delete this student face ID?',
-  });
-}
+    this.selectedDeleteId = id;
 
-confirmDelete() {
+    this.confirmDialog.open({
+      title: 'Confirm Deletion',
+      message: 'Are you sure you want to delete this student face ID?',
+    });
+  }
 
-  if (this.selectedRows.length) {
+  confirmDelete() {
+    if (!this.isBrowser) return;
+
+    if (this.selectedRows.length) {
+      const payload = {
+        ids: this.selectedRows.map((row: StudentFaceIDRow) => row.id),
+      };
+
+      this.studentFaceIDService.deleteStudentFaceID(payload).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.selectedRows = [];
+          this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
+        },
+        error: () => {
+          this.toast.error('Error', 'Failed to delete selected records');
+        },
+      });
+
+      return;
+    }
+
+    if (!this.selectedDeleteId) return;
+
     const payload = {
-      ids: this.selectedRows.map((row: StudentFaceIDRow) => row.id),
+      ids: [this.selectedDeleteId],
     };
 
     this.studentFaceIDService.deleteStudentFaceID(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-        this.selectedRows = [];
         this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
       },
       error: () => {
-        this.toast.error('Error', 'Failed to delete selected records');
+        this.toast.error('Error', 'Failed to delete record');
       },
     });
-
-    return;
   }
 
-
-  if (!this.selectedDeleteId) return;
-
-  const payload = {
-    ids: [this.selectedDeleteId],
-  };
-
-  this.studentFaceIDService.deleteStudentFaceID(payload).subscribe({
-    next: (res) => {
-      this.toast.success('Success', res.message);
-      this.loadStudenFaceID(this.currentPage, this.rowsPerPage);
-    },
-    error: () => {
-      this.toast.error('Error', 'Failed to delete record');
-    },
-  });
-}
   handleCancelDelete() {
     this.selectedRows = [];
     this.selectedDeleteId = null;

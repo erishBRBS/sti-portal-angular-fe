@@ -68,7 +68,9 @@ interface FilterOption {
   ],
 })
 export class ProfessorDashboardComponent implements OnInit {
-  isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private router = inject(Router);
   private professorService = inject(ProfessorService);
   private cdr = inject(ChangeDetectorRef);
@@ -163,10 +165,13 @@ export class ProfessorDashboardComponent implements OnInit {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadDashboardData();
   }
 
   loadDashboardData(): void {
+    if (!this.isBrowser) return;
+
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -255,6 +260,8 @@ export class ProfessorDashboardComponent implements OnInit {
   }
 
   onAnalyticsFilterChange(): void {
+    if (!this.isBrowser) return;
+
     this.loadAttendanceAnalytics(this.selectedSubjectId, this.selectedSectionId);
 
     const filteredStudents = this.getFilteredStudents();
@@ -298,6 +305,8 @@ export class ProfessorDashboardComponent implements OnInit {
   }
 
   loadAttendanceAnalytics(subjectId?: number | null, sectionId?: number | null): void {
+    if (!this.isBrowser) return;
+
     this.professorService.getAttendanceAnalytics(subjectId, sectionId).subscribe({
       next: (response) => {
         this.applyAnalyticsToChart(response.data);
@@ -529,6 +538,8 @@ export class ProfessorDashboardComponent implements OnInit {
   }
 
   handleQuickAction(action: QuickAction): void {
+    if (!this.isBrowser) return;
+
     const url = action.route.startsWith('/') ? action.route : `/${action.route}`;
     this.router.navigateByUrl(url);
   }
