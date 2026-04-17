@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -23,6 +31,7 @@ type UserRow = {
   selector: 'sti-section',
   standalone: true,
   imports: [
+    CommonModule,
     DataTableComponent,
     SectionModalComponent,
     ViewDetailsComponent,
@@ -32,8 +41,10 @@ type UserRow = {
   styleUrl: './section.component.css',
 })
 export class SectionComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<UserRow>[] = [
-    // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'section_name', header: 'Section', sortable: true, filter: true },
   ];
 
@@ -44,13 +55,12 @@ export class SectionComponent {
   ];
 
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(SectionModalComponent) sectionModal!: SectionModalComponent;
 
   private readonly sectionService = inject(SectionService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
-
-  @ViewChild(SectionModalComponent) sectionModal!: SectionModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -66,7 +76,7 @@ export class SectionComponent {
   showDeleteDialog = false;
   selectedDeleteId: number | null = null;
 
-  selectedRows: any[] = [];
+  selectedRows: UserRow[] = [];
 
   sectionConfig: DetailModalConfig = {
     title: 'Section Details',
@@ -76,9 +86,10 @@ export class SectionComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadSection(1, this.rowsPerPage);
   }
-  // MARK: - This part is for all button function
+
   onRow(row: UserRow) {
     console.log('row click', row);
   }
@@ -87,7 +98,6 @@ export class SectionComponent {
     if (e.actionKey === 'edit') {
       this.sectionModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
-      // optional view function
       this.getSectionById(e.row.id);
     } else if (e.actionKey === 'delete') {
       this.deleteSection(e.row.id);
@@ -95,6 +105,8 @@ export class SectionComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
@@ -120,10 +132,13 @@ export class SectionComponent {
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.sectionModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a section to delete.');
       return;
@@ -136,22 +151,25 @@ export class SectionComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadSection(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadSection(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
-    // Handle cancel if needed
     console.log('Add form cancelled');
   }
 
-  // MARK: - This part is for API call function
   loadSection(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.sectionService
@@ -163,6 +181,7 @@ export class SectionComponent {
             id: a.id,
             section_name: a.section_name,
           }));
+
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
             this.total = res.pagination.total;
@@ -172,13 +191,15 @@ export class SectionComponent {
           });
         },
         error: (err) => {
-          console.error('getAdmins failed', err);
+          console.error('getSection failed', err);
           this.rows = [];
         },
       });
   }
 
   deleteSection(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
@@ -188,7 +209,8 @@ export class SectionComponent {
   }
 
   confirmDelete() {
-    //  if multiple selected
+    if (!this.isBrowser) return;
+
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row: UserRow) => row.id),
@@ -208,7 +230,6 @@ export class SectionComponent {
       return;
     }
 
-    // single delete
     if (!this.selectedDeleteId) return;
 
     const payload = {
@@ -227,7 +248,7 @@ export class SectionComponent {
   }
 
   handleCancelDelete() {
-    this.selectedRows = []; // clear checkboxes
+    this.selectedRows = [];
     this.selectedDeleteId = null;
   }
 
@@ -237,13 +258,14 @@ export class SectionComponent {
   }
 
   private getSectionById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.sectionService.getSectionById(id).subscribe({
       next: (response) => {
         const data = response.data;
 
         this.ngZone.run(() => {
           this.sectionConfig = createASectionDetailConfig(data, this.sectionService.fileAPIUrl);
-
           this.showViewDetails = true;
           this.cdr.detectChanges();
         });
@@ -257,6 +279,8 @@ export class SectionComponent {
   }
 
   deleteSelectedSection(): void {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: this.selectedRows.map((row: UserRow) => row.id),
     };
@@ -264,11 +288,7 @@ export class SectionComponent {
     this.sectionService.deleteSection(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-
-        // clear selection
         this.selectedRows = [];
-
-        // reload table
         this.loadSection(this.currentPage, this.rowsPerPage);
       },
       error: (err) => {

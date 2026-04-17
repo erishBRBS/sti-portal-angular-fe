@@ -1,5 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import {
@@ -41,6 +47,9 @@ interface FilterOption {
   templateUrl: './student-attendance.component.html',
 })
 export class ProfessorStudentAttendanceComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private professorService = inject(ProfessorService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -66,6 +75,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   ngOnInit(): void {
     this.initializeColumns();
     this.initializeActions();
+
+    if (!this.isBrowser) return;
     this.loadInitialData();
   }
 
@@ -140,6 +151,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   }
 
   loadInitialData(): void {
+    if (!this.isBrowser) return;
+
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -169,6 +182,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   }
 
   loadAttendanceRecords(page: number = 1): void {
+    if (!this.isBrowser) return;
+
     this.loading = true;
     this.cdr.detectChanges();
 
@@ -247,11 +262,15 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   }
 
   onFilterChange(): void {
+    if (!this.isBrowser) return;
+
     this.first = 0;
     this.loadAttendanceRecords(1);
   }
 
   clearFilters(): void {
+    if (!this.isBrowser) return;
+
     this.selectedSubjectId = '';
     this.selectedSectionId = '';
     this.first = 0;
@@ -302,6 +321,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   }
 
   onActionClicked(event: ActionEvent<AttendanceTableRow>): void {
+    if (!this.isBrowser) return;
+
     const { actionKey, row } = event;
 
     let newStatus: 'Present' | 'Late' | 'Absent';
@@ -337,6 +358,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   }
 
   onPageChanged(event: PageChangedEvent): void {
+    if (!this.isBrowser) return;
+
     this.rows = event.perPage;
     this.first = event.first;
 

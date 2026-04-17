@@ -1,5 +1,11 @@
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  PLATFORM_ID,
+  inject,
+} from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ProfessorService } from '../../../../services/ats/professor/professor.service';
 import { AnnouncementService } from '../../../../services/general/announcement.service';
 
@@ -25,6 +31,9 @@ type AnnouncementItem = {
   templateUrl: './dashboard.component.html',
 })
 export class ProfessorDashboardComponent implements OnInit {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   private professorService = inject(ProfessorService);
   private announcementService = inject(AnnouncementService);
   private cdr = inject(ChangeDetectorRef);
@@ -58,19 +67,27 @@ export class ProfessorDashboardComponent implements OnInit {
   announcements: AnnouncementItem[] = [];
 
   ngOnInit(): void {
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    };
+    if (this.isBrowser) {
+      const options: Intl.DateTimeFormatOptions = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      };
 
-    this.todayDate = new Date().toLocaleDateString('en-US', options);
-    this.loadStudentCount();
-    this.loadAnnouncements();
+      this.todayDate = new Date().toLocaleDateString('en-US', options);
+
+      this.loadStudentCount();
+      this.loadAnnouncements();
+      return;
+    }
+
+    this.todayDate = '';
   }
 
   private loadStudentCount(): void {
+    if (!this.isBrowser) return;
+
     this.loadingStudents = true;
     this.cdr.detectChanges();
 
@@ -96,6 +113,8 @@ export class ProfessorDashboardComponent implements OnInit {
   }
 
   private loadAnnouncements(): void {
+    if (!this.isBrowser) return;
+
     this.loadingAnnouncements = true;
     this.cdr.detectChanges();
 

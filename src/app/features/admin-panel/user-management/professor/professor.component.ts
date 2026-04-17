@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -24,18 +32,21 @@ type UserRow = {
   status: 'Active' | 'Inactive' | 'Pending';
   createdAt: string;
 };
+
 type UserStatus = UserRow['status'];
 
 @Component({
   selector: 'sti-professor',
   standalone: true,
-  imports: [DataTableComponent, ProfessorModalComponent, ViewDetailsComponent],
+  imports: [CommonModule, DataTableComponent, ProfessorModalComponent, ViewDetailsComponent],
   templateUrl: './professor.component.html',
   styleUrl: './professor.component.css',
 })
 export class ProfessorManagementComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<UserRow>[] = [
-    // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'professor_name', header: 'Professor Name', sortable: true, filter: true },
     { field: 'email_address', header: 'Email Address', sortable: true, filter: true },
     { field: 'mobile_number', header: 'Mobile Number', sortable: true, filter: true },
@@ -76,7 +87,7 @@ export class ProfessorManagementComponent {
   openModal = false;
   showViewDetails = false;
 
-  selectedRows: any[] = [];
+  selectedRows: UserRow[] = [];
 
   professorConfig: DetailModalConfig = {
     title: 'Professor Details',
@@ -86,9 +97,10 @@ export class ProfessorManagementComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadProfessor(1, this.rowsPerPage);
   }
-  // MARK: - This part is for all button function
+
   onRow(row: UserRow) {
     console.log('row click', row);
   }
@@ -102,7 +114,10 @@ export class ProfessorManagementComponent {
       this.deleteProfessor(e.row.id);
     }
   }
+
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
@@ -139,10 +154,13 @@ export class ProfessorManagementComponent {
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.professorModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select parent(s) to delete.');
       return;
@@ -156,22 +174,25 @@ export class ProfessorManagementComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadProfessor(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadProfessor(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
-    // Handle cancel if needed
     console.log('Add form cancelled');
   }
 
-  // MARK: - This part is for API call function
   loadProfessor(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.professorService
@@ -188,6 +209,7 @@ export class ProfessorManagementComponent {
             status: this.mapStatus(a.status),
             createdAt: a.created_at,
           }));
+
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
             this.total = res.pagination.total;
@@ -204,6 +226,8 @@ export class ProfessorManagementComponent {
   }
 
   deleteSelectedProfessor() {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: this.selectedRows.map((row: any) => row.id),
     };
@@ -211,11 +235,7 @@ export class ProfessorManagementComponent {
     this.professorService.deleteProfessor(payload).subscribe({
       next: (res: any) => {
         this.toast.success('Success', res.message);
-
-        // clear selection
         this.selectedRows = [];
-
-        // reload table
         this.loadProfessor(this.currentPage, this.rowsPerPage);
       },
       error: (err: any) => {
@@ -226,6 +246,8 @@ export class ProfessorManagementComponent {
   }
 
   deleteProfessor(id: number) {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: [id],
     };
@@ -235,8 +257,6 @@ export class ProfessorManagementComponent {
     this.professorService.deleteProfessor(payload).subscribe({
       next: (res: any) => {
         this.toast.success('Success', res.message);
-
-        // reload table
         this.loadProfessor(this.currentPage, this.rowsPerPage);
       },
       error: (err: any) => {
@@ -247,6 +267,8 @@ export class ProfessorManagementComponent {
   }
 
   private getProfessorById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.professorService.getProfessorById(id).subscribe({
       next: (response) => {
         const data = response.data;
@@ -267,6 +289,7 @@ export class ProfessorManagementComponent {
       },
     });
   }
+
   private mapStatus(status: string): UserStatus {
     switch (status) {
       case 'active':
@@ -274,7 +297,7 @@ export class ProfessorManagementComponent {
       case 'inactive':
         return 'Inactive';
       default:
-        return 'Pending'; // or 'Inactive' depende sa backend mo
+        return 'Pending';
     }
   }
 }
