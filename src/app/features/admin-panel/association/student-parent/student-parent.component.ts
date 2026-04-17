@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, ViewChild, inject } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -10,7 +17,6 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { StudentParentService } from '../../../../services/admin-panel/association/student-parent.service';
 import { StudentParentModalComponent } from './student-parent-modal/student-parent-modal.component';
 
-
 type StudentParentRow = {
   id: number;
   student_name: string;
@@ -20,10 +26,13 @@ type StudentParentRow = {
 @Component({
   selector: 'sti-student-parent',
   standalone: true,
-  imports: [DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent],
+  imports: [CommonModule, DataTableComponent, StudentParentModalComponent, ConfirmDialogComponent],
   templateUrl: './student-parent.component.html',
 })
 export class StudentParentComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<StudentParentRow>[] = [
     { field: 'student_name', header: 'Student', sortable: true, filter: true },
     { field: 'parent_name', header: 'Parent', sortable: true, filter: true },
@@ -58,6 +67,7 @@ export class StudentParentComponent {
   selectedDeleteId: number | null = null;
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadStudentParent(1, this.rowsPerPage);
   }
 
@@ -76,6 +86,8 @@ export class StudentParentComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
@@ -112,10 +124,13 @@ export class StudentParentComponent {
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.studentParentModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a record to delete.');
       return;
@@ -128,12 +143,15 @@ export class StudentParentComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadStudentParent(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadStudentParent(1, this.rowsPerPage);
   }
 
@@ -142,6 +160,8 @@ export class StudentParentComponent {
   }
 
   loadStudentParent(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.studentParentService
@@ -171,6 +191,8 @@ export class StudentParentComponent {
   }
 
   deleteStudentParent(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
@@ -180,6 +202,8 @@ export class StudentParentComponent {
   }
 
   confirmDelete() {
+    if (!this.isBrowser) return;
+
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row: StudentParentRow) => row.id),
@@ -220,6 +244,4 @@ export class StudentParentComponent {
     this.selectedRows = [];
     this.selectedDeleteId = null;
   }
-
-  
 }

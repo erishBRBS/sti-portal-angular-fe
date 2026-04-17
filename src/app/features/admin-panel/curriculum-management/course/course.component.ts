@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -24,13 +32,21 @@ type UserRow = {
 @Component({
   selector: 'sti-course',
   standalone: true,
-  imports: [DataTableComponent, CourseModalComponent, ViewDetailsComponent, ConfirmDialogComponent],
+  imports: [
+    CommonModule,
+    DataTableComponent,
+    CourseModalComponent,
+    ViewDetailsComponent,
+    ConfirmDialogComponent,
+  ],
   templateUrl: './course.component.html',
   styleUrl: './course.component.css',
 })
 export class CourseComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<UserRow>[] = [
-    // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'course_name', header: 'Course', sortable: true, filter: true },
   ];
 
@@ -62,7 +78,7 @@ export class CourseComponent {
   showDeleteDialog = false;
   selectedDeleteId: number | null = null;
 
-  selectedRows: any[] = [];
+  selectedRows: UserRow[] = [];
 
   courseConfig: DetailModalConfig = {
     title: 'Course Details',
@@ -72,9 +88,10 @@ export class CourseComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadCourse(1, this.rowsPerPage);
   }
-  // MARK: - This part is for all button function
+
   onRow(row: UserRow) {
     console.log('row click', row);
   }
@@ -83,7 +100,6 @@ export class CourseComponent {
     if (e.actionKey === 'edit') {
       this.courseModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
-      // optional view function
       this.getCoursenById(e.row.id);
     } else if (e.actionKey === 'delete') {
       this.deleteCourse(e.row.id);
@@ -91,6 +107,8 @@ export class CourseComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
@@ -116,10 +134,13 @@ export class CourseComponent {
   }
 
   openAddModal() {
+    if (!this.isBrowser) return;
     this.courseModal?.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a subject to delete.');
       return;
@@ -132,22 +153,25 @@ export class CourseComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadCourse(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadCourse(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
-    // Handle cancel if needed
     console.log('Add form cancelled');
   }
 
-  // MARK: - This part is for API call function
   loadCourse(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.courseService
@@ -159,6 +183,7 @@ export class CourseComponent {
             id: a.id,
             course_name: a.course_name,
           }));
+
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
             this.total = res.pagination.total;
@@ -168,13 +193,15 @@ export class CourseComponent {
           });
         },
         error: (err) => {
-          console.error('getAdmins failed', err);
+          console.error('getCourse failed', err);
           this.rows = [];
         },
       });
   }
 
   deleteCourse(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
@@ -184,7 +211,8 @@ export class CourseComponent {
   }
 
   confirmDelete() {
-    //  if multiple selected
+    if (!this.isBrowser) return;
+
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row: UserRow) => row.id),
@@ -204,7 +232,6 @@ export class CourseComponent {
       return;
     }
 
-    // single delete
     if (!this.selectedDeleteId) return;
 
     const payload = {
@@ -223,7 +250,7 @@ export class CourseComponent {
   }
 
   handleCancelDelete() {
-    this.selectedRows = []; // clear checkboxes
+    this.selectedRows = [];
     this.selectedDeleteId = null;
   }
 
@@ -233,6 +260,8 @@ export class CourseComponent {
   }
 
   private getCoursenById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.courseService.getCourseById(id).subscribe({
       next: (response) => {
         const data = response.data;
@@ -252,6 +281,8 @@ export class CourseComponent {
   }
 
   deleteSelectedCourse(): void {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: this.selectedRows.map((row: UserRow) => row.id),
     };
@@ -259,11 +290,7 @@ export class CourseComponent {
     this.courseService.deleteCourse(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-
-        // clear selection
         this.selectedRows = [];
-
-        // reload table
         this.loadCourse(this.currentPage, this.rowsPerPage);
       },
       error: (err) => {

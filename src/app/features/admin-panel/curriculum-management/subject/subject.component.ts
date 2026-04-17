@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, inject, NgZone, ViewChild } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  ChangeDetectorRef,
+  Component,
+  PLATFORM_ID,
+  ViewChild,
+  inject,
+  NgZone,
+} from '@angular/core';
 import {
   DataTableComponent,
   RowAction,
@@ -19,10 +27,12 @@ type UserRow = {
   subject_code: string;
   subject_name: string;
 };
+
 @Component({
   selector: 'sti-subject',
   standalone: true,
   imports: [
+    CommonModule,
     DataTableComponent,
     SubjectModalComponent,
     ViewDetailsComponent,
@@ -32,8 +42,10 @@ type UserRow = {
   styleUrl: './subject.component.css',
 })
 export class SubjectComponent {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   cols: TableColumn<UserRow>[] = [
-    // { field: 'id', header: 'ID', sortable: true, filter: true, width: '90px', align: 'right' },
     { field: 'subject_code', header: 'Subject Code', sortable: true, filter: true },
     { field: 'subject_name', header: 'Subject Name', sortable: true, filter: true },
   ];
@@ -45,13 +57,12 @@ export class SubjectComponent {
   ];
 
   @ViewChild(ConfirmDialogComponent) confirmDialog!: ConfirmDialogComponent;
+  @ViewChild(SubjectModalComponent) subjectModal!: SubjectModalComponent;
 
   private readonly subjectService = inject(SubjectService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toast = inject(ToastService);
   private readonly ngZone = inject(NgZone);
-
-  @ViewChild(SubjectModalComponent) subjectModal!: SubjectModalComponent;
 
   loading = false;
   rowsPerPage = 12;
@@ -67,7 +78,7 @@ export class SubjectComponent {
   showDeleteDialog = false;
   selectedDeleteId: number | null = null;
 
-  selectedRows: any[] = [];
+  selectedRows: UserRow[] = [];
 
   subjectConfig: DetailModalConfig = {
     title: 'Subject Details',
@@ -77,9 +88,10 @@ export class SubjectComponent {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.loadSubject(1, this.rowsPerPage);
   }
-  // MARK: - This part is for all button function
+
   onRow(row: UserRow) {
     console.log('row click', row);
   }
@@ -88,7 +100,6 @@ export class SubjectComponent {
     if (e.actionKey === 'edit') {
       this.subjectModal.updateDialog(e.row.id);
     } else if (e.actionKey === 'view') {
-      // optional view function
       this.getSubjectById(e.row.id);
     } else if (e.actionKey === 'delete') {
       this.deleteSubject(e.row.id);
@@ -96,6 +107,8 @@ export class SubjectComponent {
   }
 
   openImportCsv() {
+    if (!this.isBrowser) return;
+
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.csv,.xlsx,.xls';
@@ -119,11 +132,15 @@ export class SubjectComponent {
 
     input.click();
   }
+
   openAddModal() {
+    if (!this.isBrowser) return;
     this.subjectModal.showDialog();
   }
 
   openDeleteModal() {
+    if (!this.isBrowser) return;
+
     if (!this.selectedRows.length) {
       this.toast.error('Error', 'Please select a subject to delete.');
       return;
@@ -136,22 +153,25 @@ export class SubjectComponent {
   }
 
   onPageChanged(e: { page: number; perPage: number; first: number }) {
+    if (!this.isBrowser) return;
+
     this.first = e.first;
     this.rowsPerPage = e.perPage;
     this.loadSubject(e.page, e.perPage);
   }
 
   onModalSuccess(): void {
+    if (!this.isBrowser) return;
     this.loadSubject(1, this.rowsPerPage);
   }
 
   onModalCancel(): void {
-    // Handle cancel if needed
     console.log('Add form cancelled');
   }
 
-  // MARK: - This part is for API call function
   loadSubject(page: number, perPage: number) {
+    if (!this.isBrowser) return;
+
     this.loading = true;
 
     this.subjectService
@@ -164,6 +184,7 @@ export class SubjectComponent {
             subject_code: a.subject_code,
             subject_name: a.subject_name,
           }));
+
           queueMicrotask(() => {
             this.currentPage = res.pagination.current_page;
             this.total = res.pagination.total;
@@ -173,12 +194,15 @@ export class SubjectComponent {
           });
         },
         error: (err) => {
-          console.error('getAdmins failed', err);
+          console.error('getSubject failed', err);
           this.rows = [];
         },
       });
   }
+
   deleteSubject(id: number) {
+    if (!this.isBrowser) return;
+
     this.selectedDeleteId = id;
 
     this.confirmDialog.open({
@@ -188,7 +212,8 @@ export class SubjectComponent {
   }
 
   confirmDelete() {
-    //  if multiple selected
+    if (!this.isBrowser) return;
+
     if (this.selectedRows.length) {
       const payload = {
         id: this.selectedRows.map((row: UserRow) => row.id),
@@ -208,7 +233,6 @@ export class SubjectComponent {
       return;
     }
 
-    // single delete
     if (!this.selectedDeleteId) return;
 
     const payload = {
@@ -227,7 +251,7 @@ export class SubjectComponent {
   }
 
   handleCancelDelete() {
-    this.selectedRows = []; // clear checkboxes
+    this.selectedRows = [];
     this.selectedDeleteId = null;
   }
 
@@ -237,6 +261,8 @@ export class SubjectComponent {
   }
 
   private getSubjectById(id: number): void {
+    if (!this.isBrowser) return;
+
     this.subjectService.getSubjectById(id).subscribe({
       next: (response) => {
         const data = response.data;
@@ -244,7 +270,7 @@ export class SubjectComponent {
         this.ngZone.run(() => {
           this.subjectConfig = createASubjectDetailConfig(
             data,
-            this.subjectService.fileAPIUrl, // or '' if wala
+            this.subjectService.fileAPIUrl,
           );
 
           this.showViewDetails = true;
@@ -260,6 +286,8 @@ export class SubjectComponent {
   }
 
   deleteSelectedSubject(): void {
+    if (!this.isBrowser) return;
+
     const payload = {
       id: this.selectedRows.map((row: UserRow) => row.id),
     };
@@ -267,11 +295,7 @@ export class SubjectComponent {
     this.subjectService.deleteSubject(payload).subscribe({
       next: (res) => {
         this.toast.success('Success', res.message);
-
-        // clear selection
         this.selectedRows = [];
-
-        // reload table
         this.loadSubject(this.currentPage, this.rowsPerPage);
       },
       error: (err) => {
