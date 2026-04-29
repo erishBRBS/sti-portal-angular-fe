@@ -28,6 +28,7 @@ type UserRow = {
   first_name: string;
   middle_name: string;
   last_name: string;
+  student_no: string;
   email: string;
   contact_number: string;
   course: string;
@@ -55,6 +56,7 @@ export class StudentManagementComponent {
     { field: 'first_name', header: 'First Name', sortable: true, filter: true },
     { field: 'middle_name', header: 'Middle Name', sortable: true, filter: true },
     { field: 'last_name', header: 'Last Name', sortable: true, filter: true },
+    { field: 'student_no', header: 'Student Number', sortable: true, filter: true },
     { field: 'email', header: 'Email', sortable: true, filter: true },
     { field: 'contact_number', header: 'Contact Number', sortable: true, filter: true },
     { field: 'course', header: 'Course', sortable: true, filter: true },
@@ -218,7 +220,7 @@ export class StudentManagementComponent {
             last_name: a.last_name,
             student_no: a.student_no ?? '',
             email: a.email,
-            contact_number: a.mobile_number ?? '',
+            contact_number: a.contact_number ?? '',
             course: a.course.course_name,
             rfid_code: a.credentials?.rfid_code ?? '',
             section: a.section.section_name,

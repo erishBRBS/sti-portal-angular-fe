@@ -51,7 +51,7 @@ export class StudentModalComponent {
   last_name = '';
   student_no = '';
   email = '';
-  mobile_number = '';
+  contact_number = '';
 
   course_id: number | null = null;
   section_id: number | null = null;
@@ -181,8 +181,9 @@ export class StudentModalComponent {
     this.first_name = '';
     this.middle_name = '';
     this.last_name = '';
+    this.student_no = '';
     this.email = '';
-    this.mobile_number = '';
+    this.contact_number = '';
 
     this.course_id = null;
     this.section_id = null;
@@ -260,7 +261,7 @@ export class StudentModalComponent {
       last_name: this.last_name,
       student_no: this.student_no,
       email: this.email,
-      mobile_number: this.mobile_number,
+      contact_number: this.contact_number,
       course_id: this.course_id ?? 0,
       section_id: this.section_id ?? 0,
       year_level: this.year_level,
@@ -291,7 +292,7 @@ export class StudentModalComponent {
       last_name: this.last_name,
       student_no: this.student_no,
       email: this.email,
-      mobile_number: this.mobile_number,
+      contact_number: this.contact_number,
       course_id: this.course_id ?? 0,
       section_id: this.section_id ?? 0,
     };
@@ -339,8 +340,9 @@ export class StudentModalComponent {
         this.middle_name = data.middle_name ?? '';
         this.last_name = data.last_name;
 
+        this.student_no = data.student_no ?? '';
         this.email = data.email;
-        this.mobile_number = data.mobile_number ?? '';
+        this.contact_number = data.contact_number ?? '';
 
         this.course_id = data.course?.id ?? null;
         this.section_id = data.section?.id ?? null;

@@ -15,7 +15,7 @@ export interface User {
   last_name?: string | null;
   middle_name?: string | null;
   email: string;
-  mobile_number: string | null;
+  contact_number: string | null;
   username: string | null;
   status: string;
   is_deleted: number;
