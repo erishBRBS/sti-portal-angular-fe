@@ -13,16 +13,13 @@
   <!-- HEADER -->
   <ng-template pTemplate="header">
     <div class="flex items-center justify-center w-full">
-      <div class="text-lg font-bold text-blue-600">{{ dialogTitle }}
-      </div>
+      <div class="text-lg font-bold text-blue-600">{{ dialogTitle }}</div>
     </div>
   </ng-template>
 
   <!-- FORM -->
   <form #studentForm="ngForm" (ngSubmit)="onSave(studentForm)" class="p-4">
-
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
       <!-- FIRST NAME -->
       <div>
         <label class="block mb-2 text-sm font-semibold text-slate-700">
@@ -57,9 +54,7 @@
 
       <!-- MIDDLE NAME -->
       <div>
-        <label class="block mb-2 text-sm font-semibold text-slate-700">
-          Middle Name
-        </label>
+        <label class="block mb-2 text-sm font-semibold text-slate-700"> Middle Name </label>
         <input
           pInputText
           name="middle_name"
@@ -67,6 +62,21 @@
           [disabled]="mode === 'VIEW'"
           class="w-full"
           placeholder="Enter Middle Name"
+        />
+      </div>
+
+      <!-- STUDENT NUMBER -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="text-red-600">*</span> Student Number
+        </label>
+        <input
+          pInputText
+          name="student_no"
+          [(ngModel)]="student_no"
+          [disabled]="mode === 'VIEW'"
+          class="w-full"
+          placeholder="Enter Student Number"
         />
       </div>
 
@@ -104,10 +114,10 @@
       </div>
 
       <!-- CONTACT -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> Contact Number:
-          </label>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+          <span class="text-red-600 mr-1">*</span> Contact Number:
+        </label>
         <input
           pInputText
           name="mobile_number"
@@ -163,27 +173,25 @@
 
       <!-- YEAR LEVEL -->
       <div>
-        <label class="block mb-2 text-sm font-semibold text-slate-700">
-          Year Level
-        </label>
+        <label class="block mb-2 text-sm font-semibold text-slate-700"> Year Level </label>
 
-      <p-select
-        class="w-full"
-        name="year_level"
-        [(ngModel)]="year_level"
-        [options]="yearLevels"
-        optionLabel="label"
-        optionValue="value"
-        [disabled]="mode === 'VIEW'"
-        placeholder="Select Year Level"
-       ></p-select> 
+        <p-select
+          class="w-full"
+          name="year_level"
+          [(ngModel)]="year_level"
+          [options]="yearLevels"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Select Year Level"
+        ></p-select>
       </div>
 
       <!-- RFID -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            <span class="text-red-600 mr-1">*</span> RFID Code:
-          </label>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700 mb-2">
+          <span class="text-red-600 mr-1">*</span> RFID Code:
+        </label>
         <input
           pInputText
           name="rfid_code"
@@ -193,69 +201,66 @@
           placeholder="Enter RFID Code"
         />
       </div>
-
     </div>
-        <!-- ✅ Image Upload (PUP style: hidden input + custom label) -->
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-2">
-            Profile Image (optional)
-          </label>
+    <!-- ✅ Image Upload (PUP style: hidden input + custom label) -->
+    <div>
+      <label class="block text-sm font-semibold text-slate-700 mb-2">
+        Profile Image (optional)
+      </label>
 
-          <div class="flex items-start gap-4">
-            <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
-              <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
-              <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
-            </div>
+      <div class="flex items-start gap-4">
+        <div
+          class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center"
+        >
+          <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
+          <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
+        </div>
 
-            <div class="flex-1 space-y-2">
-              <input
-                #fileInput
-                type="file"
-                hidden
-                accept="image/*"
-                (change)="onFileSelected($event)"
-              />
+        <div class="flex-1 space-y-2">
+          <input #fileInput type="file" hidden accept="image/*" (change)="onFileSelected($event)" />
 
-              <div class="flex items-center gap-3">
-                <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
-                  {{ fileName || 'Click to choose file' }}
-                </span>
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
+              {{ fileName || 'Click to choose file' }}
+            </span>
 
-                <button type="button" pButton class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700" label="Choose File" (click)="fileInput.click()"></button>
+            <button
+              type="button"
+              pButton
+              class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+              label="Choose File"
+              (click)="fileInput.click()"
+            ></button>
 
-                <button
-                  *ngIf="fileName || previewUrl"
-                  type="button"
-                  pButton
-                  class="p-button-text p-button-sm"
-                  label="Remove"
-                  (click)="removeImage()"
-                ></button>
-              </div>
-            </div>
+            <button
+              *ngIf="fileName || previewUrl"
+              type="button"
+              pButton
+              class="p-button-text p-button-sm"
+              label="Remove"
+              (click)="removeImage()"
+            ></button>
           </div>
         </div>
-      
+      </div>
+    </div>
 
     <!-- FOOTER -->
     <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
-
       <button
         pButton
         type="button"
         label="Cancel"
-         class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
-        (click)="close()">
-      </button>
+        class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
+        (click)="close()"
+      ></button>
 
       <button
         pButton
         type="submit"
         [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
-       class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700">
-      </button>
-
+        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+      ></button>
     </div>
-
   </form>
 </p-dialog>
