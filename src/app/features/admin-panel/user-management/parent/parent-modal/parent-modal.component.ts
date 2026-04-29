@@ -21,13 +21,7 @@ import { ToastService } from '../../../../../shared/services/toast.service';
 @Component({
   selector: 'sti-parent-modal',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    DialogModule,
-    ButtonModule,
-    InputTextModule,
-  ],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, InputTextModule],
   templateUrl: './parent-modal.component.html',
   styleUrl: './parent-modal.component.css',
 })
@@ -38,7 +32,7 @@ export class ParentModalComponent {
   @ViewChild('fileInput') fileInputRef?: ElementRef<HTMLInputElement>;
 
   private parentService = inject(ParentService);
-  
+
   private toast = inject(ToastService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -50,30 +44,27 @@ export class ParentModalComponent {
   first_name = '';
   middle_name = '';
   last_name = '';
+  contact_number = '';
   email = '';
   username = '';
   password = '';
 
   showPassword = false;
 
-  
   selectedFile: File | null = null;
   previewUrl: string | null = null;
   fileName = '';
 
   currentID: number | null = null;
-  pendingEditId: number | null = null
-  
+  pendingEditId: number | null = null;
 
-get dialogTitle(): string {
+  get dialogTitle(): string {
+    if (this.mode === ModalMode.ADD) return 'Add Parent';
 
-  if (this.mode === ModalMode.ADD) return 'Add Parent';
+    if (this.mode === ModalMode.UPDATE) return 'Update Parent';
 
-  if (this.mode === ModalMode.UPDATE) return 'Update Parent';
-
-  return 'View Parent';
-
-}
+    return 'View Parent';
+  }
 
   get dialogButtonLabel(): string {
     return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
@@ -88,8 +79,6 @@ get dialogTitle(): string {
     if (charCode < 48 || charCode > 57) event.preventDefault();
   }
 
-
-
   showDialog() {
     this.mode = ModalMode.ADD;
     this.currentID = null;
@@ -97,39 +86,36 @@ get dialogTitle(): string {
     this.resetForm();
   }
   viewDialog(id: number): void {
+    this.mode = ModalMode.VIEW;
+    this.currentID = id;
+    this.visible = true;
 
-  this.mode = ModalMode.VIEW;
-  this.currentID = id;
-  this.visible = true;
-
-  this.resetForm(true);
-
-  setTimeout(() => {
-    this.getParentById(id);
-  });
-
-}
-
-updateDialog(id: number) {
-  this.mode = ModalMode.UPDATE;
-  this.currentID = id;
-  this.visible = true;
-  this.resetForm(true);
-  this.getParentById(id);
-}
-
-onDialogShown() {
-  if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
-
-    const id = this.pendingEditId;
+    this.resetForm(true);
 
     setTimeout(() => {
       this.getParentById(id);
-    }, 0);
-
-    this.pendingEditId = null;
+    });
   }
-}
+
+  updateDialog(id: number) {
+    this.mode = ModalMode.UPDATE;
+    this.currentID = id;
+    this.visible = true;
+    this.resetForm(true);
+    this.getParentById(id);
+  }
+
+  onDialogShown() {
+    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+      const id = this.pendingEditId;
+
+      setTimeout(() => {
+        this.getParentById(id);
+      }, 0);
+
+      this.pendingEditId = null;
+    }
+  }
 
   close() {
     this.visible = false;
@@ -156,6 +142,7 @@ onDialogShown() {
     this.first_name = '';
     this.middle_name = '';
     this.last_name = '';
+    this.contact_number = '';
     this.email = '';
     this.username = '';
     this.password = '';
@@ -205,16 +192,15 @@ onDialogShown() {
     });
   }
 
-
-
   private submitAction() {
     const payload: CreateParentPayload = {
-     first_name: this.first_name,
-     middle_name: this.middle_name,
-     last_name: this.last_name,
-     email: this.email,
-     username: this.username,
-     password: this.password,
+      first_name: this.first_name,
+      middle_name: this.middle_name,
+      last_name: this.last_name,
+      contact_number: this.contact_number,
+      email: this.email,
+      username: this.username,
+      password: this.password,
     };
 
     if (this.mode === ModalMode.ADD) {
@@ -241,50 +227,47 @@ onDialogShown() {
   private updateParent(payload: CreateParentPayload) {
     if (!this.currentID) return;
 
-    this.parentService
-      .updateParent(this.currentID, payload, this.selectedFile)
-      .subscribe({
-        next: (res: any) => {
-          this.toast.success('Success', res.message);
-          this.onSuccess.emit();
-          this.close();
-        },
-        error: (err: any) => {
-          const msg = err?.error?.message ?? 'Something went wrong.';
-          this.toast.error('Error', msg);
-        },
-      });
+    this.parentService.updateParent(this.currentID, payload, this.selectedFile).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
+        this.onSuccess.emit();
+        this.close();
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Something went wrong.';
+        this.toast.error('Error', msg);
+      },
+    });
   }
 
-private getParentById(id: number) {
-  this.parentService.getParentById(id).subscribe({
-    next: (response: any) => {
-       const data = response.data;
-    
+  private getParentById(id: number) {
+    this.parentService.getParentById(id).subscribe({
+      next: (response: any) => {
+        const data = response.data;
 
-      this.first_name = data.first_name;
-      this.middle_name = data.middle_name ?? '';
-      this.last_name = data.last_name;
+        this.first_name = data.first_name;
+        this.middle_name = data.middle_name ?? '';
+        this.last_name = data.last_name;
+        this.contact_number = data.contact_number ?? '';
 
-      this.username = data.username;
-      this.email = data.email;
+        this.username = data.username;
+        this.email = data.email;
 
+        // password usually hindi binabalik ng API
+        this.password = '';
 
-      // password usually hindi binabalik ng API
-      this.password = '';
+        // image
+        this.previewUrl = data.image_path
+          ? this.parentService.fileAPIUrl + data.image_path.replace('/storage/', '')
+          : null;
 
-      // image
-      this.previewUrl = data.image_path
-        ? this.parentService.fileAPIUrl + data.image_path.replace('/storage/', '')
-        : null;
+        this.cdr.detectChanges();
+      },
 
-      this.cdr.detectChanges();
-    },
-
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to load parent details.';
-      this.toast.error('Error', msg);
-    },
-  });
-}
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to load parent details.';
+        this.toast.error('Error', msg);
+      },
+    });
+  }
 }

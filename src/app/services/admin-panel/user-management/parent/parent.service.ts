@@ -78,6 +78,7 @@ export class ParentService {
     fd.append('first_name', payload.first_name ?? '');
     fd.append('middle_name', payload.middle_name ?? '');
     fd.append('last_name', payload.last_name ?? '');
+    fd.append('contact_number', payload.contact_number ?? '');
     fd.append('email', payload.email ?? '');
     fd.append('username', payload.username ?? '');
     fd.append('password', payload.password ?? '');
@@ -102,6 +103,7 @@ export class ParentService {
     fd.append('first_name', payload.first_name ?? '');
     fd.append('middle_name', payload.middle_name ?? '');
     fd.append('last_name', payload.last_name ?? '');
+    fd.append('contact_number', payload.contact_number ?? '');
     fd.append('email', payload.email ?? '');
     fd.append('username', payload.username ?? '');
 
