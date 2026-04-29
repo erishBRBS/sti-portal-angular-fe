@@ -29,7 +29,6 @@ import { CourseService } from '../../../../../services/admin-panel/curriculum-ma
   styleUrl: './student-modal.component.css',
 })
 export class StudentModalComponent {
-
   @Output() onSuccess = new EventEmitter<void>();
   @Output() onCancel = new EventEmitter<void>();
 
@@ -42,25 +41,24 @@ export class StudentModalComponent {
   private readonly sectionService = inject(SectionService);
   private readonly courseService = inject(CourseService);
 
-
   submitted = false;
   visible = false;
   mode: ModalMode = ModalMode.ADD;
 
   // form fields
-first_name = '';
-middle_name = '';
-last_name = '';
-email = '';
-mobile_number = '';
+  first_name = '';
+  middle_name = '';
+  last_name = '';
+  student_no = '';
+  email = '';
+  mobile_number = '';
 
-course_id: number | null = null;
-section_id: number | null = null;
+  course_id: number | null = null;
+  section_id: number | null = null;
 
-year_level = '';
-username = '';
-rfid_code = '';
-
+  year_level = '';
+  username = '';
+  rfid_code = '';
 
   // file state
   selectedFile: File | null = null;
@@ -68,28 +66,25 @@ rfid_code = '';
   fileName = '';
 
   currentID = 0;
-  pendingEditId: number | null = null; 
-
+  pendingEditId: number | null = null;
 
   courses: any[] = [];
   sections: any[] = [];
 
   yearLevels = [
-  { label: '1st Year', value: '1st Year' },
-  { label: '2nd Year', value: '2nd Year' },
-  { label: '3rd Year', value: '3rd Year' },
-  { label: '4th Year', value: '4th Year' }
-];
+    { label: '1st Year', value: '1st Year' },
+    { label: '2nd Year', value: '2nd Year' },
+    { label: '3rd Year', value: '3rd Year' },
+    { label: '4th Year', value: '4th Year' },
+  ];
 
   get dialogTitle(): string {
+    if (this.mode === ModalMode.ADD) return 'Add Student';
 
-  if (this.mode === ModalMode.ADD) return 'Add Student';
+    if (this.mode === ModalMode.UPDATE) return 'Update Student';
 
-  if (this.mode === ModalMode.UPDATE) return 'Update Student';
-
-  return 'View Student';
-
-}
+    return 'View Student';
+  }
 
   get dialogButtonLabel(): string {
     return this.mode === ModalMode.ADD ? 'Add Record' : 'Update Record';
@@ -110,85 +105,77 @@ rfid_code = '';
     this.resetForm();
     this.loadDropdowns();
   }
- 
-viewDialog(id: number): void {
 
-  this.mode = ModalMode.VIEW;
-  this.currentID = id;
-  this.visible = true;
-  this.loadDropdowns();
-  this.resetForm(true);
-
-  setTimeout(() => {
-    this.getStudentById(id);
-  });
-
-}
-  
-
-updateDialog(id: number): void {
-  this.mode = ModalMode.UPDATE;
-  this.currentID = id;
-  this.pendingEditId = id;
-  this.loadDropdowns();
-  this.resetForm(true);
-  this.visible = true;
-}
-
-onDialogShown() {
-  if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
-
-    const id = this.pendingEditId;
+  viewDialog(id: number): void {
+    this.mode = ModalMode.VIEW;
+    this.currentID = id;
+    this.visible = true;
+    this.loadDropdowns();
+    this.resetForm(true);
 
     setTimeout(() => {
       this.getStudentById(id);
-    }, 0);
-
-    this.pendingEditId = null;
+    });
   }
-}
 
+  updateDialog(id: number): void {
+    this.mode = ModalMode.UPDATE;
+    this.currentID = id;
+    this.pendingEditId = id;
+    this.loadDropdowns();
+    this.resetForm(true);
+    this.visible = true;
+  }
 
-private loadDropdowns() {
-  this.courseService.getCourse().subscribe((res: any) => {
-    console.log('COURSES:', res);
+  onDialogShown() {
+    if (this.mode === ModalMode.UPDATE && this.pendingEditId) {
+      const id = this.pendingEditId;
 
-    this.courses = res.data.map((c: any) => ({
-      label: c.course_name || c.course_code, 
-      value: c.id
-    }));
-  });
+      setTimeout(() => {
+        this.getStudentById(id);
+      }, 0);
 
-    this.sectionService.getSection().subscribe((res: any) => {
-    console.log('SECTIONS:', res);
+      this.pendingEditId = null;
+    }
+  }
 
-    this.sections = res.data.map((s: any) => ({
-      label: s.section_name,
-      value: s.id
-    }));
-  });
-}
-private loadYearLevels() {
-  this.studentService.getStudent().subscribe((res: any) => {
+  private loadDropdowns() {
+    this.courseService.getCourse().subscribe((res: any) => {
+      console.log('COURSES:', res);
 
-    const unique = new Map();
-
-    res.data.forEach((s: any) => {
-      if (s.year_level) {
-        unique.set(s.year_level, {
-          label: s.year_level,
-          value: s.year_level
-        });
-      }
+      this.courses = res.data.map((c: any) => ({
+        label: c.course_name || c.course_code,
+        value: c.id,
+      }));
     });
 
-    this.yearLevels = Array.from(unique.values());
+    this.sectionService.getSection().subscribe((res: any) => {
+      console.log('SECTIONS:', res);
 
-  });
-}
+      this.sections = res.data.map((s: any) => ({
+        label: s.section_name,
+        value: s.id,
+      }));
+    });
+  }
+  private loadYearLevels() {
+    this.studentService.getStudent().subscribe((res: any) => {
+      const unique = new Map();
+
+      res.data.forEach((s: any) => {
+        if (s.year_level) {
+          unique.set(s.year_level, {
+            label: s.year_level,
+            value: s.year_level,
+          });
+        }
+      });
+
+      this.yearLevels = Array.from(unique.values());
+    });
+  }
 
   private resetForm(preserveCurrentId: boolean = false): void {
-
     this.submitted = false;
 
     this.first_name = '';
@@ -200,10 +187,9 @@ private loadYearLevels() {
     this.course_id = null;
     this.section_id = null;
 
-   this.year_level = '';
-   this.username = '';
-   this.rfid_code = '';
-  
+    this.year_level = '';
+    this.username = '';
+    this.rfid_code = '';
 
     this.clearFileControls();
 
@@ -218,19 +204,19 @@ private loadYearLevels() {
     this.resetForm();
   }
 
-onSave(form: NgForm) {
-  if (form.invalid) {
-    this.submitted = true;
-    form.control.markAllAsTouched();
-    return;
-  }
+  onSave(form: NgForm) {
+    if (form.invalid) {
+      this.submitted = true;
+      form.control.markAllAsTouched();
+      return;
+    }
 
-  if (this.mode === ModalMode.ADD) {
-    this.submitAction(); // CREATE
-  } else {
-    this.submitUpdateAction(); // UPDATE
+    if (this.mode === ModalMode.ADD) {
+      this.submitAction(); // CREATE
+    } else {
+      this.submitUpdateAction(); // UPDATE
+    }
   }
-}
 
   onFileSelected(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -268,25 +254,22 @@ onSave(form: NgForm) {
 
   // CREATE STUDENT
   private submitAction(): void {
-
     const payload: CreateStudentPayload = {
-     first_name: this.first_name,
-     middle_name: this.middle_name,
-     last_name: this.last_name,
-     email: this.email,
-     mobile_number: this.mobile_number,
-     course_id: this.course_id ?? 0,
-     section_id: this.section_id ?? 0,
-     year_level: this.year_level,
-     username: this.username,
-     rfid_code: this.rfid_code
-
+      first_name: this.first_name,
+      middle_name: this.middle_name,
+      last_name: this.last_name,
+      student_no: this.student_no,
+      email: this.email,
+      mobile_number: this.mobile_number,
+      course_id: this.course_id ?? 0,
+      section_id: this.section_id ?? 0,
+      year_level: this.year_level,
+      username: this.username,
+      rfid_code: this.rfid_code,
     };
 
     this.studentService.createStudent(payload, this.selectedFile).subscribe({
-
       next: (res) => {
-
         this.toast.success('Success', res.message);
 
         this.resetForm();
@@ -295,32 +278,30 @@ onSave(form: NgForm) {
       },
 
       error: (err) => {
-
         const msg = err?.error?.message ?? 'Something went wrong.';
         this.toast.error('Error', msg);
       },
     });
   }
-  
+
   private submitUpdateAction(): void {
+    const payload: CreateStudentPayload = {
+      first_name: this.first_name,
+      middle_name: this.middle_name,
+      last_name: this.last_name,
+      student_no: this.student_no,
+      email: this.email,
+      mobile_number: this.mobile_number,
+      course_id: this.course_id ?? 0,
+      section_id: this.section_id ?? 0,
+    };
 
-  const payload: CreateStudentPayload = {
-  first_name: this.first_name,
-  middle_name: this.middle_name,
-  last_name: this.last_name,
-  email: this.email,
-  mobile_number: this.mobile_number,
-  course_id: this.course_id ?? 0, 
-  section_id: this.section_id ?? 0,
-   
-  };
-
-       if (this.mode === ModalMode.ADD) {
+    if (this.mode === ModalMode.ADD) {
       this.createStudent(payload);
     } else {
       this.updateStudent(payload);
     }
-}
+  }
   private createStudent(payload: CreateStudentPayload) {
     this.studentService.createStudent(payload, this.selectedFile).subscribe({
       next: (res: any) => {
@@ -338,55 +319,48 @@ onSave(form: NgForm) {
   private updateStudent(payload: CreateStudentPayload) {
     if (!this.currentID) return;
 
-    this.studentService
-      .updateStudent(this.currentID, payload, this.selectedFile)
-      .subscribe({
-        next: (res: any) => {
-          this.toast.success('Success', res.message);
-          this.onSuccess.emit();
-          this.close();
-        },
-        error: (err: any) => {
-          const msg = err?.error?.message ?? 'Something went wrong.';
-          this.toast.error('Error', msg);
-        },
-      });
+    this.studentService.updateStudent(this.currentID, payload, this.selectedFile).subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
+        this.onSuccess.emit();
+        this.close();
+      },
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Something went wrong.';
+        this.toast.error('Error', msg);
+      },
+    });
   }
-private getStudentById(id: number): void {
+  private getStudentById(id: number): void {
+    this.studentService.getStudentById(id).subscribe({
+      next: (response: any) => {
+        const data: StudentData = response.data;
+        this.first_name = data.first_name;
+        this.middle_name = data.middle_name ?? '';
+        this.last_name = data.last_name;
 
-  this.studentService.getStudentById(id).subscribe({
+        this.email = data.email;
+        this.mobile_number = data.mobile_number ?? '';
 
-    next: (response: any) => {
+        this.course_id = data.course?.id ?? null;
+        this.section_id = data.section?.id ?? null;
 
-      const data: StudentData = response.data;
-      this.first_name = data.first_name;
-      this.middle_name = data.middle_name ?? '';
-      this.last_name = data.last_name;
+        this.year_level = data.year_level ?? '';
 
-      this.email = data.email;
-      this.mobile_number = data.mobile_number ?? '';
+        this.username = data.credentials?.username ?? '';
+        this.rfid_code = data.credentials?.rfid_code ?? '';
 
-      this.course_id = data.course?.id ?? null;
-     this.section_id = data.section?.id ?? null;
+        this.previewUrl = data.image_path
+          ? this.studentService.fileAPIUrl + data.image_path.replace('/storage/', '')
+          : null;
 
-      this.year_level = data.year_level ?? '';
+        this.cdr.detectChanges();
+      },
 
-      this.username = data.credentials?.username ?? '';
-      this.rfid_code = data.credentials?.rfid_code ?? '';  
-
-      this.previewUrl = data.image_path
-        ? this.studentService.fileAPIUrl + data.image_path.replace('/storage/', '')
-        : null;
-
-      this.cdr.detectChanges();
-    },
-
-    error: (err: any) => {
-      const msg = err?.error?.message ?? 'Failed to load student details.';
-      this.toast.error('Error', msg);
-    },
-
-  });
-
-}
+      error: (err: any) => {
+        const msg = err?.error?.message ?? 'Failed to load student details.';
+        this.toast.error('Error', msg);
+      },
+    });
+  }
 }

@@ -21,6 +21,7 @@ export interface StudentData {
   first_name: string;
   last_name: string;
   middle_name: string | null;
+  student_no: string;
   email: string;
   mobile_number: string | null;
   course: Course;
