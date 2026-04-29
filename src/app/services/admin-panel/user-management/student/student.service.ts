@@ -88,8 +88,9 @@ export class StudentService {
     fd.append('first_name', payload.first_name);
     fd.append('middle_name', payload.middle_name ?? '');
     fd.append('last_name', payload.last_name);
+    fd.append('student_no', payload.student_no);
     fd.append('email', payload.email);
-    fd.append('mobile_number', payload.mobile_number ?? '');
+    fd.append('contact_number', payload.contact_number ?? '');
     fd.append('course_id', payload.course_id.toString());
     fd.append('section_id', payload.section_id.toString());
     fd.append('year_level', payload.year_level ?? '');
@@ -118,7 +119,7 @@ export class StudentService {
     fd.append('middle_name', payload.middle_name ?? '');
     fd.append('last_name', payload.last_name);
     fd.append('email', payload.email);
-    fd.append('mobile_number', payload.mobile_number ?? '');
+    fd.append('contact_number', payload.contact_number ?? '');
     fd.append('course_id', String(payload.course_id));
     fd.append('section_id', String(payload.section_id));
     fd.append('year_level', payload.year_level ?? '');
