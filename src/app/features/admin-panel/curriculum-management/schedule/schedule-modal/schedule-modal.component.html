@@ -6,220 +6,305 @@
   [draggable]="false"
   [resizable]="false"
   [closable]="true"
-  [dismissableMask]="true"
+  [dismissableMask]="false"
   [style]="{ width: 'min(900px, 95vw)' }"
   [contentStyle]="{ 'max-height': '85vh', overflow: 'auto' }"
 >
   <!-- HEADER -->
   <ng-template pTemplate="header">
     <div class="flex items-center justify-center w-full">
-      <div  class="text-lg font-bold text-blue-600">
+      <div class="text-lg font-bold text-blue-600">
         {{ dialogTitle }}
       </div>
     </div>
   </ng-template>
 
   <!-- FORM -->
-  <form
-    #scheduleForm="ngForm"
-    (ngSubmit)="onSave(scheduleForm)"
-    class="p-4"
-  >
+  <form #scheduleForm="ngForm" (ngSubmit)="onSave(scheduleForm)" class="p-4">
+    <!-- GRID START -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- COURSE CODE -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Course Code
+        </label>
 
-  <!-- GRID START -->
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <input
+          pInputText
+          name="course_code"
+          [(ngModel)]="course_code"
+          [disabled]="mode === 'VIEW'"
+          #courseCtrl="ngModel"
+          class="w-full"
+          required
+          placeholder="Enter Course Code"
+        />
 
-    <!-- COURSE -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Course
-      </label>
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="courseCtrl.invalid && (courseCtrl.touched || submitted)"
+        >
+          Course is required.
+        </p>
+      </div>
 
-      <p-select
-        class="w-full"
-        name="course_id"
-        [(ngModel)]="course_id"
-        #courseCtrl="ngModel"
-        [options]="courses"
-        optionLabel="label"
-        optionValue="value"
-        [disabled]="mode === 'VIEW'"
-        placeholder="Select Course"
-        required>
-      </p-select>
+      <!-- SECTION -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Section
+        </label>
 
-      <p class="mt-1 text-xs text-rose-600"
-      *ngIf="courseCtrl.invalid && (courseCtrl.touched || submitted)">
-      Course is required.
-      </p>
+        <p-select
+          class="w-full"
+          name="section_id"
+          [(ngModel)]="section_id"
+          #sectionCtrl="ngModel"
+          [options]="sections"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Select Section"
+          required
+          appendTo="body"
+          scrollHeight="220px"
+          [filter]="true"
+          filterBy="label"
+        ></p-select>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="sectionCtrl.invalid && (sectionCtrl.touched || submitted)"
+        >
+          Section is required.
+        </p>
+      </div>
+
+      <!-- PROFESSOR -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Professor
+        </label>
+
+        <p-select
+          class="w-full"
+          name="professor_id"
+          [(ngModel)]="professor_id"
+          #professorCtrl="ngModel"
+          [options]="professors"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Select Professor"
+          required
+          appendTo="body"
+          scrollHeight="220px"
+          [filter]="true"
+          filterBy="label"
+        ></p-select>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="professorCtrl.invalid && (professorCtrl.touched || submitted)"
+        >
+          Professor is required.
+        </p>
+      </div>
+
+      <!-- SUBJECT -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Subject
+        </label>
+
+        <p-select
+          class="w-full"
+          name="subject_id"
+          [(ngModel)]="subject_id"
+          #subjectCtrl="ngModel"
+          [options]="subjects"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          required
+          placeholder="Select Subject"
+          appendTo="body"
+          scrollHeight="220px"
+          [filter]="true"
+          filterBy="label"
+        ></p-select>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="subjectCtrl.invalid && (subjectCtrl.touched || submitted)"
+        >
+          Subject is required.
+        </p>
+      </div>
+
+      <!-- DAY -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Day
+        </label>
+
+        <p-select
+          class="w-full"
+          name="day"
+          [(ngModel)]="day"
+          #dayCtrl="ngModel"
+          [options]="days"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          required
+          placeholder="Select Day"
+          appendTo="body"
+          scrollHeight="220px"
+        ></p-select>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="dayCtrl.invalid && (dayCtrl.touched || submitted)"
+        >
+          Day is required.
+        </p>
+      </div>
+
+      <!-- DURATION -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Duration
+        </label>
+
+        <p-select
+          class="w-full"
+          name="duration"
+          [(ngModel)]="duration"
+          #durationCtrl="ngModel"
+          [options]="hours"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          required
+          placeholder="Select Duration"
+          appendTo="body"
+          scrollHeight="220px"
+        ></p-select>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="durationCtrl.invalid && (durationCtrl.touched || submitted)"
+        >
+          Duration is required.
+        </p>
+      </div>
+
+      <!-- START TIME -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Start Time
+        </label>
+
+        <p-datepicker
+          name="start_time"
+          [(ngModel)]="start_time"
+          [disabled]="mode === 'VIEW'"
+          #startTimeCtrl="ngModel"
+          [required]="true"
+          [showTime]="true"
+          [timeOnly]="true"
+          hourFormat="12"
+          placeholder="Select Start Time"
+          class="w-full"
+          inputStyleClass="w-full"
+          appendTo="body"
+        ></p-datepicker>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="startTimeCtrl.invalid && (startTimeCtrl.touched || submitted)"
+        >
+          Start time is required.
+        </p>
+      </div>
+
+      <!-- END TIME -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> End Time
+        </label>
+
+        <p-datepicker
+          name="end_time"
+          [(ngModel)]="end_time"
+          [disabled]="mode === 'VIEW'"
+          #endTimeCtrl="ngModel"
+          [required]="true"
+          [showTime]="true"
+          [timeOnly]="true"
+          hourFormat="12"
+          placeholder="Select End Time"
+          class="w-full"
+          inputStyleClass="w-full"
+          appendTo="body"
+        ></p-datepicker>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="endTimeCtrl.invalid && (endTimeCtrl.touched || submitted)"
+        >
+          End time is required.
+        </p>
+      </div>
+
+      <!-- ROOM -->
+      <div>
+        <label class="block mb-2 text-sm font-semibold text-slate-700">
+          <span class="mr-1 text-red-600">*</span> Room
+        </label>
+
+        <p-select
+          class="w-full"
+          name="room"
+          [(ngModel)]="room"
+          #roomCtrl="ngModel"
+          [options]="rooms"
+          optionLabel="label"
+          optionValue="value"
+          [disabled]="mode === 'VIEW'"
+          required
+          placeholder="Select Room"
+          appendTo="body"
+          scrollHeight="220px"
+          [filter]="true"
+          filterBy="label"
+        ></p-select>
+
+        <p
+          class="mt-1 text-xs text-rose-600"
+          *ngIf="roomCtrl.invalid && (roomCtrl.touched || submitted)"
+        >
+          Room is required.
+        </p>
+      </div>
     </div>
 
-    <!-- SECTION -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Section
-      </label>
+    <!-- ACTIONS -->
+    <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
+        (click)="close()"
+      ></button>
 
-      <p-select
-       class="w-full"
-       name="section_id"
-      [(ngModel)]="section_id"
-      #sectionCtrl="ngModel"
-      [options]="sections"
-      optionLabel="label"
-      optionValue="value"
-      [disabled]="mode === 'VIEW'"
-      placeholder="Select Section"
-      required>
-      </p-select>
+      <button
+        pButton
+        type="submit"
+        [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
+        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+      ></button>
     </div>
-
-    <!-- PROFESSOR -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Professor
-      </label>
-
-      <p-select
-        class="w-full"
-        name="professor_id"
-        [(ngModel)]="professor_id"
-        #professorCtrl="ngModel"
-        [options]="professors"
-        optionLabel="label"
-        optionValue="value"
-        [disabled]="mode === 'VIEW'"
-        placeholder="Select Professor"
-        required>
-      ></p-select>
-    </div>
-
-    <!-- SUBJECT -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Subject
-      </label>
-
-      <p-select
-        class="w-full"
-        name="subject_id"
-        [(ngModel)]="subject_id"
-        #subjectCtrl="ngModel"
-        [options]="subjects"
-        optionLabel="label"
-        optionValue="value"
-        [disabled]="mode === 'VIEW'"
-        required
-        placeholder="Select Subject"
-      
-      ></p-select>
-    </div>
-
-    <!-- DAY -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Day
-      </label>
-
-      <p-select
-        class="w-full"
-        name="day"
-        [(ngModel)]="day"
-        #dayCtrl="ngModel"
-        [options]="days"
-        optionLabel="label"
-        optionValue="value"
-        [disabled]="mode === 'VIEW'"
-        required
-        placeholder="Select Day"
-    
-      ></p-select>
-    </div>
-
-    <!-- START TIME -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Start Time
-      </label>
-
-      <p-datepicker
-        name="start_time"
-        [(ngModel)]="start_time"
-        [disabled]="mode === 'VIEW'"
-        #startTimeCtrl="ngModel"
-        [required]="true"
-        [showTime]="true"
-        timeOnly="true"
-        hourFormat="12"
-        placeholder="Select Start Time"
-        class="w-full"
-        inputStyleClass="w-full"
-     ></p-datepicker>
-    </div>
-
-    <!-- END TIME -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> End Time
-      </label>
-
-      <p-datepicker
-        name="end_time"
-        [(ngModel)]="end_time"
-        [disabled]="mode === 'VIEW'"
-        #startTimeCtrl="ngModel"
-        [required]="true"
-        [showTime]="true"
-        timeOnly="true"
-        hourFormat="12"
-        placeholder="Select End Time"
-        class="w-full"
-        inputStyleClass="w-full"
-     ></p-datepicker>
-    </div>
-
-    <!-- ROOM -->
-    <div>
-      <label class="block mb-2 text-sm font-semibold text-slate-700">
-        <span class="mr-1 text-red-600">*</span> Room
-      </label>
-
-      <input
-        pInputText
-        name="room"
-        [(ngModel)]="room"
-        [disabled]="mode === 'VIEW'"
-        #roomCtrl="ngModel"
-        class="w-full"
-        required
-        placeholder="Input Room Number/Name"
-      />
-    </div>
-
-  </div>
-
-
-  <!-- LOADING -->
-  <div
-  *ngIf="mode !== 'VIEW'"
-   class="flex justify-end gap-3 mt-6">
-
-   <button
-     pButton
-     type="button"
-     label="Cancel"
-     class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
-     (click)="close()">
-  </button>
-
-   <button
-     pButton
-    type="submit"
-     [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
-     class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700">
-  </button>
-
- </div>
-
   </form>
 </p-dialog>

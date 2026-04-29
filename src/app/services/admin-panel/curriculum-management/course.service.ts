@@ -18,11 +18,13 @@ export enum CourseEndPoints {
   updateCourse = 'update/course/{id}',
   deleteCourse = 'delete/course',
   bulkUploadCourse = 'bulk-upload/courses',
+  listAllCourse = 'list-all/course',
 }
 
 export type CourseResponse = ApiResponse<CourseData>;
 export type DeleteCourseResponse = ApiResponseNoData;
 export type bulkUploadCourseResponse = ApiResponseNoData;
+export type CourseListAllResponse = ApiResponse<CourseData[]>;
 
 @Injectable({
   providedIn: 'root',
@@ -41,6 +43,7 @@ export class CourseService {
   private readonly updateCourseUrl = `${this.baseAPIUrl}${CourseEndPoints.updateCourse}`;
   private readonly deleteCoursetUrl = `${this.baseAPIUrl}${CourseEndPoints.deleteCourse}`;
   private readonly bulkUploadCourseUrl = `${this.baseAPIUrl}${CourseEndPoints.bulkUploadCourse}`;
+  private readonly listAllCourseUrl = `${this.baseAPIUrl}${CourseEndPoints.listAllCourse}`;
 
   private authHeaders(): HttpHeaders {
     //  const token = localStorage.getItem('access_token');
@@ -90,6 +93,12 @@ export class CourseService {
     fd.append('file', file);
 
     return this.http.post<bulkUploadCourseResponse>(this.bulkUploadCourseUrl, fd, {
+      headers: this.authHeaders(),
+    });
+  }
+
+  listAllCourse(): Observable<CourseListAllResponse> {
+    return this.http.get<CourseListAllResponse>(this.listAllCourseUrl, {
       headers: this.authHeaders(),
     });
   }

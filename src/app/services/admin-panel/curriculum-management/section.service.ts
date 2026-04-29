@@ -22,11 +22,13 @@ export enum SectionEndPoints {
   updateSection = 'update/section/{id}',
   deleteSection = 'delete/section',
   bulkUploadSection = 'bulk-upload/sections',
+  listAllSection = 'list-all/section',
 }
 
 export type SectionResponse = ApiResponse<SectionData>;
 export type DeleteSectionResponse = ApiResponseNoData;
 export type bulkUploadSectionResponse = ApiResponseNoData;
+export type SectionListAllResponse = ApiResponse<SectionData[]>;
 
 @Injectable({
   providedIn: 'root',
@@ -45,6 +47,7 @@ export class SectionService {
   private readonly updateSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.updateSection}`;
   private readonly deleteSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.deleteSection}`;
   private readonly bulkUploadSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.bulkUploadSection}`;
+  private readonly listAllSectionUrl = `${this.baseAPIUrl}${SectionEndPoints.listAllSection}`;
 
   private authHeaders(): HttpHeaders {
     //  const token = localStorage.getItem('access_token');
@@ -101,6 +104,12 @@ export class SectionService {
     fd.append('file', file);
 
     return this.http.post<bulkUploadSectionResponse>(this.bulkUploadSectionUrl, fd, {
+      headers: this.authHeaders(),
+    });
+  }
+
+  listAllSection(): Observable<SectionListAllResponse> {
+    return this.http.get<SectionListAllResponse>(this.listAllSectionUrl, {
       headers: this.authHeaders(),
     });
   }
