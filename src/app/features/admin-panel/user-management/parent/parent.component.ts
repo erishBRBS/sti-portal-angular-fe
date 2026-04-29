@@ -26,6 +26,7 @@ import { createParentDetailConfig } from '../../../../helper/parent.helper';
 type UserRow = {
   id: number;
   first_name: string;
+  contact_number: string;
   middle_name: string;
   last_name: string;
   email: string;
@@ -51,6 +52,7 @@ export class ParentManagementComponent {
     { field: 'middle_name', header: 'Middle Name', sortable: true, filter: true },
     { field: 'last_name', header: 'Last Name', sortable: true, filter: true },
     { field: 'email', header: 'Email', sortable: true, filter: true },
+    { field: 'contact_number', header: 'Contact Number', sortable: true, filter: true },
     { field: 'createdAt', header: 'Created', sortable: true, filter: true, type: 'datetime' },
   ];
 
@@ -197,6 +199,7 @@ export class ParentManagementComponent {
             first_name: a.first_name,
             middle_name: a.middle_name ?? '',
             last_name: a.last_name,
+            contact_number: a.contact_number ?? '',
             email: a.email,
             status: this.mapStatus(a.status),
             createdAt: a.created_at,
