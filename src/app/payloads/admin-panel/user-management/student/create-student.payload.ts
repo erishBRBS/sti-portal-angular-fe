@@ -3,6 +3,7 @@ export interface CreateStudentPayload {
   middle_name?: string;
   last_name: string;
   email: string;
+  student_no: string;
   mobile_number?: string;
   course_id: number;
   section_id: number;

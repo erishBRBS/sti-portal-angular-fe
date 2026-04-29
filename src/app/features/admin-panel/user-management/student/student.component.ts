@@ -216,6 +216,7 @@ export class StudentManagementComponent {
             first_name: a.first_name,
             middle_name: a.middle_name ?? '',
             last_name: a.last_name,
+            student_no: a.student_no ?? '',
             email: a.email,
             contact_number: a.mobile_number ?? '',
             course: a.course.course_name,
