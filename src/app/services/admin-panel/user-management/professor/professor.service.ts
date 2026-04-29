@@ -14,12 +14,14 @@ export enum ProfessorEndPoints {
   updateProfessor = 'update/p/{id}',
   getProfessorById = 'get/professor/{id}',
   deleteProfessor = 'delete/professor',
-  bulkUploadProfessor = 'bulk-upload/professors'
+  bulkUploadProfessor = 'bulk-upload/professors',
+  listAllProfessor = 'list-all/professor'
 }
 
 export type ProfessorResponse = ApiResponse<ProfessorData>;
 export type DeleteProfessorResponse = ApiResponseNoData;
 export type bulkUploadProfessorResponse = ApiResponseNoData;
+export type ProfessorListAllResponse = ApiResponse<ProfessorData[]>;
 
 @Injectable({
   providedIn: 'root',
@@ -37,6 +39,7 @@ export class ProfessorService {
   private readonly updateProfessorUrl = `${this.baseAPIUrl}${ProfessorEndPoints.updateProfessor}`;
   private readonly deleteProfessorUrl = `${this.baseAPIUrl}${ProfessorEndPoints.deleteProfessor}`;
   private readonly bulkUploadProfessorUrl = `${this.baseAPIUrl}${ProfessorEndPoints.bulkUploadProfessor}`;
+  private readonly listAllProfessorUrl = `${this.baseAPIUrl}${ProfessorEndPoints.listAllProfessor}`;
 
   private authHeaders(): HttpHeaders {
     return new HttpHeaders({
@@ -125,5 +128,11 @@ export class ProfessorService {
       fd,
       { headers: this.authHeaders() }
     );
+  }
+
+  listAllProfessors(): Observable<ProfessorListAllResponse> {
+    return this.http.get<ProfessorListAllResponse>(this.listAllProfessorUrl, {
+      headers: this.authHeaders(),
+    });
   }
 }

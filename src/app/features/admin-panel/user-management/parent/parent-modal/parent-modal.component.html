@@ -10,21 +10,16 @@
   [contentStyle]="{ 'max-height': '78vh', overflow: 'auto' }"
   (onHide)="close()"
 >
-
   <!-- HEADER -->
   <ng-template pTemplate="header">
     <div class="w-full flex justify-center">
-      <span class="text-lg font-bold text-blue-600">{{ dialogTitle }}
-      </span>
+      <span class="text-lg font-bold text-blue-600">{{ dialogTitle }} </span>
     </div>
   </ng-template>
 
   <form #parentForm="ngForm" (ngSubmit)="onSave(parentForm)" class="p-4">
-    
-
     <!-- GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
       <!-- FIRST NAME -->
       <div>
         <label class="block text-sm font-semibold mb-2">
@@ -42,12 +37,13 @@
           placeholder="Enter first name"
         />
 
-        <p class="text-xs text-red-500 mt-1"
-          *ngIf="firstNameCtrl.invalid && (firstNameCtrl.touched || submitted)">
+        <p
+          class="text-xs text-red-500 mt-1"
+          *ngIf="firstNameCtrl.invalid && (firstNameCtrl.touched || submitted)"
+        >
           First name is required
         </p>
       </div>
-
 
       <!-- USERNAME -->
       <div>
@@ -67,12 +63,9 @@
         />
       </div>
 
-
       <!-- MIDDLE NAME -->
       <div>
-        <label class="block text-sm font-semibold mb-2">
-          Middle Name
-        </label>
+        <label class="block text-sm font-semibold mb-2"> Middle Name </label>
 
         <input
           pInputText
@@ -83,7 +76,6 @@
           placeholder="Enter middle name"
         />
       </div>
-
 
       <!-- PASSWORD -->
       <div class="relative">
@@ -110,7 +102,6 @@
         ></i>
       </div>
 
-
       <!-- LAST NAME -->
       <div>
         <label class="block text-sm font-semibold mb-2">
@@ -128,7 +119,6 @@
           placeholder="Enter last name"
         />
       </div>
-
 
       <!-- EMAIL -->
       <div>
@@ -148,46 +138,52 @@
         />
       </div>
 
+      <!-- CONTACT NUMBER -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Contact Number
+        </label>
 
-      <!-- MOBILE -->
-
+        <input
+          pInputText
+          class="w-full"
+          name="contact_number"
+          [(ngModel)]="contact_number"
+          [disabled]="mode === 'VIEW'"
+          #contactNumberCtrl="ngModel"
+          required
+          placeholder="Enter contact number"
+        />
+      </div>
     </div>
-
 
     <!-- IMAGE UPLOAD -->
     <div class="mt-6">
-
-      <label class="block text-sm font-semibold mb-2">
-        Profile Image (optional)
-      </label>
+      <label class="block text-sm font-semibold mb-2"> Profile Image (optional) </label>
 
       <div class="flex items-start gap-4">
-
-        <div class="w-24 h-24 rounded-xl border overflow-hidden bg-gray-50 flex items-center justify-center">
+        <div
+          class="w-24 h-24 rounded-xl border overflow-hidden bg-gray-50 flex items-center justify-center"
+        >
           <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
           <span *ngIf="!previewUrl" class="text-xs text-gray-400">No image</span>
         </div>
 
         <div class="flex-1 space-y-2">
-
-          <input
-            #fileInput
-            type="file"
-            hidden
-            accept="image/*"
-            (change)="onFileSelected($event)"
-          />
+          <input #fileInput type="file" hidden accept="image/*" (change)="onFileSelected($event)" />
 
           <div class="flex items-center gap-3">
-
-            <span
-              class="text-sm text-gray-600 cursor-pointer"
-              (click)="fileInput.click()"
-            >
+            <span class="text-sm text-gray-600 cursor-pointer" (click)="fileInput.click()">
               {{ fileName || 'Click to choose file' }}
             </span>
 
-            <button type="button" pButton  class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700" label="Choose File"(click)="fileInput.click()"></button>
+            <button
+              type="button"
+              pButton
+              class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+              label="Choose File"
+              (click)="fileInput.click()"
+            ></button>
 
             <button
               *ngIf="fileName || previewUrl"
@@ -197,37 +193,27 @@
               label="Remove"
               (click)="removeImage()"
             ></button>
-
           </div>
-
         </div>
-
       </div>
-
     </div>
 
-
     <!-- FOOTER -->
-    <div 
-      *ngIf="mode !== 'VIEW'"
-      class="flex justify-end gap-3 mt-6"
-      >
+    <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
+      <button
+        pButton
+        type="button"
+        label="Cancel"
+        class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
+        (click)="close()"
+      ></button>
 
       <button
-         pButton
-         type="button"
-         label="Cancel"
-          class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
-         (click)="close()">
-     </button>
-
-     <button
         pButton
         type="submit"
         [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
-        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700">
-     </button>
-
+        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+      ></button>
     </div>
-   </form>
+  </form>
 </p-dialog>
