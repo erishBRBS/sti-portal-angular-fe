@@ -99,10 +99,13 @@ export class ScheduleModalComponent {
     { label: '215', value: 'Room 215' },
     { label: '216', value: 'Room 216' },
     { label: '217-A', value: 'Room 217-A' },
+    { label: '218-A', value: 'Room 218-A' },
     { label: '219-A', value: 'Room 219-A' },
 
     { label: '301', value: 'Room 301' },
     { label: '302', value: 'Room 302' },
+    { label: '303', value: 'Room 303' },
+    { label: '304', value: 'Room 304' },
 
     { label: 'L1', value: 'Room L1' },
     { label: 'L2', value: 'Room L2' },
