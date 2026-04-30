@@ -8,12 +8,16 @@ import {
   GetStudentGradesResponse,
 } from '../../../models/gps/professor/professor.model';
 import { CreateStudentGradePayload } from '../../../payloads/gps/professor/professor.payload';
+import { ApiResponseNoData } from '../../../models/pagination.model';
 
 export enum GradePortalEndPoints {
   createStudentGrade = 'create/student',
-  getStudentGrades = 'get/student-grade', 
+  getStudentGrades = 'get/student-grade',
   updateStudentGrade = 'update/student-grade',
+  bulkUploadStudentGrades = 'bulk-upload/student-grades',
 }
+
+export type bulkUploadStudentGradesResponse = ApiResponseNoData;
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +31,7 @@ export class GradePortalService {
   private readonly createStudentGradeUrl = `${this.baseAPIUrl}${GradePortalEndPoints.createStudentGrade}`;
   private readonly getStudentGradesUrl = `${this.baseAPIUrl}${GradePortalEndPoints.getStudentGrades}`;
   private readonly updateStudentGradeUrl = `${this.baseAPIUrl}${GradePortalEndPoints.updateStudentGrade}`;
+  private readonly bulkUploadStudentGradesUrl = `${this.baseAPIUrl}${GradePortalEndPoints.bulkUploadStudentGrades}`;
 
   private authHeaders(): HttpHeaders {
     const token = this.storage.getToken();
@@ -48,28 +53,30 @@ export class GradePortalService {
     });
   }
 
-  createStudentGrade(
-    payload: CreateStudentGradePayload
-  ): Observable<CreateStudentGradeResponse> {
-    return this.http.post<CreateStudentGradeResponse>(
-      this.createStudentGradeUrl,
-      payload,
-      {
-        headers: this.authHeaders(),
-      }
-    );
+  createStudentGrade(payload: CreateStudentGradePayload): Observable<CreateStudentGradeResponse> {
+    return this.http.post<CreateStudentGradeResponse>(this.createStudentGradeUrl, payload, {
+      headers: this.authHeaders(),
+    });
   }
 
   updateStudentGrade(
     id: number,
-    payload: CreateStudentGradePayload
+    payload: CreateStudentGradePayload,
   ): Observable<CreateStudentGradeResponse> {
     return this.http.patch<CreateStudentGradeResponse>(
       `${this.updateStudentGradeUrl}/${id}`,
       payload,
       {
         headers: this.authHeaders(),
-      }
+      },
     );
+  }
+
+  bulkUploadStudentGrades(file: File): Observable<bulkUploadStudentGradesResponse> {
+    const fd = new FormData();
+    fd.append('file', file);
+    return this.http.post<bulkUploadStudentGradesResponse>(this.bulkUploadStudentGradesUrl, fd, {
+      headers: this.authHeaders(),
+    });
   }
 }
