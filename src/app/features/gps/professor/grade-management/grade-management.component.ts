@@ -17,6 +17,8 @@ import {
 } from '../../../../shared/components/data-table/data-table.component';
 import { GradePortalService } from '../../../../services/gps/professor/professor.service';
 import { StudentGradeListItem } from '../../../../models/gps/professor/professor.model';
+import { ToastService } from '../../../../shared/services/toast.service';
+
 
 interface SectionOption {
   id: number;
@@ -61,6 +63,7 @@ export class GradeManagementComponent implements OnInit {
 
   private gradePortalService = inject(GradePortalService);
   private cdr = inject(ChangeDetectorRef);
+  private toast = inject(ToastService);
 
   @ViewChild(GradeModalComponent) gradeModal?: GradeModalComponent;
 
@@ -138,14 +141,39 @@ export class GradeManagementComponent implements OnInit {
 
   get filteredGrades(): StudentGradeRow[] {
     return this.allGrades.filter((item) => {
-      const subjectMatch =
-        !this.selectedSubject || item.subject_id === this.selectedSubject;
+      const subjectMatch = !this.selectedSubject || item.subject_id === this.selectedSubject;
 
-      const sectionMatch =
-        !this.selectedSection || item.section_id === this.selectedSection;
+      const sectionMatch = !this.selectedSection || item.section_id === this.selectedSection;
 
       return subjectMatch && sectionMatch;
     });
+  }
+
+  openImportCsv() {
+    if (!this.isBrowser) return;
+
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.csv,.xlsx,.xls';
+
+    input.onchange = (event: any) => {
+      const file: File = event.target.files[0];
+
+      if (!file) return;
+
+      this.gradePortalService.bulkUploadStudentGrades(file).subscribe({
+        next: (res) => {
+          this.toast.success('Success', res.message);
+          this.loadStudentGrades();
+        },
+        error: (err) => {
+          console.error(err);
+          this.toast.error('Error', 'Failed to import CSV');
+        },
+      });
+    };
+
+    input.click();
   }
 
   onSubjectChange(value: string): void {
@@ -198,9 +226,7 @@ export class GradeManagementComponent implements OnInit {
 
     this.gradePortalService.getStudentGrades().subscribe({
       next: (response) => {
-        const rows = (response.data ?? []).map((item) =>
-          this.mapGradeRow(item)
-        );
+        const rows = (response.data ?? []).map((item) => this.mapGradeRow(item));
 
         this.allGrades = rows;
         this.subjectOptions = this.buildSubjectOptions(rows);
@@ -231,9 +257,7 @@ export class GradeManagementComponent implements OnInit {
       pre_finals: this.toNumber(item.pre_finals_grade),
       finals: this.toNumber(item.finals_grade),
       final_grade:
-        item.final_grade !== null &&
-        item.final_grade !== undefined &&
-        item.final_grade !== ''
+        item.final_grade !== null && item.final_grade !== undefined && item.final_grade !== ''
           ? String(item.final_grade)
           : '-',
       subject_id: item.schedule?.subject?.id ?? 0,
