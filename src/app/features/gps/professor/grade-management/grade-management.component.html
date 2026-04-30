@@ -71,7 +71,8 @@
         [showActions]="true"
         [showAdd]="false"
         [showDelete]="false"
-        [showImportCsv]="false"
+        [showImportCsv]="true"
+        (importCsvClicked)="openImportCsv()"
         [showSelection]="false"
         (actionClicked)="onTableAction($event)"
       >
