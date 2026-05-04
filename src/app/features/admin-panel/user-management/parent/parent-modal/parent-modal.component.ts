@@ -113,7 +113,7 @@ export class ParentModalComponent {
         this.getParentById(id);
       }, 0);
 
-      this.pendingEditId = null;
+      this.pendingEditId = null ;
     }
   }
 
