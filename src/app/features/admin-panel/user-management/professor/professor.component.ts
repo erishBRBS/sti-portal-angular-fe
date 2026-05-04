@@ -58,9 +58,7 @@ export class ProfessorManagementComponent {
       filter: true,
       type: 'tag',
       tagSeverity: (r) =>
-        r.status === 'Active' ? 'success' : r.status === 'Pending' ? 'warn' : 'danger',
-    },
-    { field: 'createdAt', header: 'Created', sortable: true, filter: true, type: 'datetime' },
+        r.status === 'Active' ? 'success' : r.status === 'Pending' ? 'warn' : 'danger',},
   ];
 
   actions: RowAction<UserRow>[] = [
