@@ -105,12 +105,12 @@ export class ParentService {
     fd.append('middle_name', payload.middle_name ?? '');
     fd.append('last_name', payload.last_name ?? '');
     fd.append('contact_number', payload.contact_number ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('username', payload.username ?? '');
+    // fd.append('email', payload.email ?? '');
+    // fd.append('username', payload.username ?? '');
 
-    if (payload.password) {
-      fd.append('password', payload.password);
-    }
+    // if (payload.password) {
+    //   fd.append('password', payload.password);
+    // }
 
     if (imageFile) {
       fd.append('image_path', imageFile);

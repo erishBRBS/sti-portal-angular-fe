@@ -128,6 +128,7 @@ export class ParentModalComponent {
 
   onSave(form: NgForm) {
     if (form.invalid) {
+      console.log('test dito');
       this.submitted = true;
       form.control.markAllAsTouched();
       return;
@@ -254,7 +255,7 @@ export class ParentModalComponent {
         this.email = data.email;
 
         // password usually hindi binabalik ng API
-        this.password = '';
+        this.password = '1';
 
         // image
         this.previewUrl = data.image_path

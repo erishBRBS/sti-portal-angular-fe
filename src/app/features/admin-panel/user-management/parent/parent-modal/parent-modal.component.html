@@ -56,7 +56,7 @@
           class="w-full"
           name="username"
           [(ngModel)]="username"
-          [disabled]="mode === 'VIEW'"
+          [disabled]="mode === 'VIEW' || 'UPDATE'"
           #usernameCtrl="ngModel"
           required
           placeholder="Enter username"
@@ -78,7 +78,7 @@
       </div>
 
       <!-- PASSWORD -->
-      <div class="relative">
+      <div class="relative" [hidden]="mode === 'UPDATE'">
         <label class="block text-sm font-semibold mb-2">
           <span class="text-red-600">*</span> Password
         </label>
@@ -131,7 +131,7 @@
           class="w-full"
           name="email"
           [(ngModel)]="email"
-          [disabled]="mode === 'VIEW'"
+          [disabled]="mode === 'VIEW' || 'UPDATE'"
           required
           email
           placeholder="Enter email"
