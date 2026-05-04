@@ -100,6 +100,7 @@ export class ParentService {
     const url = this.updateParentUrl.replace('{id}', String(id));
 
     const fd = new FormData();
+    fd.append('_method', 'PATCH');
     fd.append('first_name', payload.first_name ?? '');
     fd.append('middle_name', payload.middle_name ?? '');
     fd.append('last_name', payload.last_name ?? '');
@@ -115,7 +116,7 @@ export class ParentService {
       fd.append('image_path', imageFile);
     }
 
-    return this.http.patch<ParentResponse>(url, fd, {
+    return this.http.post<ParentResponse>(url, fd, {
       headers: this.authHeaders(),
     });
   }
