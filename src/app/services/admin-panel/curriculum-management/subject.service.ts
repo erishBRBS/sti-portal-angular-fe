@@ -49,8 +49,6 @@ export class SubjectService {
   private readonly listAllSubjectUrl = `${this.baseAPIUrl}${SubjectEndPoints.listAllSubject}`;
 
   private authHeaders(): HttpHeaders {
-    //  const token = localStorage.getItem('access_token');
-    //   const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
       Authorization: this.storage.getToken() ? `Bearer ${this.storage.getToken()}` : '',
       Accept: 'application/json',
@@ -82,17 +80,19 @@ export class SubjectService {
       headers: this.authHeaders(),
     });
   }
+
   updateSubject(id: number, payload: CreateSubjectPayload): Observable<SubjectResponse> {
-    const url = `${this.baseAPIUrl}/update/subject/${id}`;
+    const url = `${this.baseAPIUrl}${SubjectEndPoints.updateSubject}`.replace('{id}', String(id));
+    const body = {
+      subject_code: payload.subject_code,
+      subject_name: payload.subject_name
+    };
 
-    const fd = new FormData();
-    fd.append('subject_code', payload.subject_code);
-    fd.append('subject_name', payload.subject_name);
-
-    return this.http.post<SubjectResponse>(url, fd, {
-      headers: this.authHeaders(),
+    return this.http.patch<SubjectResponse>(url, body, {
+      headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
+
   deleteSubject(payload: DeletePayload): Observable<DeleteSubjectResponse> {
     return this.http.post<DeleteSubjectResponse>(this.deleteSubjectUrl, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),

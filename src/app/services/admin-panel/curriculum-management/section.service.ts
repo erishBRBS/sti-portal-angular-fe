@@ -82,14 +82,13 @@ export class SectionService {
       headers: this.authHeaders(),
     });
   }
-  updateSection(id: number, payload: CreateSectionPayload): Observable<SectionResponse> {
+ updateSection(id: number, payload: CreateSectionPayload): Observable<SectionResponse> {
     const url = this.updateSectionUrl.replace('{id}', String(id));
-
-    const fd = new FormData();
-    fd.append('section_name', payload.section_name);
-
-    return this.http.post<SectionResponse>(url, fd, {
-      headers: this.authHeaders(),
+    const body = {
+      section_name: payload.section_name
+    };
+    return this.http.patch<SectionResponse>(url, body, {
+      headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
 
