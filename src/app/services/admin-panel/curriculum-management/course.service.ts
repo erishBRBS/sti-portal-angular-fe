@@ -46,8 +46,6 @@ export class CourseService {
   private readonly listAllCourseUrl = `${this.baseAPIUrl}${CourseEndPoints.listAllCourse}`;
 
   private authHeaders(): HttpHeaders {
-    //  const token = localStorage.getItem('access_token');
-    //   const token = '2|Mh08c6p0j4tzzbdZgAHIPJuEHs4PqhpvhrCaS8Ztd5840140';
     return new HttpHeaders({
       Authorization: this.storage.getToken() ? `Bearer ${this.storage.getToken()}` : '',
       Accept: 'application/json',
@@ -77,7 +75,7 @@ export class CourseService {
   }
   updateCourse(id: number, payload: CreateCoursePayload): Observable<CourseResponse> {
     const url = this.updateCourseUrl.replace('{id}', String(id));
-    return this.http.post<CourseResponse>(url, payload, {
+    return this.http.patch<CourseResponse>(url, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }

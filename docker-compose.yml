@@ -1,0 +1,28 @@
+services:
+  angular-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prod-sti-portal-angular-fe
+    restart: unless-stopped
+    ports:
+      - "4200:80"
+    networks:
+      - app_network
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: sti-portal-angular-cloudflared
+    restart: unless-stopped
+    command: tunnel --config /etc/cloudflared/portal.yml run
+    volumes:
+      - ./cloudflared/portal.yml:/etc/cloudflared/portal.yml:ro
+      - ./cloudflared:/etc/cloudflared:ro
+    depends_on:
+      - angular-app
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
