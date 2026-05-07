@@ -12,58 +12,90 @@
 >
   <ng-template pTemplate="header">
     <div class="w-full flex items-center justify-center">
-      <div class="text-lg font-bold text-blue-700">{{ dialogTitle }}</div>
+      <div class="text-lg font-bold text-blue-700">
+        {{ dialogTitle }}
+      </div>
     </div>
   </ng-template>
 
   <form #parentForm="ngForm" (ngSubmit)="onSave(parentForm)" class="p-4">
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- LEFT -->
       <div class="space-y-5">
+
+        <!-- FULL NAME -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Full Name:
           </label>
+
           <input
-            pInputText class="w-full" name="full_name"
+            pInputText
+            class="w-full"
+            name="full_name"
             [(ngModel)]="full_name"
             [disabled]="mode === 'VIEW'"
             #fullNameCtrl="ngModel"
             required
-            placeholder="Input full Name"
-            [ngClass]="{ 'ng-invalid ng-dirty': fullNameCtrl.invalid && (fullNameCtrl.touched || submitted) }"
+            placeholder="Input Full Name"
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                fullNameCtrl.invalid &&
+                (fullNameCtrl.touched || submitted)
+            }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="fullNameCtrl.invalid && (fullNameCtrl.touched || submitted)">
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="fullNameCtrl.invalid && (fullNameCtrl.touched || submitted)"
+          >
             Full Name is required.
           </p>
         </div>
 
+        <!-- EMAIL -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Email:
           </label>
+
           <input
-            pInputText class="w-full" name="email"
+            pInputText
+            class="w-full"
+            name="email"
             [(ngModel)]="email"
-            [disabled]="mode === 'VIEW'"
+            [disabled]="mode === 'VIEW' || mode === 'UPDATE'"
             #emailCtrl="ngModel"
             required
             email
             placeholder="Input Email"
-            [ngClass]="{ 'ng-invalid ng-dirty': emailCtrl.invalid && (emailCtrl.touched || submitted) }"
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                emailCtrl.invalid &&
+                (emailCtrl.touched || submitted)
+            }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="emailCtrl.invalid && (emailCtrl.touched || submitted)">
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="emailCtrl.invalid && (emailCtrl.touched || submitted)"
+          >
             Email is required / must be valid.
           </p>
         </div>
 
+        <!-- MOBILE -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Mobile Number:
           </label>
+
           <input
-            pInputText class="w-full" name="mobile_number"
+            pInputText
+            class="w-full"
+            name="mobile_number"
             [(ngModel)]="mobile_number"
             #mobileCtrl="ngModel"
             required
@@ -74,77 +106,127 @@
             placeholder="Input Mobile"
             (keypress)="allowNumbersOnly($event)"
             (input)="mobile_number = mobile_number.replace(/[^0-9]/g, '')"
-            [ngClass]="{ 'ng-invalid ng-dirty': mobileCtrl.invalid && (mobileCtrl.touched || submitted) }"
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                mobileCtrl.invalid &&
+                (mobileCtrl.touched || submitted)
+            }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="mobileCtrl.invalid && (mobileCtrl.touched || submitted)">
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="mobileCtrl.invalid && (mobileCtrl.touched || submitted)"
+          >
             Mobile number is required.
           </p>
         </div>
+
       </div>
 
       <!-- RIGHT -->
       <div class="space-y-5">
+
+        <!-- USERNAME -->
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Username:
           </label>
+
           <input
-            pInputText class="w-full" name="username"
+            pInputText
+            class="w-full"
+            name="username"
             [(ngModel)]="username"
-            [disabled]="mode === 'VIEW'"
+            [disabled]="mode === 'VIEW' || mode === 'UPDATE'"
             #usernameCtrl="ngModel"
             required
             placeholder="Input Username"
-            [ngClass]="{ 'ng-invalid ng-dirty': usernameCtrl.invalid && (usernameCtrl.touched || submitted) }"
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                usernameCtrl.invalid &&
+                (usernameCtrl.touched || submitted)
+            }"
           />
-          <p class="mt-1 text-xs text-rose-600" *ngIf="usernameCtrl.invalid && (usernameCtrl.touched || submitted)">
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="usernameCtrl.invalid && (usernameCtrl.touched || submitted)"
+          >
             Username is required.
           </p>
         </div>
 
-         <div class="relative">
-             <label class="block text-sm font-semibold text-slate-700 mb-2">
+        <!-- PASSWORD -->
+        <div *ngIf="mode !== 'UPDATE'">
+
+          <label class="block text-sm font-semibold text-slate-700 mb-2">
             <span class="text-red-600 mr-1">*</span> Password:
           </label>
-           <input
-             pInputText
-             class="w-full pr-10"
-             name="password"
-             [(ngModel)]="password"
-             [disabled]="mode === 'VIEW'"
-             #passCtrl="ngModel"
-             [type]="showPassword ? 'text' : 'password'"
-             required
-             placeholder="Input Password"
-             [ngClass]="{ 'ng-invalid ng-dirty': passCtrl.invalid && (passCtrl.touched || submitted) }"
-           />
 
-           <i
-           class="pi cursor-pointer absolute right-3 top-[38px] text-slate-500"
-           [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"
-           (click)="togglePassword()"
-        ></i>
-     </div>
+          <div class="relative">
 
-     <p class="mt-1 text-xs text-rose-600"
-        *ngIf="passCtrl.invalid && (passCtrl.touched || submitted)">
-        Password is required.
-     </p>
-   </div>
+            <input
+              pInputText
+              class="w-full pr-10"
+              name="password"
+              [(ngModel)]="password"
+              [disabled]="mode === 'VIEW'"
+              #passCtrl="ngModel"
+              [type]="showPassword ? 'text' : 'password'"
+              required
+              placeholder="Input Password"
+              [ngClass]="{
+                'ng-invalid ng-dirty':
+                  passCtrl.invalid &&
+                  (passCtrl.touched || submitted)
+              }"
+            />
 
-        <!-- ✅ Image Upload (PUP style: hidden input + custom label) -->
+            <i
+              class="pi cursor-pointer absolute right-3 top-[38px] text-slate-500"
+              [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"
+              (click)="togglePassword()"
+            ></i>
+
+          </div>
+
+          <p
+            class="mt-1 text-xs text-rose-600"
+            *ngIf="passCtrl.invalid && (passCtrl.touched || submitted)"
+          >
+            Password is required.
+          </p>
+
+        </div>
+
+        <!-- IMAGE -->
         <div>
+
           <label class="block text-sm font-semibold text-slate-700 mb-2">
             Profile Image (optional)
           </label>
 
           <div class="flex items-start gap-4">
-            <div class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center">
-              <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
-              <span *ngIf="!previewUrl" class="text-xs text-slate-400">No image</span>
+
+            <div
+              class="w-24 h-24 rounded-xl border border-slate-200 overflow-hidden bg-slate-50 flex items-center justify-center"
+            >
+              <img
+                *ngIf="previewUrl"
+                [src]="previewUrl"
+                class="w-full h-full object-cover"
+              />
+
+              <span
+                *ngIf="!previewUrl"
+                class="text-xs text-slate-400"
+              >
+                No image
+              </span>
             </div>
 
             <div class="flex-1 space-y-2">
+
               <input
                 #fileInput
                 type="file"
@@ -154,11 +236,21 @@
               />
 
               <div class="flex items-center gap-3">
-                <span class="text-sm text-slate-600 cursor-pointer" (click)="fileInput.click()">
+
+                <span
+                  class="text-sm text-slate-600 cursor-pointer"
+                  (click)="fileInput.click()"
+                >
                   {{ fileName || 'Click to choose file' }}
                 </span>
 
-                <button type="button" pButton class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700" label="Choose File" (click)="fileInput.click()"></button>
+                <button
+                  type="button"
+                  pButton
+                  class="p-button-sm !bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+                  label="Choose File"
+                  (click)="fileInput.click()"
+                ></button>
 
                 <button
                   *ngIf="fileName || previewUrl"
@@ -168,36 +260,44 @@
                   label="Remove"
                   (click)="removeImage()"
                 ></button>
+
               </div>
+
             </div>
+
           </div>
+
         </div>
 
       </div>
 
+    </div>
 
-
-    <!-- Footer -->
-    <div 
+    <!-- FOOTER -->
+    <div
       *ngIf="mode !== 'VIEW'"
       class="flex justify-end gap-3 mt-6"
-      >
+    >
 
       <button
-         pButton
-         type="button"
-         label="Cancel"
-         class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
-         (click)="close()">
-     </button>
+        pButton
+        type="button"
+        label="Cancel"
+        class="!bg-slate-100 !border-slate-300 !text-slate-700 hover:!bg-slate-200"
+        (click)="close()"
+      >
+      </button>
 
-     <button
+      <button
         pButton
         type="submit"
         [label]="mode === 'ADD' ? 'Add Record' : 'Update Record'"
-        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700">
-     </button>
+        class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
+      >
+      </button>
 
     </div>
+
   </form>
+
 </p-dialog>

@@ -89,7 +89,7 @@ export class AdminService {
     fd.append('email', payload.email ?? '');
     fd.append('mobile_number', payload.mobile_number ?? '');
     fd.append('username', payload.username ?? '');
-    fd.append('password', payload.password ?? '');
+    //fd.append('password', payload.password ?? '');
 
     if (imageFile) {
       fd.append('image_path', imageFile); 

@@ -11,7 +11,7 @@ import { TokenStorageService } from "../../../../core/services/token-storage.ser
 export enum ProfessorEndPoints {
   getProfessor = 'get/professor',
   createProfessor = 'create/professor',
-  updateProfessor = 'update/p/{id}',
+  updateProfessor = 'update/professor/{id}',
   getProfessorById = 'get/professor/{id}',
   deleteProfessor = 'delete/professor',
   bulkUploadProfessor = 'bulk-upload/professors',
@@ -88,30 +88,29 @@ export class ProfessorService {
     });
   }
 
-  updateProfessor(
-    id: number,
-    payload: CreateProfessorPayload,
-    imageFile?: File | null
-  ): Observable<ProfessorResponse> {
-    const url = this.updateProfessorUrl.replace('{id}', String(id));
+updateProfessor(
+  id: number,
+  payload: CreateProfessorPayload,
+  imageFile?: File | null
+): Observable<ProfessorResponse> {
 
-    const fd = new FormData();
-    fd.append('professor_name', payload.professor_name ?? '');
-    fd.append('email', payload.email ?? '');
-    fd.append('username', payload.username ?? '');
+  const url = this.updateProfessorUrl.replace('{id}', String(id));
 
-    if (payload.password) {
-      fd.append('password', payload.password);
-    }
+  const fd = new FormData();
 
-    if (imageFile) {
-      fd.append('image_path', imageFile);
-    }
+  fd.append('full_name', payload.professor_name ?? '');
+  fd.append('mobile_number', payload.mobile_number ?? '');
 
-    return this.http.patch<ProfessorResponse>(url, fd, {
-      headers: this.authHeaders(),
-    });
+  if (imageFile) {
+    fd.append('image_path', imageFile);
   }
+
+  fd.append('_method', 'PATCH');
+
+  return this.http.post<ProfessorResponse>(url, fd, {
+    headers: this.authHeaders(),
+  });
+}
 
   deleteProfessor(payload: DeletePayload): Observable<DeleteProfessorResponse> {
     return this.http.post<DeleteProfessorResponse>(this.deleteProfessorUrl, payload, {

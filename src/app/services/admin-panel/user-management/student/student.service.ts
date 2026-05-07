@@ -106,36 +106,42 @@ export class StudentService {
     });
   }
 
-  updateStudent(
-    id: number,
-    payload: CreateStudentPayload,
-    selectedFile: File | null,
-  ): Observable<StudentResponse> {
-    const url = this.updateStudentUrl.replace('{id}', String(id));
+updateStudent(
+  id: number,
+  payload: any,
+  selectedFile: File | null,
+): Observable<StudentResponse> {
 
-    const fd = new FormData();
+  const url = this.updateStudentUrl.replace('{id}', String(id));
 
-    fd.append('first_name', payload.first_name);
-    fd.append('middle_name', payload.middle_name ?? '');
-    fd.append('last_name', payload.last_name);
-    fd.append('email', payload.email);
-    fd.append('contact_number', payload.contact_number ?? '');
-    fd.append('course_id', String(payload.course_id));
-    fd.append('section_id', String(payload.section_id));
-    fd.append('year_level', payload.year_level ?? '');
-    fd.append('username', payload.username ?? '');
-    fd.append('rfid_code', payload.rfid_code ?? '');
+  const fd = new FormData();
 
-    fd.append('_method', 'PATCH');
+  fd.append('first_name', payload.first_name);
+  fd.append('middle_name', payload.middle_name ?? '');
+  fd.append('last_name', payload.last_name);
+  //fd.append('student_no', payload.student_no);
 
-    if (selectedFile) {
-      fd.append('image_path', selectedFile);
-    }
-
-    return this.http.post<StudentResponse>(url, fd, {
-      headers: this.authHeaders(),
-    });
+  // ONLY append email if changed
+  if (payload.email) {
+    //fd.append('email', payload.email);
   }
+
+  fd.append('contact_number', payload.contact_number ?? '');
+  fd.append('course_id', String(payload.course_id));
+  fd.append('section_id', String(payload.section_id));
+  fd.append('year_level', payload.year_level ?? '');
+  //fd.append('username', payload.username ?? '');
+  //fd.append('rfid_code', payload.rfid_code ?? '');
+
+  if (selectedFile) {
+    fd.append('image_path', selectedFile);
+  }
+  fd.append('_method', 'PATCH');
+
+  return this.http.post<StudentResponse>(url, fd, {
+    headers: this.authHeaders(),
+  });
+}
 
   deleteStudent(payload: DeleteStudentPayload): Observable<DeleteStudentResponse> {
     return this.http.post<DeleteStudentResponse>(this.deleteStudentUrl, payload, {
