@@ -285,24 +285,24 @@ export class StudentModalComponent {
     });
   }
 
-  private submitUpdateAction(): void {
-    const payload: CreateStudentPayload = {
-      first_name: this.first_name,
-      middle_name: this.middle_name,
-      last_name: this.last_name,
-      student_no: this.student_no,
-      email: this.email,
-      contact_number: this.contact_number,
-      course_id: this.course_id ?? 0,
-      section_id: this.section_id ?? 0,
-    };
+private submitUpdateAction(): void {
+  const payload: CreateStudentPayload = {
+    first_name: this.first_name,
+    middle_name: this.middle_name,
+    last_name: this.last_name,
+    student_no: this.student_no,
+    email: this.email,
+    contact_number: this.contact_number,
+    course_id: this.course_id ?? 0,
+    section_id: this.section_id ?? 0,
+    year_level: this.year_level,
+    username: this.username,
+    rfid_code: this.rfid_code,
+  };
 
-    if (this.mode === ModalMode.ADD) {
-      this.createStudent(payload);
-    } else {
-      this.updateStudent(payload);
-    }
-  }
+  console.log('UPDATE PAYLOAD', payload);
+  this.updateStudent(payload);
+}
   private createStudent(payload: CreateStudentPayload) {
     this.studentService.createStudent(payload, this.selectedFile).subscribe({
       next: (res: any) => {
@@ -317,21 +317,25 @@ export class StudentModalComponent {
     });
   }
 
-  private updateStudent(payload: CreateStudentPayload) {
-    if (!this.currentID) return;
+private updateStudent(payload: CreateStudentPayload) {
+  if (!this.currentID) return;
 
-    this.studentService.updateStudent(this.currentID, payload, this.selectedFile).subscribe({
-      next: (res: any) => {
-        this.toast.success('Success', res.message);
-        this.onSuccess.emit();
-        this.close();
-      },
-      error: (err: any) => {
-        const msg = err?.error?.message ?? 'Something went wrong.';
-        this.toast.error('Error', msg);
-      },
-    });
-  }
+  this.studentService.updateStudent(this.currentID, payload, this.selectedFile).subscribe({
+    next: (res: any) => {
+      this.toast.success('Success', res.message);
+
+      this.onSuccess.emit();
+      this.close();
+
+      window.location.reload();
+    },
+
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Something went wrong.';
+      this.toast.error('Error', msg);
+    },
+  });
+}
   private getStudentById(id: number): void {
     this.studentService.getStudentById(id).subscribe({
       next: (response: any) => {
@@ -352,9 +356,8 @@ export class StudentModalComponent {
         this.username = data.credentials?.username ?? '';
         this.rfid_code = data.credentials?.rfid_code ?? '';
 
-        this.previewUrl = data.image_path
-          ? this.studentService.fileAPIUrl + data.image_path.replace('/storage/', '')
-          : null;
+          this.previewUrl = this.studentService.fileAPIUrl + data.image_path;
+        console.log('fileDito', this.previewUrl);
 
         this.cdr.detectChanges();
       },

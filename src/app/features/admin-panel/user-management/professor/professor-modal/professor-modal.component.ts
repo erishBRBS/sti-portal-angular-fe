@@ -174,16 +174,20 @@ onDialogShown() {
     this.visible = false;
   }
 
-  onSave(form: NgForm) {
-    if (form.invalid) {
-      // show errors again if something changed
-      console.log('form invalid');
-      this.submitted = true;
-      form.control.markAllAsTouched();
-      return;
-    }
-    this.submitAction();
+onSave(form: NgForm) {
+  if (form.invalid) {
+    console.log('form invalid');
+    this.submitted = true;
+    form.control.markAllAsTouched();
+    return;
   }
+
+if (this.mode === ModalMode.ADD) {
+  this.submitAction();
+} else {
+  this.submitUpdateAction();
+}
+}
 
   onFileSelected(ev: Event) {
     const input = ev.target as HTMLInputElement;
@@ -202,6 +206,20 @@ onDialogShown() {
     this.clearFileControls();
   }
 
+  private submitUpdateAction(): void {
+  const payload: CreateProfessorPayload = {
+    professor_name: this.full_name,
+    email: this.email,
+    mobile_number: this.mobile_number,
+    username: this.username,
+    password: '',
+    department_id: 1,
+    user_role_id: 2
+  };
+
+  this.updateProfessor(payload);
+}
+
   // MARK: - API Function
   private submitAction(): void {
     const payload: CreateProfessorPayload = {
@@ -212,7 +230,8 @@ onDialogShown() {
      password: this.password,
      department_id: 1,
      user_role_id: 2 
-    };
+    }; 
+     
 
     this.professorService.createProfessor(payload, this.selectedFile).subscribe({
       next: (res) => {
@@ -269,7 +288,7 @@ onDialogShown() {
     next: (response: any) => {
     const data = response.data;
 
-      this.full_name = data.professor_name;
+     this.full_name = data.full_name;
       this.username = data.username;
       this.email = data.email;
       this.mobile_number = data.mobile_number; 
@@ -279,9 +298,9 @@ onDialogShown() {
       this.password = '';
 
       // image
-this.previewUrl = data.image_path
-  ? this.professorService.fileAPIUrl + data.image_path.replace('/storage/', '')
-  : null;
+        this.previewUrl = data.image_path
+          ? this.professorService.fileAPIUrl + data.image_path.replace('/storage/', '')
+          : null;
 
       this.cdr.detectChanges();
 
