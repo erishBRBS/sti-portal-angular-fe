@@ -17,7 +17,6 @@ export function createProfessorDetailConfig(
       { label: 'Mobile Number', value: data.mobile_number },
       { label: 'Username', value: data.username },
       { label: 'status', value: data.status },
-      { label: 'Created', value: DateHelper.formatDateTime(data.created_at), },
     ],
   };
 }
