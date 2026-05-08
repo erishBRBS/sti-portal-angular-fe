@@ -77,7 +77,7 @@ export class StudentScheduleService {
     payload: AssignStudentSchedulePayload,
   ): Observable<AssignStudentScheduleResponse> {
     const url = this.updateStudentScheduleUrl.replace('{id}', String(id));
-    return this.http.post<AssignStudentScheduleResponse>(url, payload, {
+    return this.http.patch<AssignStudentScheduleResponse>(url, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }

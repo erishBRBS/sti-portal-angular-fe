@@ -77,7 +77,7 @@ export class StudentParentService {
     payload: AssignStudentParentPayload,
   ): Observable<AssignStudentParentResponse> {
     const url = this.updateStudentParentUrl.replace('{id}', String(id));
-    return this.http.post<AssignStudentParentResponse>(url, payload, {
+    return this.http.patch<AssignStudentParentResponse>(url, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
