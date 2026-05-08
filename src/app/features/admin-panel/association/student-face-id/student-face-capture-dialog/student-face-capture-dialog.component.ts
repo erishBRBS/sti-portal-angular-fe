@@ -261,21 +261,28 @@ updateFace(): void {
     .filter(p => p.file !== null)
     .map(p => p.file as File);
 
-  const payload = {
-    id: this.selectedData.id,
+  const payload: EnrollFaceIDPayload = {
+    student_no: this.studentNo,
+    full_name: this.studentName,
     images: files
   };
 
-  this.studentFaceIDService.updateStudentFaceID(payload).subscribe({
-    next: (res: any) => {
-      this.toast.success('Success', res.message);
-      this.uploaded.emit();
-      this.closeDialog();
-    },
-    error: () => {
-      this.toast.error('Error', 'Failed to update');
-    },
-  });
+  this.studentFaceIDService
+    .updateStudentFaceID(this.selectedData.id, payload)
+    .subscribe({
+      next: (res: any) => {
+        this.toast.success('Success', res.message);
+        this.uploaded.emit();
+        this.closeDialog();
+      },
+      error: (err) => {
+        console.error(err);
+        this.toast.error(
+          'Error',
+          err?.error?.message || 'Failed to update'
+        );
+      },
+    });
 }
 
 openEdit(data: any) {

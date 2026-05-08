@@ -17,6 +17,7 @@ import { ToastService } from '../../../../../shared/services/toast.service';
 import { AssignStudentSchedulePayload } from '../../../../../payloads/admin-panel/association/student-schedule/student-schedule.payload';
 import { StudentService } from '../../../../../services/admin-panel/user-management/student/student.service';
 import { ScheduleService } from '../../../../../services/admin-panel/curriculum-management/schedule.service';
+import { SelectModule } from 'primeng/select';
 
 type SelectOption = {
   label: string;
@@ -26,7 +27,7 @@ type SelectOption = {
 @Component({
   selector: 'sti-student-schedule-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, DialogModule, ButtonModule],
+  imports: [CommonModule, FormsModule, DialogModule, ButtonModule, SelectModule],
   templateUrl: './student-schedule-modal.component.html',
 })
 export class StudentScheduleModalComponent {
