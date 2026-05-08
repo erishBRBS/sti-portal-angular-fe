@@ -131,7 +131,7 @@ export class ScheduleModalComponent {
   course_code: string = '';
   section_id!: number;
   professor_id!: number;
-  subject_id!: number;
+  subject_id: any = null;
 
   day = '';
   start_time: Date | string | null = null;
@@ -203,7 +203,7 @@ export class ScheduleModalComponent {
     let hours = 0;
     let minutes = 0;
 
-    const hiMatch = value.match(/^(\d{1,2}):(\d{2})$/);
+   const hiMatch = value.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
 
     if (hiMatch) {
       hours = Number(hiMatch[1]);
@@ -282,10 +282,10 @@ export class ScheduleModalComponent {
 
   private loadDropdowns() {
     this.courseService.listAllCourse().subscribe((res: any) => {
-      this.courses = (res.data ?? []).map((c: any) => ({
-        label: c.course_code,
-        value: c.id,
-      }));
+    this.courses = (res.data ?? []).map((c: any) => ({
+     label: c.course_code,
+     value: c.course_code,
+   }));
     });
 
     this.sectionService.listAllSection().subscribe((res: any) => {
@@ -302,12 +302,19 @@ export class ScheduleModalComponent {
       }));
     });
 
-    this.subjectService.listAllSubjects().subscribe((res: any) => {
-      this.subjects = (res.data ?? []).map((s: any) => ({
-        label: s.subject_name,
-        value: s.id,
-      }));
-    });
+this.subjectService.listAllSubjects().subscribe((res: any) => {
+  this.subjects = (res.data ?? []).map((s: any) => ({
+    label: s.subject_name,
+    value: Number(s.id),
+  }));
+
+  // re-assign selected value AFTER options load
+  if (this.subject_id) {
+    this.subject_id = Number(this.subject_id);
+  }
+
+  this.cdr.detectChanges();
+});
   }
 
   /* ============================
@@ -440,37 +447,44 @@ export class ScheduleModalComponent {
      GET BY ID
   ============================ */
 
-  private getScheduleById(id: number): void {
-    this.loading = true;
+private getScheduleById(id: number): void {
+  this.loading = true;
 
-    this.scheduleService.getScheduleById(id).subscribe({
-      next: (response: any) => {
-        const data = response.data;
+  this.scheduleService.getScheduleById(id).subscribe({
+    next: (response: any) => {
+      const data = response.data;
 
-        this.course_code = data.course_code;
-        this.section_id = data.section_id;
-        this.professor_id = data.professor_id;
-        this.subject_id = data.subject_id;
+      console.log(data);
 
-        this.day = data.day;
-        this.start_time = this.parseTimeToDate(data.start_time);
-        this.end_time = this.parseTimeToDate(data.end_time);
-        this.duration = data.duration;
-        this.room = data.room;
+      this.course_code = data.course_code;
 
-        this.cdr.detectChanges();
+      // FIX HERE
+      this.section_id = data.section?.id;
+      this.professor_id = data.professor?.id;
+ setTimeout(() => {
+  this.subject_id = Number(data.subject?.id);
+  this.cdr.detectChanges();
+}, 200);
 
-        this.loading = false;
-      },
+      this.day = data.day;
+      this.start_time = this.parseTimeToDate(data.start_time);
+      this.end_time = this.parseTimeToDate(data.end_time);
+      this.duration = data.duration;
+      this.room = data.room;
 
-      error: (err: any) => {
-        const msg = err?.error?.message ?? 'Failed to load schedule details.';
+      this.cdr.detectChanges();
 
-        this.toast.error('Error', msg);
-        console.error(err);
+      this.loading = false;
+    },
 
-        this.loading = false;
-      },
-    });
-  }
+    error: (err: any) => {
+      const msg = err?.error?.message ?? 'Failed to load schedule details.';
+
+      this.toast.error('Error', msg);
+      console.error(err);
+
+      this.loading = false;
+    },
+  });
+}
 }
