@@ -23,8 +23,6 @@ export function createAScheduleDetailConfig(
         value: `${data.subject?.subject_code} - ${data.subject?.subject_name}`
       },
 
-      { label: 'Year Level', value: data.subject?.year_level },
-
       { label: 'Day', value: data.day },
 
       {
