@@ -16,6 +16,8 @@ export function createParentDetailConfig(
       { label: 'Last Name', value: data.last_name },
       { label: 'Email', value: data.email },
       { label: 'Username', value: data.username },
+      { label: 'Contact Number', value: data.contact_number},
+      { label: 'Username', value: data.username},
       { label: 'Created', value: DateHelper.formatDateTime(data.created_at), },
     ],
   };
