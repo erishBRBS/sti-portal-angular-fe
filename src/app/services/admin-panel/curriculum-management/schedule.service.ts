@@ -90,7 +90,7 @@ export class ScheduleService {
   }
   updateSchedule(id: number, payload: CreateSchedulePayload): Observable<ScheduleResponse> {
     const url = this.updateScheduleUrl.replace('{id}', String(id));
-    return this.http.post<ScheduleResponse>(url, payload, {
+    return this.http.patch<ScheduleResponse>(url, payload, {
       headers: this.authHeaders().set('Content-Type', 'application/json'),
     });
   }
