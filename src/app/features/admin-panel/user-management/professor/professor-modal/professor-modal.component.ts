@@ -133,6 +133,8 @@ onDialogShown() {
     this.email = '';
     this.username = '';
     this.password = '';
+    this.mobile_number = '';
+
 
     this.clearFileControls();
 
@@ -167,6 +169,7 @@ onDialogShown() {
     this.email = '';
     this.username = '';
     this.password = '';
+    this.mobile_number = '';
 
     this.clearFileControls();
 
