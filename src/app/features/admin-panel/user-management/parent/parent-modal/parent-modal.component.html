@@ -13,13 +13,18 @@
   <!-- HEADER -->
   <ng-template pTemplate="header">
     <div class="w-full flex justify-center">
-      <span class="text-lg font-bold text-blue-600">{{ dialogTitle }} </span>
+      <span class="text-lg font-bold text-blue-600">
+        {{ dialogTitle }}
+      </span>
     </div>
   </ng-template>
 
+  <!-- FORM -->
   <form #parentForm="ngForm" (ngSubmit)="onSave(parentForm)" class="p-4">
+
     <!-- GRID -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
       <!-- FIRST NAME -->
       <div>
         <label class="block text-sm font-semibold mb-2">
@@ -45,27 +50,36 @@
         </p>
       </div>
 
-      <!-- USERNAME -->
+      <!-- LAST NAME -->
       <div>
         <label class="block text-sm font-semibold mb-2">
-          <span class="text-red-600">*</span> Username
+          <span class="text-red-600">*</span> Last Name
         </label>
 
         <input
           pInputText
           class="w-full"
-          name="username"
-          [(ngModel)]="username"
-          [disabled]="mode === 'VIEW' || 'UPDATE'"
-          #usernameCtrl="ngModel"
+          name="last_name"
+          [(ngModel)]="last_name"
+          [disabled]="mode === 'VIEW'"
+          #lastNameCtrl="ngModel"
           required
-          placeholder="Enter username"
+          placeholder="Enter last name"
         />
+
+        <p
+          class="text-xs text-red-500 mt-1"
+          *ngIf="lastNameCtrl.invalid && (lastNameCtrl.touched || submitted)"
+        >
+          Last name is required
+        </p>
       </div>
 
       <!-- MIDDLE NAME -->
       <div>
-        <label class="block text-sm font-semibold mb-2"> Middle Name </label>
+        <label class="block text-sm font-semibold mb-2">
+          Middle Name
+        </label>
 
         <input
           pInputText
@@ -77,8 +91,64 @@
         />
       </div>
 
+      <!-- USERNAME -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Username
+        </label>
+
+        <input
+          pInputText
+          class="w-full"
+          name="username"
+          [(ngModel)]="username"
+          [disabled]="mode === 'VIEW' || mode === 'UPDATE'"
+          #usernameCtrl="ngModel"
+          required
+          placeholder="Enter username"
+          [ngClass]="{
+            'ng-invalid ng-dirty':
+              usernameCtrl.invalid &&
+              (usernameCtrl.touched || submitted)
+          }"
+        />
+
+        <p
+          class="text-xs text-red-500 mt-1"
+          *ngIf="usernameCtrl.invalid && (usernameCtrl.touched || submitted)"
+        >
+          Username is required
+        </p>
+      </div>
+
+      <!-- EMAIL -->
+      <div>
+        <label class="block text-sm font-semibold mb-2">
+          <span class="text-red-600">*</span> Email
+        </label>
+
+        <input
+          pInputText
+          class="w-full"
+          name="email"
+          [(ngModel)]="email"
+          [disabled]="mode === 'VIEW' || mode === 'UPDATE'"
+          #emailCtrl="ngModel"
+          required
+          email
+          placeholder="Enter email"
+        />
+
+        <p
+          class="text-xs text-red-500 mt-1"
+          *ngIf="emailCtrl.invalid && (emailCtrl.touched || submitted)"
+        >
+          Valid email is required
+        </p>
+      </div>
+
       <!-- PASSWORD -->
-      <div class="relative" [hidden]="mode === 'UPDATE'">
+      <div *ngIf="mode !== 'UPDATE'" class="relative">
         <label class="block text-sm font-semibold mb-2">
           <span class="text-red-600">*</span> Password
         </label>
@@ -100,42 +170,13 @@
           [ngClass]="showPassword ? 'pi-eye-slash' : 'pi-eye'"
           (click)="togglePassword()"
         ></i>
-      </div>
 
-      <!-- LAST NAME -->
-      <div>
-        <label class="block text-sm font-semibold mb-2">
-          <span class="text-red-600">*</span> Last Name
-        </label>
-
-        <input
-          pInputText
-          class="w-full"
-          name="last_name"
-          [(ngModel)]="last_name"
-          [disabled]="mode === 'VIEW'"
-          #lastNameCtrl="ngModel"
-          required
-          placeholder="Enter last name"
-        />
-      </div>
-
-      <!-- EMAIL -->
-      <div>
-        <label class="block text-sm font-semibold mb-2">
-          <span class="text-red-600">*</span> Email
-        </label>
-
-        <input
-          pInputText
-          class="w-full"
-          name="email"
-          [(ngModel)]="email"
-          [disabled]="mode === 'VIEW' || 'UPDATE'"
-          required
-          email
-          placeholder="Enter email"
-        />
+        <p
+          class="text-xs text-red-500 mt-1"
+          *ngIf="passCtrl.invalid && (passCtrl.touched || submitted)"
+        >
+          Password is required
+        </p>
       </div>
 
       <!-- CONTACT NUMBER -->
@@ -147,33 +188,74 @@
         <input
           pInputText
           class="w-full"
-          name="contact_number"
+          name="mobile_number"
           [(ngModel)]="contact_number"
-          [disabled]="mode === 'VIEW'"
-          #contactNumberCtrl="ngModel"
+          #mobileCtrl="ngModel"
           required
-          placeholder="Enter contact number"
+          pattern="^09[0-9]{9}$"
+          maxlength="11"
+          inputmode="numeric"
+          [disabled]="mode === 'VIEW'"
+          placeholder="Input Mobile"
+          (keypress)="allowNumbersOnly($event)"
+          (input)="contact_number = contact_number.replace(/[^0-9]/g, '')"
+          [ngClass]="{
+            'ng-invalid ng-dirty':
+              mobileCtrl.invalid &&
+              (mobileCtrl.touched || submitted)
+          }"
         />
+
+        <p
+          class="text-xs text-red-500 mt-1"
+          *ngIf="mobileCtrl.invalid && (mobileCtrl.touched || submitted)"
+        >
+          Valid mobile number is required
+        </p>
       </div>
+
     </div>
 
     <!-- IMAGE UPLOAD -->
     <div class="mt-6">
-      <label class="block text-sm font-semibold mb-2"> Profile Image (optional) </label>
+      <label class="block text-sm font-semibold mb-2">
+        Profile Image (optional)
+      </label>
 
       <div class="flex items-start gap-4">
+
+        <!-- PREVIEW -->
         <div
           class="w-24 h-24 rounded-xl border overflow-hidden bg-gray-50 flex items-center justify-center"
         >
-          <img *ngIf="previewUrl" [src]="previewUrl" class="w-full h-full object-cover" />
-          <span *ngIf="!previewUrl" class="text-xs text-gray-400">No image</span>
+          <img
+            *ngIf="previewUrl"
+            [src]="previewUrl"
+            class="w-full h-full object-cover"
+          />
+
+          <span *ngIf="!previewUrl" class="text-xs text-gray-400">
+            No image
+          </span>
         </div>
 
+        <!-- FILE ACTIONS -->
         <div class="flex-1 space-y-2">
-          <input #fileInput type="file" hidden accept="image/*" (change)="onFileSelected($event)" />
+
+          <input
+            #fileInput
+            type="file"
+            hidden
+            accept="image/*"
+            (change)="onFileSelected($event)"
+          />
 
           <div class="flex items-center gap-3">
-            <span class="text-sm text-gray-600 cursor-pointer" (click)="fileInput.click()">
+
+            <span
+              class="text-sm text-gray-600 cursor-pointer"
+              (click)="fileInput.click()"
+            >
               {{ fileName || 'Click to choose file' }}
             </span>
 
@@ -193,13 +275,17 @@
               label="Remove"
               (click)="removeImage()"
             ></button>
+
           </div>
         </div>
       </div>
     </div>
 
     <!-- FOOTER -->
-    <div *ngIf="mode !== 'VIEW'" class="flex justify-end gap-3 mt-6">
+    <div
+      *ngIf="mode !== 'VIEW'"
+      class="flex justify-end gap-3 mt-6"
+    >
       <button
         pButton
         type="button"
@@ -215,5 +301,6 @@
         class="!bg-blue-600 !border-blue-600 !text-white hover:!bg-blue-700"
       ></button>
     </div>
+
   </form>
 </p-dialog>
