@@ -152,8 +152,26 @@ export class StudentFaceIDService {
     );
   }
 
-  updateStudentFaceID(payload: any) {
-  return this.http.post('/update-face-id', payload);
+updateStudentFaceID(id: number, payload: EnrollFaceIDPayload) {
+  const fd = new FormData();
+
+  fd.append('student_no', payload.student_no?.trim() ?? '');
+  fd.append('full_name', payload.full_name?.trim() ?? '');
+
+  payload.images.forEach((file) => {
+    fd.append('image_path[]', file, file.name);
+  });
+
+  return this.http.patch(
+    `${this.baseAPIUrl}update/face-recognation/${id}`,
+    fd,
+    {
+      headers: new HttpHeaders({
+        Accept: 'application/json',
+        Authorization: `Bearer ${this.storage.getToken()}`,
+      }),
+    }
+  );
 }
 
   deleteStudentFaceID(payload: DeleteFaceIDPayload): Observable<StudenFaceIDResponse> {
