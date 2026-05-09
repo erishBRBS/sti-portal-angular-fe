@@ -45,7 +45,7 @@ type RoleUI = 'Student' | 'Parent' | 'Professor' | 'Admin';
                 style="touch-action: manipulation;"
               >
                 <i class="fas fa-times text-sm"></i>
-              </button>
+              </button>a
 
               <div
                 class="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-white shadow-md"
