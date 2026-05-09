@@ -131,7 +131,7 @@ updateStudent(
   fd.append('section_id', String(payload.section_id));
   fd.append('year_level', payload.year_level ?? '');
   //fd.append('username', payload.username ?? '');
-  //fd.append('rfid_code', payload.rfid_code ?? '');
+  fd.append('rfid_code', payload.rfid_code ?? '');
 
   if (selectedFile) {
     fd.append('image_path', selectedFile);
