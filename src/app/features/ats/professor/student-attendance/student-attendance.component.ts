@@ -285,6 +285,48 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
     this.loadAttendanceRecords(1);
   }
 
+  get attendanceExportFileName(): string {
+    const today = new Date().toISOString().slice(0, 10);
+    return `student-attendance-${today}.pdf`;
+  }
+
+  get attendanceExportMeta(): string[] {
+    const subject = this.getFilterLabel(
+      this.subjectOptions,
+      this.selectedSubjectId,
+      'All Subjects',
+    );
+
+    const section = this.getFilterLabel(
+      this.sectionOptions,
+      this.selectedSectionId,
+      'All Sections',
+    );
+
+    const dateFrom = this.formatDateForApi(this.selectedDateFrom) ?? 'Any';
+    const dateTo = this.formatDateForApi(this.selectedDateTo) ?? 'Any';
+
+    return [
+      `Subject: ${subject}`,
+      `Section: ${section}`,
+      `Date From: ${dateFrom}`,
+      `Date To: ${dateTo}`,
+      `Total Records Exported: ${this.attendanceRecords.length}`,
+    ];
+  }
+
+  private getFilterLabel(
+    options: FilterOption[],
+    value: string | number | '',
+    fallback: string,
+  ): string {
+    if (value === '' || value === null || value === undefined) {
+      return fallback;
+    }
+
+    return options.find((option) => option.value === value)?.label ?? fallback;
+  }
+
   extractDate(value: string | null | undefined): string {
     if (!value) return 'N/A';
 
