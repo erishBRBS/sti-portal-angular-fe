@@ -73,7 +73,7 @@ export class ProfessorService {
 
   getMyStudents(
     subjectId?: number | null,
-    sectionId?: number | null
+    sectionId?: number | null,
   ): Observable<GetMyStudentsResponse> {
     let params = new HttpParams();
 
@@ -93,7 +93,7 @@ export class ProfessorService {
 
   getAttendanceAnalytics(
     subjectId?: number | null,
-    sectionId?: number | null
+    sectionId?: number | null,
   ): Observable<GetAttendanceAnalyticsResponse> {
     let params = new HttpParams();
 
@@ -117,11 +117,10 @@ export class ProfessorService {
     subjectId?: number | null,
     sectionId?: number | null,
     scheduleId?: number | null,
-    date?: string | null
+    dateFrom?: string | null,
+    dateTo?: string | null,
   ): Observable<GetAttendanceRecordsResponse> {
-    let params = new HttpParams()
-      .set('page', page)
-      .set('per_page', perPage);
+    let params = new HttpParams().set('page', page).set('per_page', perPage);
 
     if (subjectId) {
       params = params.set('subject_id', subjectId);
@@ -135,8 +134,12 @@ export class ProfessorService {
       params = params.set('schedule_id', scheduleId);
     }
 
-    if (date) {
-      params = params.set('date', date);
+    if (dateFrom) {
+      params = params.set('date_from', dateFrom);
+    }
+
+    if (dateTo) {
+      params = params.set('date_to', dateTo);
     }
 
     return this.http.get<GetAttendanceRecordsResponse>(this.getAttendanceRecordsUrl, {
@@ -147,7 +150,7 @@ export class ProfessorService {
 
   updateAttendanceStatus(
     attendanceId: number,
-    status: 'Present' | 'Late' | 'Absent'
+    status: 'Present' | 'Late' | 'Absent',
   ): Observable<UpdateAttendanceStatusResponse> {
     const params = new HttpParams().set('status', status);
 
@@ -157,7 +160,7 @@ export class ProfessorService {
       {
         headers: this.authHeaders(),
         params,
-      }
+      },
     );
   }
 }

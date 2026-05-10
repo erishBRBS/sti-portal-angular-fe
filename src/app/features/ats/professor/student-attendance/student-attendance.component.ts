@@ -1,13 +1,8 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  PLATFORM_ID,
-  inject,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, PLATFORM_ID, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { DatePickerModule } from 'primeng/datepicker';
 import {
   ActionEvent,
   DataTableComponent,
@@ -43,7 +38,7 @@ interface FilterOption {
 @Component({
   selector: 'app-gate-attendance',
   standalone: true,
-  imports: [CommonModule, FormsModule, DataTableComponent],
+  imports: [CommonModule, FormsModule, DataTableComponent, DatePickerModule],
   templateUrl: './student-attendance.component.html',
 })
 export class ProfessorStudentAttendanceComponent implements OnInit {
@@ -65,6 +60,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
 
   selectedSubjectId: number | '' = '';
   selectedSectionId: number | '' = '';
+  selectedDateFrom: Date | null = null;
+  selectedDateTo: Date | null = null;
 
   subjectOptions: FilterOption[] = [];
   sectionOptions: FilterOption[] = [];
@@ -159,7 +156,7 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
     forkJoin({
       subjects: this.professorService.getMySubjects(),
       schedules: this.professorService.getMySchedules(),
-      attendance: this.professorService.getAttendanceRecords(1, this.rows, null, null),
+      attendance: this.professorService.getAttendanceRecords(1, this.rows, null, null, null, null),
     }).subscribe({
       next: ({ subjects, schedules, attendance }) => {
         this.subjects = subjects.data ?? [];
@@ -181,6 +178,16 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
     });
   }
 
+  private formatDateForApi(date: Date | null): string | null {
+    if (!date) return null;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
   loadAttendanceRecords(page: number = 1): void {
     if (!this.isBrowser) return;
 
@@ -192,7 +199,10 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
         page,
         this.rows,
         this.selectedSubjectId || null,
-        this.selectedSectionId || null
+        this.selectedSectionId || null,
+        null,
+        this.formatDateForApi(this.selectedDateFrom),
+        this.formatDateForApi(this.selectedDateTo),
       )
       .subscribe({
         next: (response) => {
@@ -219,7 +229,7 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
       name: record.student?.name ?? 'N/A',
       section: record.student?.section?.section_name ?? 'N/A',
       subject: record.schedule?.subject?.subject_name ?? 'N/A',
-      date: this.extractDate(record.created_at),
+      date: this.extractDate(record.date ?? record.created_at),
       timeIn: record.time_in ?? '-',
       timeOut: record.time_out ?? '-',
       status: this.formatStatus(record.status),
@@ -228,8 +238,7 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
 
     this.totalRecords = response.pagination?.total ?? 0;
     this.first =
-      ((response.pagination?.current_page ?? 1) - 1) *
-      (response.pagination?.per_page ?? this.rows);
+      ((response.pagination?.current_page ?? 1) - 1) * (response.pagination?.per_page ?? this.rows);
   }
 
   private buildFilterOptions(): void {
@@ -251,14 +260,11 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
               label: item.section!.section_name,
               value: item.section!.id,
             },
-          ])
-      ).values()
+          ]),
+      ).values(),
     );
 
-    this.sectionOptions = [
-      { label: 'All Sections', value: '' },
-      ...uniqueSections,
-    ];
+    this.sectionOptions = [{ label: 'All Sections', value: '' }, ...uniqueSections];
   }
 
   onFilterChange(): void {
@@ -273,13 +279,24 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
 
     this.selectedSubjectId = '';
     this.selectedSectionId = '';
+    this.selectedDateFrom = null;
+    this.selectedDateTo = null;
     this.first = 0;
     this.loadAttendanceRecords(1);
   }
 
   extractDate(value: string | null | undefined): string {
     if (!value) return 'N/A';
-    return value.includes(' ') ? value.split(' ')[0] : value;
+
+    if (value.includes('T')) {
+      return value.split('T')[0];
+    }
+
+    if (value.includes(' ')) {
+      return value.split(' ')[0];
+    }
+
+    return value;
   }
 
   formatStatus(status: string): string {

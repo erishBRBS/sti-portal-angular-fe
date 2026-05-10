@@ -13,13 +13,15 @@
       <section
         class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6 rounded-2xl shadow-sm"
       >
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+          <!-- Subject -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Subject
             </label>
+
             <select
-              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 outline-none"
+              class="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
               [(ngModel)]="selectedSubjectId"
               (ngModelChange)="onFilterChange()"
             >
@@ -29,12 +31,14 @@
             </select>
           </div>
 
-          <div>
-            <label class="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300">
+          <!-- Section -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
               Section
             </label>
+
             <select
-              class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-200 outline-none"
+              class="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
               [(ngModel)]="selectedSectionId"
               (ngModelChange)="onFilterChange()"
             >
@@ -44,11 +48,73 @@
             </select>
           </div>
 
-          <div class="flex items-end">
+          <!-- Date -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Date From
+            </label>
+
+            <ng-container *ngIf="isBrowser; else dateFromFallback">
+              <p-datepicker
+                [(ngModel)]="selectedDateFrom"
+                (ngModelChange)="onFilterChange()"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                [showButtonBar]="true"
+                [appendTo]="'body'"
+                placeholder="Date from"
+                styleClass="attendance-date-picker w-full"
+                inputStyleClass="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+              />
+            </ng-container>
+
+            <ng-template #dateFromFallback>
+              <input
+                type="text"
+                disabled
+                placeholder="Date from"
+                class="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm"
+              />
+            </ng-template>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              Date To
+            </label>
+
+            <ng-container *ngIf="isBrowser; else dateToFallback">
+              <p-datepicker
+                [(ngModel)]="selectedDateTo"
+                (ngModelChange)="onFilterChange()"
+                dateFormat="yy-mm-dd"
+                [showIcon]="true"
+                [showButtonBar]="true"
+                [appendTo]="'body'"
+                placeholder="Date to"
+                styleClass="attendance-date-picker w-full"
+                inputStyleClass="h-11 w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 text-sm text-slate-700 dark:text-slate-200 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
+              />
+            </ng-container>
+
+            <ng-template #dateToFallback>
+              <input
+                type="text"
+                disabled
+                placeholder="Date to"
+                class="h-11 w-full rounded-xl border border-slate-300 px-3 text-sm"
+              />
+            </ng-template>
+          </div>
+
+          <!-- Clear Button -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-transparent select-none"> Action </label>
+
             <button
               type="button"
               (click)="clearFilters()"
-              class="w-full rounded-xl border border-gray-400 bg-gray-300 px-3 py-2 text-sm font-medium text-gray-800 hover:bg-gray-400 transition"
+              class="h-11 w-full rounded-xl border border-slate-300 bg-slate-100 px-3 text-sm font-semibold text-slate-700 hover:bg-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 transition"
             >
               Clear Filters
             </button>
