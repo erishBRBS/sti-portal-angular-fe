@@ -97,6 +97,7 @@ export interface ProfessorAttendanceRecord {
   status: 'Present' | 'Late' | 'Absent' | string;
   time_in: string | null;
   time_out: string | null;
+  date: string;
   created_at: string;
 }
 
