@@ -1,5 +1,14 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  PLATFORM_ID,
+  SimpleChanges,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -46,6 +55,10 @@ export interface TableColumn<T = any> {
 
   valueGetter?: (row: T) => any;
 
+  exportable?: boolean;
+  exportHeader?: string;
+  exportValueGetter?: (row: T) => any;
+
   tagSeverity?: (row: T) => StiTagSeverity;
   tagLabel?: (row: T) => string;
   tagClass?: (row: T) => string;
@@ -87,6 +100,9 @@ export interface ActionEvent<T = any> {
   styleUrl: './data-table.component.css',
 })
 export class DataTableComponent<T = any> implements OnChanges {
+  private readonly platformId = inject(PLATFORM_ID);
+  readonly isBrowser = isPlatformBrowser(this.platformId);
+
   @Input() value: T[] = [];
   @Input() columns: TableColumn<T>[] = [];
 
@@ -107,6 +123,14 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Input() importCsvLabel = 'Import';
   @Input() addLabel = 'Add';
   @Input() deleteLabel = 'Delete';
+
+  @Input() showExportPdf = false;
+  @Input() exportPdfLabel = 'Export PDF';
+  @Input() exportPdfFileName = 'export-data.pdf';
+  @Input() exportPdfTitle = '';
+  @Input() exportPdfSubtitle = '';
+  @Input() exportPdfMeta: string[] = [];
+  @Input() exportPdfRows: T[] | null = null;
 
   @Input() showSelection = false;
   @Input() selection: T[] = [];
@@ -144,6 +168,11 @@ export class DataTableComponent<T = any> implements OnChanges {
   @Output() pageChanged = new EventEmitter<PageChangedEvent>();
 
   selectedColumns: TableColumn<T>[] = [];
+
+  get canExportPdf(): boolean {
+    const rowsToExport = this.exportPdfRows?.length ? this.exportPdfRows : this.value;
+    return this.isBrowser && !this.loading && !!rowsToExport && rowsToExport.length > 0;
+  }
 
   getAttachmentUrl(row: T, col: TableColumn<T>): string {
     if (col.attachmentUrlGetter) return col.attachmentUrlGetter(row) ?? '';
@@ -251,8 +280,153 @@ export class DataTableComponent<T = any> implements OnChanges {
     return this.visibleColumns.map((c) => c.field);
   }
 
+  async onExportPdf(): Promise<void> {
+    if (!this.canExportPdf) return;
+
+    const rowsToExport = this.exportPdfRows?.length ? this.exportPdfRows : this.value;
+
+    const exportColumns = this.visibleColumns.filter((col) => {
+      if (col.exportable === false) return false;
+      if (col.type === 'attachment') return false;
+      if (col.type === 'custom' && !col.exportValueGetter) return false;
+      return true;
+    });
+
+    if (!rowsToExport?.length || exportColumns.length === 0) return;
+
+    const jsPdfModule: any = await import('jspdf');
+    const autoTableModule: any = await import('jspdf-autotable');
+
+    const jsPDF = jsPdfModule.default || jsPdfModule.jsPDF;
+    const autoTable = autoTableModule.default || autoTableModule.autoTable;
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'pt',
+      format: 'a4',
+    });
+
+    const marginX = 40;
+    let currentY = 40;
+
+    const title = this.exportPdfTitle || this.title || 'Exported Data';
+    const subtitle = this.exportPdfSubtitle || this.subtitle || '';
+
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, marginX, currentY);
+
+    currentY += 18;
+
+    if (subtitle) {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(subtitle, marginX, currentY);
+      currentY += 16;
+    }
+
+    if (this.exportPdfMeta?.length) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+
+      this.exportPdfMeta.forEach((item) => {
+        doc.text(String(item), marginX, currentY);
+        currentY += 12;
+      });
+    }
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Generated At: ${new Date().toLocaleString()}`, marginX, currentY);
+
+    currentY += 14;
+
+    const headers = exportColumns.map((col) => col.exportHeader || col.header);
+
+    const body = rowsToExport.map((row) =>
+      exportColumns.map((col) => this.getExportCellValue(row, col))
+    );
+
+    autoTable(doc, {
+      startY: currentY,
+      head: [headers],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 5,
+        overflow: 'linebreak',
+      },
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: 255,
+        fontStyle: 'bold',
+      },
+      alternateRowStyles: {
+        fillColor: [248, 250, 252],
+      },
+      margin: {
+        left: marginX,
+        right: marginX,
+      },
+      didDrawPage: (data: any) => {
+        const pageCount = doc.internal.getNumberOfPages();
+        const pageSize = doc.internal.pageSize;
+        const pageWidth = pageSize.getWidth();
+        const pageHeight = pageSize.getHeight();
+
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Page ${data.pageNumber} of ${pageCount}`, pageWidth - marginX, pageHeight - 20, {
+          align: 'right',
+        });
+      },
+    });
+
+    doc.save(this.buildPdfFileName());
+  }
+
+  private getExportCellValue(row: T, col: TableColumn<T>): string {
+    let value: any;
+
+    if (col.exportValueGetter) {
+      value = col.exportValueGetter(row);
+    } else if (col.type === 'tag' && col.tagLabel) {
+      value = col.tagLabel(row);
+    } else {
+      value = this.getCellValue(row, col);
+    }
+
+    if (value === null || value === undefined || value === '') {
+      return '-';
+    }
+
+    if (col.type === 'boolean') {
+      return value ? 'Yes' : 'No';
+    }
+
+    if (value instanceof Date) {
+      return value.toLocaleDateString();
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+
+    return String(value);
+  }
+
+  private buildPdfFileName(): string {
+    const fileName = this.exportPdfFileName || 'export-data.pdf';
+    const withExtension = fileName.toLowerCase().endsWith('.pdf') ? fileName : `${fileName}.pdf`;
+
+    return withExtension
+      .replace(/[\\/:*?"<>|]/g, '-')
+      .replace(/\s+/g, '-')
+      .toLowerCase();
+  }
+
   cols = [
-  { field: 'academic_year', header: 'Academic Year', filter: true },
-  { field: 'semester', header: 'Semester', filter: true }
-];
+    { field: 'academic_year', header: 'Academic Year', filter: true },
+    { field: 'semester', header: 'Semester', filter: true },
+  ];
 }

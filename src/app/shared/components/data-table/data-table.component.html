@@ -12,7 +12,21 @@
       <div class="text-sm text-slate-500 dark:text-slate-400" *ngIf="subtitle">{{ subtitle }}</div>
     </div>
 
-    <div class="flex items-center gap-2 md:ml-auto" *ngIf="showImportCsv || showAdd || showDelete">
+    <div
+      class="flex items-center gap-2 md:ml-auto"
+      *ngIf="showExportPdf || showImportCsv || showAdd || showDelete"
+    >
+      <button
+        *ngIf="showExportPdf"
+        type="button"
+        [disabled]="!canExportPdf"
+        class="cursor-pointer inline-flex items-center gap-2 rounded-lg border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50 dark:border-red-900 dark:bg-slate-800 dark:text-red-300 dark:hover:bg-slate-700"
+        (click)="onExportPdf()"
+      >
+        <i class="pi pi-file-pdf"></i>
+        {{ exportPdfLabel }}npm
+      </button>
+
       <button
         *ngIf="showImportCsv"
         type="button"
@@ -74,29 +88,28 @@
         </th>
 
         <th
-          *ngFor="let col of columns"
+          *ngFor="let col of cols"
           [ngClass]="[getAlignClass(col), col.headerClass || '']"
           [ngStyle]="getWidthStyle(col)"
           [pSortableColumn]="col.sortable ? col.field : undefined"
         >
-     <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <!--LEFT: HEADER + SORT -->
+            <div class="flex items-center gap-2">
+              <span class="font-semibold">{{ col.header }}</span>
+            </div>
 
-       <!--LEFT: HEADER + SORT -->
-      <div class="flex items-center gap-2">
-        <span class="font-semibold">{{ col.header }}</span>
-     </div>
-
-      <!--RIGHT: DITO MO ILALAGAY FILTER -->
-       <p-columnFilter
-        *ngIf="showColumnFilters && col.field !== 'actions'"
-         [field]="col.field"
-         display="menu"
-         [showMatchModes]="false"
-         [showOperator]="false"
-         [showAddButton]="false">
-      </p-columnFilter>
-
-    </div>
+            <!--RIGHT: DITO MO ILALAGAY FILTER -->
+            <p-columnFilter
+              *ngIf="showColumnFilters && col.field !== 'actions'"
+              [field]="col.field"
+              display="menu"
+              [showMatchModes]="false"
+              [showOperator]="false"
+              [showAddButton]="false"
+            >
+            </p-columnFilter>
+          </div>
         </th>
 
         <th *ngIf="showActions" class="text-right w-28">
