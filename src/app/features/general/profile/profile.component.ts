@@ -16,6 +16,15 @@ import {
 
 type RoleType = 'admin' | 'professor' | 'student' | 'parent';
 
+type ParentProfileView = {
+  id: number;
+  firstName: string;
+  middleName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+};
+
 type UserProfileView = {
   id: number;
   role: RoleType;
@@ -31,6 +40,7 @@ type UserProfileView = {
   firstName: string;
   lastName: string;
   fullName: string;
+  parents: ParentProfileView[];
 };
 
 @Component({
@@ -61,6 +71,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     firstName: '',
     lastName: '',
     fullName: '',
+    parents: [],
   };
 
   editableFirstName = '';
@@ -110,21 +121,57 @@ export class ProfileComponent implements OnInit, OnDestroy {
           raw?.course?.course_name?.trim?.() ||
           raw?.course_name?.trim?.() ||
           '';
+
         const yearLevel = String(raw?.year_level ?? '').trim() || '';
+
         const section =
           raw?.section?.section_name?.trim?.() ||
           raw?.section_name?.trim?.() ||
           '';
 
+        const parents: ParentProfileView[] = Array.isArray(raw?.parents)
+          ? raw.parents.map((parent: any) => {
+              const parentFirstName = parent?.first_name?.trim?.() || '';
+              const parentMiddleName = parent?.middle_name?.trim?.() || '';
+              const parentLastName = parent?.last_name?.trim?.() || '';
+
+              const parentFullName = [
+                parentFirstName,
+                parentMiddleName,
+                parentLastName,
+              ]
+                .filter(Boolean)
+                .join(' ');
+
+              return {
+                id: Number(parent?.id ?? 0),
+                firstName: parentFirstName,
+                middleName: parentMiddleName,
+                lastName: parentLastName,
+                fullName: parentFullName || 'Parent / Guardian',
+                email: parent?.email?.trim?.() || '',
+              };
+            })
+          : [];
+
         let role: RoleType = 'admin';
         const normalizedRole = roleName.toLowerCase();
 
-        if (normalizedRole.includes('student')) role = 'student';
-        else if (normalizedRole.includes('parent')) role = 'parent';
-        else if (normalizedRole.includes('professor') || normalizedRole.includes('teacher')) role = 'professor';
-        else role = 'admin';
+        if (normalizedRole.includes('student')) {
+          role = 'student';
+        } else if (normalizedRole.includes('parent')) {
+          role = 'parent';
+        } else if (
+          normalizedRole.includes('professor') ||
+          normalizedRole.includes('teacher')
+        ) {
+          role = 'professor';
+        } else {
+          role = 'admin';
+        }
 
         let displayName = '';
+
         if (firstName || lastName) {
           displayName = `${firstName} ${lastName}`.trim();
         } else if (fullName) {
@@ -158,6 +205,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           firstName,
           lastName,
           fullName,
+          parents,
         };
 
         this.editableFirstName = firstName;
@@ -195,6 +243,14 @@ export class ProfileComponent implements OnInit, OnDestroy {
 
   get showStudentFields(): boolean {
     return this.user.role === 'student';
+  }
+
+  get showParentFields(): boolean {
+    return this.user.role === 'student';
+  }
+
+  get hasParents(): boolean {
+    return this.user.parents.length > 0;
   }
 
   saveChanges(): void {
@@ -275,10 +331,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             );
           },
           error: () => {
-            this.toast.error(
-              'Update Failed',
-              'Unable to save your profile.'
-            );
+            this.toast.error('Update Failed', 'Unable to save your profile.');
           },
         });
 
@@ -343,10 +396,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             );
           },
           error: () => {
-            this.toast.error(
-              'Update Failed',
-              'Unable to save your profile.'
-            );
+            this.toast.error('Update Failed', 'Unable to save your profile.');
           },
         });
 
@@ -403,10 +453,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             );
           },
           error: () => {
-            this.toast.error(
-              'Update Failed',
-              'Unable to save your profile.'
-            );
+            this.toast.error('Update Failed', 'Unable to save your profile.');
           },
         });
 
@@ -462,10 +509,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           );
         },
         error: () => {
-          this.toast.error(
-            'Update Failed',
-            'Unable to save your profile.'
-          );
+          this.toast.error('Update Failed', 'Unable to save your profile.');
         },
       });
   }
@@ -473,6 +517,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
   onPhotoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
+
     if (!file) return;
 
     const isImage = file.type.startsWith('image/');
@@ -499,6 +544,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     if (this.lastObjectUrl) {
       URL.revokeObjectURL(this.lastObjectUrl);
     }
+
     this.lastObjectUrl = null;
     this.photoPreviewUrl = null;
   }

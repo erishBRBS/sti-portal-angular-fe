@@ -201,8 +201,8 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
         this.selectedSubjectId || null,
         this.selectedSectionId || null,
         null,
-        this.formatDateForApi(this.selectedDateFrom),
-        this.formatDateForApi(this.selectedDateTo),
+        null,
+        null,
       )
       .subscribe({
         next: (response) => {
@@ -223,7 +223,7 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
   private setAttendanceData(response: any): void {
     const records: ProfessorAttendanceRecord[] = response.data ?? [];
 
-    this.attendanceRecords = records.map((record) => ({
+    const mappedRecords = records.map((record) => ({
       id: record.id,
       studentId: record.student?.id ?? 0,
       name: record.student?.name ?? 'N/A',
@@ -236,9 +236,35 @@ export class ProfessorStudentAttendanceComponent implements OnInit {
       raw: record,
     }));
 
-    this.totalRecords = response.pagination?.total ?? 0;
+    this.attendanceRecords = this.applyFrontendDateFilter(mappedRecords);
+
+    this.totalRecords = this.attendanceRecords.length;
+
     this.first =
       ((response.pagination?.current_page ?? 1) - 1) * (response.pagination?.per_page ?? this.rows);
+  }
+
+  private applyFrontendDateFilter(records: AttendanceTableRow[]): AttendanceTableRow[] {
+    const dateFrom = this.formatDateForApi(this.selectedDateFrom);
+    const dateTo = this.formatDateForApi(this.selectedDateTo);
+
+    if (!dateFrom && !dateTo) {
+      return records;
+    }
+
+    return records.filter((record) => {
+      if (!record.date || record.date === 'N/A') return false;
+
+      if (dateFrom && record.date < dateFrom) {
+        return false;
+      }
+
+      if (dateTo && record.date > dateTo) {
+        return false;
+      }
+
+      return true;
+    });
   }
 
   private buildFilterOptions(): void {
