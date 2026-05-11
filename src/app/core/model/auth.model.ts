@@ -1,11 +1,21 @@
 export type RoleName = 'Admin' | 'Student' | 'Teacher' | string;
 
-export interface UserROle {
+export interface UserRole {
   id: number;
   role_name: RoleName;
   is_deleted: number;
   created_at: string;
   updated_at: string;
+}
+
+export interface ParentSession {
+  id: number;
+  first_name: string;
+  last_name: string;
+  middle_name?: string | null;
+  email?: string | null;
+  image_path?: string | null;
+  user_role_id?: number | null;
 }
 
 export interface User {
@@ -38,7 +48,9 @@ export interface User {
     section_name: string;
   } | null;
 
-  role: UserROle;
+  role: UserRole;
+
+  parents?: ParentSession[];
 }
 
 export interface LoginRequest {
@@ -75,4 +87,6 @@ export interface SessionUser {
     id: number;
     section_name: string;
   } | null;
+
+  parents?: ParentSession[];
 }

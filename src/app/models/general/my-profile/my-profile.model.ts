@@ -33,6 +33,8 @@ export interface StudentProfile {
     id: number;
     section_name: string;
   } | null;
+
+  parent?: ParentProfile[];
 }
 
 export interface ParentProfile {
