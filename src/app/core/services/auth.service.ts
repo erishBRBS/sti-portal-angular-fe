@@ -14,7 +14,7 @@ export class AuthService {
 
   constructor(
     private readonly api: ApiClientService,
-    private readonly storage: TokenStorageService
+    private readonly storage: TokenStorageService,
   ) {
     this.userSubject = new BehaviorSubject<SessionUser | null>(this.storage.getUser());
     this.$user = this.userSubject.asObservable();
@@ -31,7 +31,12 @@ export class AuthService {
   login(role: string, payload: LoginRequest): Observable<SessionUser> {
     return this.api.post<LoginResponse>(loginEndPoint.login(role), payload).pipe(
       map((res) => {
-        const u = res.user;
+        const u = res.user as any;
+
+        console.log('LOGIN RESPONSE USER:', u);
+        console.log('LOGIN RESPONSE PARENTS:', u.parents);
+
+        const parents = Array.isArray(u.parents) ? u.parents : u.parent ? [u.parent] : [];
 
         const sessionUser: SessionUser = {
           id: u.id,
@@ -50,6 +55,8 @@ export class AuthService {
 
           course: u.course ?? null,
           section: u.section ?? null,
+
+          parents: parents,
         };
 
         return { sessionUser, token: res.token };
@@ -59,7 +66,7 @@ export class AuthService {
         this.storage.setUser(sessionUser);
         this.userSubject.next(sessionUser);
       }),
-      map(({ sessionUser }) => sessionUser)
+      map(({ sessionUser }) => sessionUser),
     );
   }
 
@@ -87,7 +94,7 @@ export class AuthService {
         this.storage.clearAll();
         this.userSubject.next(null);
         return of(void 0);
-      })
+      }),
     );
   }
 
