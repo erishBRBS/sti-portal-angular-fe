@@ -19,7 +19,6 @@ import { GradePortalService } from '../../../../services/gps/professor/professor
 import { StudentGradeListItem } from '../../../../models/gps/professor/professor.model';
 import { ToastService } from '../../../../shared/services/toast.service';
 
-
 interface SectionOption {
   id: number;
   name: string;
@@ -83,6 +82,13 @@ export class GradeManagementComponent implements OnInit {
     {
       field: 'student_name',
       header: 'Student Name',
+      sortable: true,
+      filter: true,
+      width: '24rem',
+    },
+    {
+      field: 'subject_name',
+      header: 'Subject',
       sortable: true,
       filter: true,
       width: '24rem',
